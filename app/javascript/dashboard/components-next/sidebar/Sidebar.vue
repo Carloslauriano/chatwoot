@@ -3,7 +3,6 @@ import { h, ref, computed, onMounted, watch } from 'vue';
 import { provideSidebarContext, useSidebarResize } from './provider';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useConfig } from 'dashboard/composables/useConfig';
-import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
@@ -11,6 +10,7 @@ import { useSidebarKeyboardShortcuts } from './useSidebarKeyboardShortcuts';
 import { vOnClickOutside } from '@vueuse/components';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import { useWindowSize, useEventListener } from '@vueuse/core';
+import { isVoiceCallEnabled } from 'dashboard/helper/inbox';
 
 import Button from 'dashboard/components-next/button/Button.vue';
 import SidebarGroup from './SidebarGroup.vue';
@@ -49,10 +49,13 @@ const store = useStore();
 
 // Calls run on the enterprise-only API (cloud runs enterprise); hide the entry
 // on community so it doesn't lead to a dashboard/CTA the backend can't serve.
-const isCallsAvailable = computed(
-  () => isOnChatwootCloud.value || isEnterprise
+// Also requires at least one voice-enabled inbox, otherwise there's nothing to call from.
+const hasVoiceInbox = computed(() =>
+  (inboxes.value || []).some(isVoiceCallEnabled)
 );
-const searchShortcut = useKbd([`$mod`, 'k']);
+const isCallsAvailable = computed(
+  () => (isOnChatwootCloud.value || isEnterprise) && hasVoiceInbox.value
+);
 const { t } = useI18n();
 
 const isACustomBrandedInstance = useMapGetter(
@@ -199,9 +202,13 @@ const onResizeEnd = () => {
   }
 };
 
-const onResizeHandleDoubleClick = () => {
+const toggleSidebarCollapse = () => {
   if (isCollapsed.value) snapToExpanded();
   else snapToCollapsed();
+};
+
+const onResizeHandleDoubleClick = () => {
+  toggleSidebarCollapse();
 };
 
 // Support both mouse and touch events
@@ -245,6 +252,9 @@ const getSidebarSectionSort = useMapGetter(
   'sidebarSortPreferences/getSectionSort'
 );
 
+const portalsCount = useMapGetter('portals/count');
+const hasHelpCenterPortals = computed(() => portalsCount.value > 0);
+
 onMounted(() => {
   store.dispatch('labels/get');
   store.dispatch('inboxes/get');
@@ -253,6 +263,7 @@ onMounted(() => {
   store.dispatch('attributes/get');
   store.dispatch('customViews/get', 'conversation');
   store.dispatch('customViews/get', 'contact');
+  store.dispatch('portals/index');
 });
 
 watch([accountId, hasConversationUnreadCounts], fetchConversationUnreadCounts, {
@@ -724,53 +735,57 @@ const menuItems = computed(() => {
         },
       ],
     },
-    {
-      name: 'Portals',
-      label: t('SIDEBAR.HELP_CENTER.TITLE'),
-      icon: 'i-lucide-library-big',
-      children: [
-        {
-          name: 'Articles',
-          label: t('SIDEBAR.HELP_CENTER.ARTICLES'),
-          activeOn: [
-            'portals_articles_index',
-            'portals_articles_new',
-            'portals_articles_edit',
-          ],
-          to: accountScopedRoute('portals_index', {
-            navigationPath: 'portals_articles_index',
-          }),
-        },
-        {
-          name: 'Categories',
-          label: t('SIDEBAR.HELP_CENTER.CATEGORIES'),
-          activeOn: [
-            'portals_categories_index',
-            'portals_categories_articles_index',
-            'portals_categories_articles_edit',
-          ],
-          to: accountScopedRoute('portals_index', {
-            navigationPath: 'portals_categories_index',
-          }),
-        },
-        {
-          name: 'Locales',
-          label: t('SIDEBAR.HELP_CENTER.LOCALES'),
-          activeOn: ['portals_locales_index'],
-          to: accountScopedRoute('portals_index', {
-            navigationPath: 'portals_locales_index',
-          }),
-        },
-        {
-          name: 'Settings',
-          label: t('SIDEBAR.HELP_CENTER.SETTINGS'),
-          activeOn: ['portals_settings_index'],
-          to: accountScopedRoute('portals_index', {
-            navigationPath: 'portals_settings_index',
-          }),
-        },
-      ],
-    },
+    ...(hasHelpCenterPortals.value
+      ? [
+          {
+            name: 'Portals',
+            label: t('SIDEBAR.HELP_CENTER.TITLE'),
+            icon: 'i-lucide-library-big',
+            children: [
+              {
+                name: 'Articles',
+                label: t('SIDEBAR.HELP_CENTER.ARTICLES'),
+                activeOn: [
+                  'portals_articles_index',
+                  'portals_articles_new',
+                  'portals_articles_edit',
+                ],
+                to: accountScopedRoute('portals_index', {
+                  navigationPath: 'portals_articles_index',
+                }),
+              },
+              {
+                name: 'Categories',
+                label: t('SIDEBAR.HELP_CENTER.CATEGORIES'),
+                activeOn: [
+                  'portals_categories_index',
+                  'portals_categories_articles_index',
+                  'portals_categories_articles_edit',
+                ],
+                to: accountScopedRoute('portals_index', {
+                  navigationPath: 'portals_categories_index',
+                }),
+              },
+              {
+                name: 'Locales',
+                label: t('SIDEBAR.HELP_CENTER.LOCALES'),
+                activeOn: ['portals_locales_index'],
+                to: accountScopedRoute('portals_index', {
+                  navigationPath: 'portals_locales_index',
+                }),
+              },
+              {
+                name: 'Settings',
+                label: t('SIDEBAR.HELP_CENTER.SETTINGS'),
+                activeOn: ['portals_settings_index'],
+                to: accountScopedRoute('portals_index', {
+                  navigationPath: 'portals_settings_index',
+                }),
+              },
+            ],
+          },
+        ]
+      : []),
     {
       name: 'Settings',
       label: t('SIDEBAR.SETTINGS'),
@@ -998,25 +1013,28 @@ const menuItems = computed(() => {
         class="flex gap-2"
         :class="isEffectivelyCollapsed ? 'flex-col items-center' : 'px-2'"
       >
+        <Button
+          v-if="!isMobile"
+          icon="i-lucide-menu"
+          color="slate"
+          size="sm"
+          class="flex-shrink-0 dark:hover:!bg-n-slate-9/30"
+          :class="
+            isEffectivelyCollapsed
+              ? '!size-8 !outline-n-weak !text-n-slate-11'
+              : '!h-7 !outline-n-weak !text-n-slate-11'
+          "
+          :title="
+            isEffectivelyCollapsed
+              ? t('SIDEBAR.TOGGLE_EXPAND')
+              : t('SIDEBAR.TOGGLE_COLLAPSE')
+          "
+          @click="toggleSidebarCollapse"
+        />
         <RouterLink
-          v-if="!isEffectivelyCollapsed"
           :to="{ name: 'search' }"
-          class="flex gap-2 items-center px-2 py-1 w-full h-7 rounded-lg outline outline-1 outline-n-weak bg-n-button-color transition-all duration-100 ease-out"
-        >
-          <span class="flex-shrink-0 i-lucide-search size-4 text-n-slate-10" />
-          <span class="flex-grow text-start text-n-slate-10">
-            {{ t('COMBOBOX.SEARCH_PLACEHOLDER') }}
-          </span>
-          <span
-            class="hidden tracking-wide pointer-events-none select-none text-n-slate-10"
-          >
-            {{ searchShortcut }}
-          </span>
-        </RouterLink>
-        <RouterLink
-          v-else
-          :to="{ name: 'search' }"
-          class="flex items-center justify-center size-8 rounded-lg outline outline-1 outline-n-weak bg-n-button-color transition-all duration-100 ease-out hover:bg-n-alpha-2 dark:hover:bg-n-slate-9/30"
+          class="flex items-center justify-center flex-shrink-0 rounded-lg outline outline-1 outline-n-weak bg-n-button-color transition-all duration-100 ease-out hover:bg-n-alpha-2 dark:hover:bg-n-slate-9/30"
+          :class="isEffectivelyCollapsed ? 'size-8' : 'h-7 w-8'"
           :title="t('COMBOBOX.SEARCH_PLACEHOLDER')"
         >
           <span class="i-lucide-search size-4 text-n-slate-11" />
@@ -1027,7 +1045,7 @@ const menuItems = computed(() => {
               icon="i-lucide-pen-line"
               color="slate"
               size="sm"
-              class="dark:hover:!bg-n-slate-9/30"
+              class="flex-shrink-0 dark:hover:!bg-n-slate-9/30"
               :class="[
                 isEffectivelyCollapsed
                   ? '!size-8 !outline-n-weak !text-n-slate-11'
