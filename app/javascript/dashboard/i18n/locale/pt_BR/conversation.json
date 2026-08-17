@@ -145,6 +145,8 @@
     "RESOLVE_DROPDOWN": {
       "MARK_PENDING": "Deixar pendente",
       "SNOOZE_UNTIL": "Adiar",
+      "SILENT_RESOLVE": "Finalizar silencioso",
+      "INACTIVITY_RESOLVE": "Finalizar por inatividade",
       "SNOOZE": {
         "TITLE": "Suspender até",
         "NEXT_REPLY": "Próxima resposta",

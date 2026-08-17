@@ -81,6 +81,10 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def toggle_status
     # FIXME: move this logic into a service object
+    apply_silent_resolve_extras if silent_resolve_requested?
+    apply_inactivity_resolve_extras if inactivity_resolve_requested?
+    return if status_change_blocked_by_workflow_rules?
+
     if bot_handoff?
       @conversation.bot_handoff!
     elsif params[:status].present?
@@ -99,6 +103,10 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   def toggle_priority
+    if params[:priority].present? && Current.account.hidden_priorities&.include?(params[:priority])
+      return render_could_not_create_error(I18n.t('errors.conversations.workflow.priority_hidden'))
+    end
+
     @conversation.toggle_priority(params[:priority])
     head :ok
   end
@@ -173,6 +181,51 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   def set_conversation_status
     @conversation.status = params[:status]
     @conversation.snoozed_until = parse_date_time(params[:snoozed_until].to_s) if params[:snoozed_until]
+  end
+
+  def silent_resolve_requested?
+    params[:status] == 'resolved' && params[:silent].present? && Current.account.silent_resolve_enabled
+  end
+
+  def apply_silent_resolve_extras
+    @conversation.add_labels(Current.account.silent_resolve_label) if Current.account.silent_resolve_label.present?
+    @conversation.additional_attributes = @conversation.additional_attributes.merge('skip_csat_survey' => true)
+  end
+
+  def inactivity_resolve_requested?
+    params[:status] == 'resolved' && params[:inactivity].present? && Current.account.inactivity_resolve_enabled
+  end
+
+  def apply_inactivity_resolve_extras
+    if Current.account.inactivity_resolve_message.present?
+      MessageTemplates::Template::InactivityResolve.new(conversation: @conversation).perform
+    end
+    @conversation.add_labels(Current.account.inactivity_resolve_label) if Current.account.inactivity_resolve_label.present?
+    @conversation.additional_attributes = @conversation.additional_attributes.merge('skip_csat_survey' => true)
+  end
+
+  def status_change_blocked_by_workflow_rules?
+    return false if bot_handoff? || params[:status].blank?
+
+    blocking_message = workflow_rule_violation_message
+    return false if blocking_message.blank?
+
+    render_could_not_create_error(blocking_message)
+    true
+  end
+
+  def workflow_rule_violation_message
+    account = Current.account
+
+    if params[:status] == 'resolved'
+      return I18n.t('errors.conversations.workflow.label_required') if account.require_label_before_resolve && @conversation.label_list.blank?
+      return I18n.t('errors.conversations.workflow.priority_required') if account.require_priority_before_resolve && @conversation.priority.blank?
+    end
+
+    return I18n.t('errors.conversations.workflow.pending_disabled') if params[:status] == 'pending' && account.disable_pending
+    return I18n.t('errors.conversations.workflow.snooze_disabled') if params[:status] == 'snoozed' && account.disable_snooze
+
+    nil
   end
 
   def handle_human_open

@@ -251,6 +251,7 @@
     "KEYBOARD_SHORTCUTS": "Atalhos do teclado",
     "APPEARANCE": "Alterar Tema",
     "SUPER_ADMIN_CONSOLE": "Console de Super Admin",
+    "SUPER_ADMIN_INTERNAL_CONFIG": "Configurações internas",
     "DOCS": "Ler documentação",
     "CHANGELOG": "Notas de versão",
     "LOGOUT": "Encerrar sessão"
@@ -309,6 +310,8 @@
   },
   "SIDEBAR": {
     "NO_ITEMS": "Nenhum item",
+    "TOGGLE_COLLAPSE": "Recolher menu lateral",
+    "TOGGLE_EXPAND": "Expandir menu lateral",
     "CURRENTLY_VIEWING_ACCOUNT": "Visualização atual:",
     "SWITCH": "Trocar",
     "INBOX_VIEW": "Caixa de entrada",
@@ -764,6 +767,84 @@
         "AVAILABLE_ON": "O recurso de atributos obrigatórios de conversa está disponível nos planos pagos.",
         "UPGRADE_PROMPT": "Atualize para um plano pago para exigir atributos obrigatórios antes da resolução da conversa.",
         "ASK_ADMIN": "Entre em contato com seu administrador para fazer a atualização."
+      }
+    },
+    "RESOLVE_RESTRICTIONS": {
+      "TITLE": "Restrições de resolução",
+      "DESCRIPTION": "Controle o que os agentes precisam fazer antes de alterar o status de uma conversa.",
+      "REQUIRE_LABEL": {
+        "LABEL": "Exigir uma etiqueta antes de resolver"
+      },
+      "REQUIRE_PRIORITY": {
+        "LABEL": "Exigir uma prioridade antes de resolver"
+      },
+      "STATUS_ACTIONS": {
+        "TITLE": "Ações de status"
+      },
+      "DISABLE_SNOOZE": {
+        "LABEL": "Desativar adiar"
+      },
+      "DISABLE_PENDING": {
+        "LABEL": "Desativar marcar como pendente"
+      },
+      "SAVE_BUTTON": "Salvar alterações",
+      "SAVE": {
+        "SUCCESS": "Restrições de resolução atualizadas",
+        "ERROR": "Não foi possível atualizar essa configuração, tente novamente"
+      },
+      "LABEL_REQUIRED": "Esta conversa não pode ser resolvida sem pelo menos uma etiqueta.",
+      "PRIORITY_REQUIRED": "Esta conversa não pode ser resolvida sem uma prioridade definida.",
+      "BLOCKED_ACTION": "Esta ação está desativada pelas configurações de fluxo de conversa da sua conta."
+    },
+    "SILENT_RESOLVE": {
+      "TITLE": "Finalizar silencioso",
+      "DESCRIPTION": "Ative um botão que resolve a conversa sem enviar a pesquisa de satisfação (CSAT), aplicando opcionalmente uma etiqueta.",
+      "LABEL": {
+        "LABEL": "Etiqueta a aplicar",
+        "PLACEHOLDER": "Selecione uma etiqueta (opcional)"
+      },
+      "SAVE_BUTTON": "Salvar alterações",
+      "SAVE": {
+        "SUCCESS": "Configurações de finalizar silencioso atualizadas",
+        "ERROR": "Não foi possível atualizar essa configuração, tente novamente"
+      }
+    },
+    "INACTIVITY_RESOLVE": {
+      "TITLE": "Finalizar por inatividade",
+      "DESCRIPTION": "Ative um botão que resolve a conversa por inatividade: envia uma mensagem automática, não envia a pesquisa de satisfação (CSAT) e aplica opcionalmente uma etiqueta.",
+      "LABEL": {
+        "LABEL": "Etiqueta a aplicar",
+        "PLACEHOLDER": "Selecione uma etiqueta (opcional)"
+      },
+      "MESSAGE": {
+        "LABEL": "Mensagem automática",
+        "PLACEHOLDER": "Mensagem enviada ao contato ao finalizar por inatividade (opcional)"
+      },
+      "SAVE_BUTTON": "Salvar alterações",
+      "SAVE": {
+        "SUCCESS": "Configurações de finalizar por inatividade atualizadas",
+        "ERROR": "Não foi possível atualizar essa configuração, tente novamente"
+      }
+    },
+    "HIDDEN_PRIORITIES": {
+      "TITLE": "Prioridades ocultas",
+      "DESCRIPTION": "Oculte níveis de prioridade dos menus de seleção para que os agentes não possam mais atribuí-los a novas conversas. Conversas que já têm uma prioridade oculta continuam exibindo-a.",
+      "URGENT": {
+        "LABEL": "Ocultar prioridade 'Urgente'"
+      },
+      "HIGH": {
+        "LABEL": "Ocultar prioridade 'Alta'"
+      },
+      "MEDIUM": {
+        "LABEL": "Ocultar prioridade 'Média'"
+      },
+      "LOW": {
+        "LABEL": "Ocultar prioridade 'Baixa'"
+      },
+      "SAVE_BUTTON": "Salvar alterações",
+      "SAVE": {
+        "SUCCESS": "Prioridades ocultas atualizadas",
+        "ERROR": "Não foi possível atualizar essa configuração, tente novamente"
       }
     }
   },

@@ -116,11 +116,16 @@ class Api::V1::AccountsController < Api::BaseController
   end
 
   def settings_params
-    params.permit(*permitted_settings_attributes)
+    params.permit(*permitted_settings_attributes, hidden_priorities: [])
   end
 
   def permitted_settings_attributes
-    [:auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting, :audio_transcriptions, :auto_resolve_label]
+    [
+      :auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting, :audio_transcriptions, :auto_resolve_label,
+      :require_label_before_resolve, :require_priority_before_resolve, :disable_snooze, :disable_pending,
+      :silent_resolve_enabled, :silent_resolve_label,
+      :inactivity_resolve_enabled, :inactivity_resolve_label, :inactivity_resolve_message
+    ]
   end
 
   def check_signup_enabled

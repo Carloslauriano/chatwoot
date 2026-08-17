@@ -251,6 +251,7 @@
     "KEYBOARD_SHORTCUTS": "Keyboard shortcuts",
     "APPEARANCE": "Change appearance",
     "SUPER_ADMIN_CONSOLE": "SuperAdmin console",
+    "SUPER_ADMIN_INTERNAL_CONFIG": "Internal config",
     "DOCS": "Read documentation",
     "CHANGELOG": "Changelog",
     "LOGOUT": "Log out"
@@ -309,6 +310,8 @@
   },
   "SIDEBAR": {
     "NO_ITEMS": "No items",
+    "TOGGLE_COLLAPSE": "Collapse sidebar",
+    "TOGGLE_EXPAND": "Expand sidebar",
     "CURRENTLY_VIEWING_ACCOUNT": "Currently viewing:",
     "SWITCH": "Switch",
     "INBOX_VIEW": "Inbox View",
@@ -764,6 +767,84 @@
         "AVAILABLE_ON": "The required conversation attributes feature is available on the paid plans.",
         "UPGRADE_PROMPT": "Upgrade to a paid plan to enforce required attributes before conversation resolution.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
+      }
+    },
+    "RESOLVE_RESTRICTIONS": {
+      "TITLE": "Resolution restrictions",
+      "DESCRIPTION": "Control what agents are required to do before changing a conversation's status.",
+      "REQUIRE_LABEL": {
+        "LABEL": "Require a label before resolving"
+      },
+      "REQUIRE_PRIORITY": {
+        "LABEL": "Require a priority before resolving"
+      },
+      "STATUS_ACTIONS": {
+        "TITLE": "Status actions"
+      },
+      "DISABLE_SNOOZE": {
+        "LABEL": "Disable snooze"
+      },
+      "DISABLE_PENDING": {
+        "LABEL": "Disable mark as pending"
+      },
+      "SAVE_BUTTON": "Save changes",
+      "SAVE": {
+        "SUCCESS": "Resolution restrictions updated",
+        "ERROR": "Could not update this setting, please try again"
+      },
+      "LABEL_REQUIRED": "This conversation cannot be resolved without at least one label.",
+      "PRIORITY_REQUIRED": "This conversation cannot be resolved without a priority set.",
+      "BLOCKED_ACTION": "This action is disabled by your account's conversation workflow settings."
+    },
+    "SILENT_RESOLVE": {
+      "TITLE": "Silent resolve",
+      "DESCRIPTION": "Enable a button that resolves a conversation without sending a CSAT survey, optionally applying a label.",
+      "LABEL": {
+        "LABEL": "Label to apply",
+        "PLACEHOLDER": "Select a label (optional)"
+      },
+      "SAVE_BUTTON": "Save changes",
+      "SAVE": {
+        "SUCCESS": "Silent resolve settings updated",
+        "ERROR": "Could not update this setting, please try again"
+      }
+    },
+    "INACTIVITY_RESOLVE": {
+      "TITLE": "Inactivity resolve",
+      "DESCRIPTION": "Enable a button that resolves a conversation due to inactivity: sends an automatic message, skips the CSAT survey, and optionally applies a label.",
+      "LABEL": {
+        "LABEL": "Label to apply",
+        "PLACEHOLDER": "Select a label (optional)"
+      },
+      "MESSAGE": {
+        "LABEL": "Automatic message",
+        "PLACEHOLDER": "Message sent to the contact when resolving due to inactivity (optional)"
+      },
+      "SAVE_BUTTON": "Save changes",
+      "SAVE": {
+        "SUCCESS": "Inactivity resolve settings updated",
+        "ERROR": "Could not update this setting, please try again"
+      }
+    },
+    "HIDDEN_PRIORITIES": {
+      "TITLE": "Hidden priorities",
+      "DESCRIPTION": "Hide priority levels from the selection menus so agents can't assign them to new conversations. Conversations that already have a hidden priority keep showing it.",
+      "URGENT": {
+        "LABEL": "Hide 'Urgent' priority"
+      },
+      "HIGH": {
+        "LABEL": "Hide 'High' priority"
+      },
+      "MEDIUM": {
+        "LABEL": "Hide 'Medium' priority"
+      },
+      "LOW": {
+        "LABEL": "Hide 'Low' priority"
+      },
+      "SAVE_BUTTON": "Save changes",
+      "SAVE": {
+        "SUCCESS": "Hidden priorities updated",
+        "ERROR": "Could not update this setting, please try again"
       }
     }
   },

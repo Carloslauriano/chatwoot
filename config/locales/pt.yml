@@ -98,6 +98,12 @@ pt:
     conversations:
       unread_counts:
         feature_not_enabled: Conversation unread counts feature not enabled for this account
+      workflow:
+        label_required: 'Esta conversa não pode ser resolvida sem pelo menos uma etiqueta.'
+        priority_required: 'Esta conversa não pode ser resolvida sem uma prioridade definida.'
+        snooze_disabled: 'Adiar conversas está desativado para esta conta.'
+        pending_disabled: 'Marcar conversas como pendentes está desativado para esta conta.'
+        priority_hidden: 'Esta prioridade está desativada para esta conta.'
     data_import:
       data_type:
         invalid: Tipo de dados inválido
@@ -343,6 +349,8 @@ pt:
         not_sent_due_to_messaging_window: 'Inquérito CSAT não enviado devido a restrições de saída de mensagem'
       auto_resolve:
         not_sent_due_to_messaging_window: 'Auto-resolução de mensagem não enviada devido a restrições na saída de mensagens'
+      inactivity_resolve:
+        not_sent_due_to_messaging_window: 'Mensagem de finalização por inatividade não enviada devido a restrições na saída de mensagens'
       muted: '%{user_name} bloqueou a conversa'
       unmuted: '%{user_name} reativou a conversa'
       auto_resolution_message: 'Resolving the conversation as it has been inactive for a while. Please start a new conversation if you need further assistance.'

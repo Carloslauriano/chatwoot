@@ -6,6 +6,10 @@ import { FEATURE_FLAGS } from '../../../../featureFlags';
 import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 import SettingsLayout from '../SettingsLayout.vue';
 import ConversationRequiredAttributes from 'dashboard/components-next/ConversationWorkflow/ConversationRequiredAttributes.vue';
+import ConversationResolveRestrictions from 'dashboard/components-next/ConversationWorkflow/ConversationResolveRestrictions.vue';
+import ConversationSilentResolve from 'dashboard/components-next/ConversationWorkflow/ConversationSilentResolve.vue';
+import ConversationInactivityResolve from 'dashboard/components-next/ConversationWorkflow/ConversationInactivityResolve.vue';
+import ConversationHiddenPriorities from 'dashboard/components-next/ConversationWorkflow/ConversationHiddenPriorities.vue';
 import AutoResolve from 'dashboard/routes/dashboard/settings/account/components/AutoResolve.vue';
 
 const { accountId } = useAccount();
@@ -42,6 +46,10 @@ const showRequiredAttributes = computed(() => {
       <div class="flex flex-col gap-6 mt-4">
         <AutoResolve v-if="showAutoResolutionConfig" />
         <ConversationRequiredAttributes :is-enabled="showRequiredAttributes" />
+        <ConversationResolveRestrictions />
+        <ConversationSilentResolve />
+        <ConversationInactivityResolve />
+        <ConversationHiddenPriorities />
       </div>
     </template>
   </SettingsLayout>

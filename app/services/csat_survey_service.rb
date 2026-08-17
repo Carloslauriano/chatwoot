@@ -2,7 +2,9 @@ class CsatSurveyService
   pattr_initialize [:conversation!]
 
   def perform
-    return unless should_send_csat_survey?
+    should_send = should_send_csat_survey?
+    clear_skip_csat_flag
+    return unless should_send
 
     if whatsapp_channel? && template_available_and_approved?
       send_whatsapp_template_survey
@@ -20,7 +22,19 @@ class CsatSurveyService
   delegate :inbox, :contact, to: :conversation
 
   def should_send_csat_survey?
-    conversation_allows_csat? && csat_enabled? && !csat_already_sent? && csat_allowed_by_survey_rules?
+    conversation_allows_csat? && csat_enabled? && !csat_already_sent? && csat_allowed_by_survey_rules? && !skip_csat_survey?
+  end
+
+  def skip_csat_survey?
+    conversation.additional_attributes['skip_csat_survey'].present?
+  end
+
+  def clear_skip_csat_flag
+    return unless skip_csat_survey?
+
+    # rubocop:disable Rails/SkipsModelValidations
+    conversation.update_columns(additional_attributes: conversation.additional_attributes.except('skip_csat_survey'))
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   def conversation_allows_csat?

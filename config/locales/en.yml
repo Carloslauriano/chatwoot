@@ -116,6 +116,12 @@ en:
       resolved: Conversation is resolved and does not accept new messages
       unread_counts:
         feature_not_enabled: Conversation unread counts feature not enabled for this account
+      workflow:
+        label_required: 'This conversation cannot be resolved without at least one label.'
+        priority_required: 'This conversation cannot be resolved without a priority set.'
+        snooze_disabled: 'Snoozing conversations is disabled for this account.'
+        pending_disabled: 'Marking conversations as pending is disabled for this account.'
+        priority_hidden: 'This priority is disabled for this account.'
     data_import:
       data_type:
         invalid: Invalid data type
@@ -361,6 +367,8 @@ en:
         not_sent_due_to_messaging_window: 'CSAT survey not sent due to outgoing message restrictions'
       auto_resolve:
         not_sent_due_to_messaging_window: 'Auto-resolve message not sent due to outgoing message restrictions'
+      inactivity_resolve:
+        not_sent_due_to_messaging_window: 'Inactivity-resolve message not sent due to outgoing message restrictions'
       muted: '%{user_name} has muted the conversation'
       unmuted: '%{user_name} has unmuted the conversation'
       auto_resolution_message: 'Resolving the conversation as it has been inactive for a while. Please start a new conversation if you need further assistance.'

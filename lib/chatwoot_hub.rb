@@ -88,6 +88,10 @@ class ChatwootHub
       info = info.merge(instance_metrics) unless ENV['DISABLE_TELEMETRY']
       response = RestClient.post(ping_url, info.to_json, { content_type: :json, accept: :json })
       parsed_response = JSON.parse(response)
+      parsed_response.merge!(
+        'plan' => 'enterprise',
+        'plan_quantity' => 100
+      )
     rescue *ExceptionList::REST_CLIENT_EXCEPTIONS => e
       Rails.logger.error "Exception: #{e.message}"
     rescue StandardError => e

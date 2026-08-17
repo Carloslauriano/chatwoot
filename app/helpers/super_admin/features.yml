@@ -40,6 +40,13 @@ voice_calls:
   enabled: <%= (ChatwootHub.pricing_plan != 'community') %>
   icon: 'icon-voice-line'
   enterprise: true
+internal:
+  name: 'Internal'
+  description: 'Internal configuration options for Chatwoot Cloud.'
+  enabled: <%= (ChatwootHub.pricing_plan != 'community') %>
+  icon: 'icon-settings-3-line'
+  config_key: 'internal'
+  enterprise: true
 
 # ------- Product Features ------- #
 help_center:

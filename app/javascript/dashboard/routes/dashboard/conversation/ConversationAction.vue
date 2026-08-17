@@ -3,6 +3,7 @@
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import { useAgentsList } from 'dashboard/composables/useAgentsList';
+import { useAccount } from 'dashboard/composables/useAccount';
 import ContactDetailsItem from './ContactDetailsItem.vue';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
 import ConversationLabels from './labels/LabelBox.vue';
@@ -26,8 +27,10 @@ export default {
   },
   setup() {
     const { agentsList } = useAgentsList(true, { includeAgentBots: true });
+    const { currentAccount } = useAccount();
     return {
       agentsList,
+      currentAccount,
     };
   },
   data() {
@@ -69,6 +72,10 @@ export default {
     }),
     hasAnAssignedTeam() {
       return !!this.currentChat?.meta?.team;
+    },
+    visiblePriorityOptions() {
+      const hidden = this.currentAccount?.settings?.hidden_priorities || [];
+      return this.priorityOptions.filter(option => !hidden.includes(option.id));
     },
     teamsList() {
       if (this.hasAnAssignedTeam) {
@@ -283,7 +290,7 @@ export default {
     <div>
       <ContactDetailsItem compact :title="$t('CONVERSATION.PRIORITY.TITLE')" />
       <MultiselectDropdown
-        :options="priorityOptions"
+        :options="visiblePriorityOptions"
         :selected-item="assignedPriority"
         :multiselector-title="$t('CONVERSATION.PRIORITY.TITLE')"
         :multiselector-placeholder="

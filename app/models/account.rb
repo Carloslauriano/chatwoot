@@ -59,6 +59,10 @@ class Account < ApplicationRecord
   store_accessor :settings, :reporting_timezone
   store_accessor :settings, :keep_pending_on_bot_failure
   store_accessor :settings, :captain_auto_resolve_mode, :captain_false_promise_harness_enabled
+  store_accessor :settings, :require_label_before_resolve, :require_priority_before_resolve, :disable_snooze, :disable_pending
+  store_accessor :settings, :silent_resolve_enabled, :silent_resolve_label
+  store_accessor :settings, :inactivity_resolve_enabled, :inactivity_resolve_label, :inactivity_resolve_message
+  store_accessor :settings, :hidden_priorities
   include AccountCaptainAutoResolve
 
   has_many :account_users, dependent: :destroy_async

@@ -20,6 +20,19 @@ module AccountSettingsSchema
           'type': %w[array null],
           'items': { 'type': 'string' }
         },
+        'require_label_before_resolve': { 'type': %w[boolean null] },
+        'require_priority_before_resolve': { 'type': %w[boolean null] },
+        'disable_snooze': { 'type': %w[boolean null] },
+        'disable_pending': { 'type': %w[boolean null] },
+        'silent_resolve_enabled': { 'type': %w[boolean null] },
+        'silent_resolve_label': { 'type': %w[string null] },
+        'inactivity_resolve_enabled': { 'type': %w[boolean null] },
+        'inactivity_resolve_label': { 'type': %w[string null] },
+        'inactivity_resolve_message': { 'type': %w[string null] },
+        'hidden_priorities': {
+          'type': %w[array null],
+          'items': { 'type': 'string', 'enum': %w[urgent high medium low] }
+        },
         'captain_models': {
           'type': %w[object null],
           'properties': CAPTAIN_MODEL_PROPERTIES,

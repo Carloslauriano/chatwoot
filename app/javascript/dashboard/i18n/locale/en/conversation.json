@@ -155,6 +155,8 @@
     "RESOLVE_DROPDOWN": {
       "MARK_PENDING": "Mark as pending",
       "SNOOZE_UNTIL": "Snooze",
+      "SILENT_RESOLVE": "Silent resolve",
+      "INACTIVITY_RESOLVE": "Inactivity resolve",
       "SNOOZE": {
         "TITLE": "Snooze until",
         "NEXT_REPLY": "Next reply",

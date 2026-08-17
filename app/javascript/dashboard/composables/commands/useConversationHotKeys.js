@@ -6,6 +6,7 @@ import { emitter } from 'shared/helpers/mitt';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
 import { useCaptain } from 'dashboard/composables/useCaptain';
 import { useAgentsList } from 'dashboard/composables/useAgentsList';
+import { useAccount } from 'dashboard/composables/useAccount';
 import { CMD_AI_ASSIST } from 'dashboard/helper/commandbar/events';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 
@@ -50,7 +51,7 @@ const prepareActions = (actions, t) => {
   }));
 };
 
-const createPriorityOptions = (t, currentPriority) => {
+const createPriorityOptions = (t, currentPriority, hiddenPriorities = []) => {
   return [
     {
       label: t('CONVERSATION.PRIORITY.OPTIONS.NONE'),
@@ -77,7 +78,9 @@ const createPriorityOptions = (t, currentPriority) => {
       key: 'low',
       icon: ICON_PRIORITY_LOW,
     },
-  ].filter(item => item.key !== currentPriority);
+  ].filter(
+    item => item.key !== currentPriority && !hiddenPriorities.includes(item.key)
+  );
 };
 
 const createNonDraftMessageAIAssistActions = (t, replyMode) => {
@@ -148,6 +151,11 @@ export function useConversationHotKeys() {
 
   const { captainTasksEnabled } = useCaptain();
   const { agentsList } = useAgentsList();
+  const { currentAccount } = useAccount();
+
+  const isSnoozeDisabled = computed(
+    () => !!currentAccount.value?.settings?.disable_snooze
+  );
 
   const currentChat = useMapGetter('getSelectedChat');
   const replyMode = useMapGetter('draftMessages/getReplyEditorMode');
@@ -201,7 +209,9 @@ export function useConversationHotKeys() {
 
     let actions = [];
     if (isOpen) {
-      actions = [...OPEN_CONVERSATION_ACTIONS, ...SNOOZE_CONVERSATION_ACTIONS];
+      actions = isSnoozeDisabled.value
+        ? [...OPEN_CONVERSATION_ACTIONS]
+        : [...OPEN_CONVERSATION_ACTIONS, ...SNOOZE_CONVERSATION_ACTIONS];
     } else if (isResolved || isSnoozed) {
       actions = RESOLVED_CONVERSATION_ACTIONS;
     }
@@ -209,7 +219,11 @@ export function useConversationHotKeys() {
   });
 
   const priorityOptions = computed(() =>
-    createPriorityOptions(t, currentChat.value?.priority)
+    createPriorityOptions(
+      t,
+      currentChat.value?.priority,
+      currentAccount.value?.settings?.hidden_priorities || []
+    )
   );
 
   const assignAgentActions = computed(() => {
@@ -368,7 +382,9 @@ export function useConversationHotKeys() {
 
   const shouldShowSnoozeOption = computed(() => {
     return (
-      isAConversationRoute(route.name, true, false) && contextMenuChatId.value
+      isAConversationRoute(route.name, true, false) &&
+      contextMenuChatId.value &&
+      !isSnoozeDisabled.value
     );
   });
 
