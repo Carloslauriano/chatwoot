@@ -113,6 +113,15 @@ const menuItems = computed(() => {
       target: '_blank',
     },
     {
+      show: currentUser.value.type === 'SuperAdmin',
+      showOnCustomBrandedInstance: true,
+      label: t('SIDEBAR_ITEMS.SUPER_ADMIN_INTERNAL_CONFIG'),
+      icon: 'i-lucide-settings-2',
+      link: '/super_admin/app_config?config=internal',
+      nativeLink: true,
+      target: '_blank',
+    },
+    {
       show: true,
       showOnCustomBrandedInstance: true,
       label: t('SIDEBAR_ITEMS.LOGOUT'),
