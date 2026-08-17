@@ -227,7 +227,7 @@ export const icons = {
     height: 24,
   },
   'priority-low': {
-    body: `<mask id="a" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><path fill="#d9d9d9" d="M0 0h24v24H0z"/></mask><g mask="url(#a)"><rect x="4" y="12" width="4" height="8" rx="2" fill="#ffc53d"/><rect x="10" y="8" width="4" height="12" rx="2" fill="#e4e4e9"/><rect x="16" y="4" width="4" height="16" rx="2" fill="#e4e4e9"/></g>`,
+    body: `<mask id="a" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><path fill="#d9d9d9" d="M0 0h24v24H0z"/></mask><g mask="url(#a)"><rect x="4" y="12" width="4" height="8" rx="2" fill="#30a46c"/><rect x="10" y="8" width="4" height="12" rx="2" fill="#e4e4e9"/><rect x="16" y="4" width="4" height="16" rx="2" fill="#e4e4e9"/></g>`,
     width: 24,
     height: 24,
   },
@@ -237,7 +237,7 @@ export const icons = {
     height: 24,
   },
   'priority-high': {
-    body: `<mask id="a" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><path fill="#ed8a5c" d="M0 0h24v24H0z"/></mask><g mask="url(#a)" fill="#ffc53d"><rect x="4" y="12" width="4" height="8" rx="2"/><rect x="10" y="8" width="4" height="12" rx="2"/><rect x="16" y="4" width="4" height="16" rx="2"/></g>`,
+    body: `<mask id="a" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><path fill="#ed8a5c" d="M0 0h24v24H0z"/></mask><g mask="url(#a)" fill="#f76b15"><rect x="4" y="12" width="4" height="8" rx="2"/><rect x="10" y="8" width="4" height="12" rx="2"/><rect x="16" y="4" width="4" height="16" rx="2"/></g>`,
     width: 24,
     height: 24,
   },
