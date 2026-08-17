@@ -731,7 +731,9 @@ function toggleConversationStatus(
   conversationId,
   status,
   snoozedUntil,
-  customAttributes = null
+  customAttributes = null,
+  silent = false,
+  inactivity = false
 ) {
   const payload = {
     conversationId,
@@ -743,12 +745,48 @@ function toggleConversationStatus(
     payload.customAttributes = customAttributes;
   }
 
-  store.dispatch('toggleStatus', payload).then(() => {
-    useAlert(t('CONVERSATION.CHANGE_STATUS'));
-  });
+  if (silent) {
+    payload.silent = true;
+  }
+
+  if (inactivity) {
+    payload.inactivity = true;
+  }
+
+  store
+    .dispatch('toggleStatus', payload)
+    .then(() => {
+      useAlert(t('CONVERSATION.CHANGE_STATUS'));
+    })
+    .catch(error => {
+      useAlert(error?.response?.data?.error || t('CONVERSATION.CHANGE_STATUS'));
+    });
 }
 
-function handleResolveConversation(conversationId, status, snoozedUntil) {
+function handleResolveConversation(
+  conversationId,
+  status,
+  snoozedUntil,
+  silent = false,
+  inactivity = false
+) {
+  if (silent) {
+    toggleConversationStatus(conversationId, status, snoozedUntil, null, true);
+    return;
+  }
+
+  if (inactivity) {
+    toggleConversationStatus(
+      conversationId,
+      status,
+      snoozedUntil,
+      null,
+      false,
+      true
+    );
+    return;
+  }
+
   if (status !== wootConstants.STATUS_TYPE.RESOLVED) {
     toggleConversationStatus(conversationId, status, snoozedUntil);
     return;
