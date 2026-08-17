@@ -7,6 +7,8 @@ import { useStore, useStoreGetters } from 'dashboard/composables/store';
 import { useEmitter } from 'dashboard/composables/emitter';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import { useConversationRequiredAttributes } from 'dashboard/composables/useConversationRequiredAttributes';
+import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
+import { useAccount } from 'dashboard/composables/useAccount';
 
 import WootDropdownItem from 'shared/components/ui/dropdown/DropdownItem.vue';
 import WootDropdownMenu from 'shared/components/ui/dropdown/DropdownMenu.vue';
@@ -24,6 +26,8 @@ const store = useStore();
 const getters = useStoreGetters();
 const { t } = useI18n();
 const { checkMissingAttributes } = useConversationRequiredAttributes();
+const { savedLabels } = useConversationLabels();
+const { currentAccount } = useAccount();
 
 const arrowDownButtonRef = ref(null);
 const isLoading = ref(false);
@@ -48,8 +52,32 @@ const isSnoozed = computed(
   () => currentChat.value.status === wootConstants.STATUS_TYPE.SNOOZED
 );
 
+const disableSnooze = computed(
+  () => !!currentAccount.value?.settings?.disable_snooze
+);
+const disablePending = computed(
+  () => !!currentAccount.value?.settings?.disable_pending
+);
+
+const showSnoozeOption = computed(
+  () => !isPending.value && !disableSnooze.value
+);
+const showPendingOption = computed(
+  () => !isPending.value && !disablePending.value
+);
+const showSilentResolveOption = computed(
+  () => isOpen.value && !!currentAccount.value?.settings?.silent_resolve_enabled
+);
+const showInactivityResolveOption = computed(
+  () =>
+    isOpen.value && !!currentAccount.value?.settings?.inactivity_resolve_enabled
+);
+
 const showAdditionalActions = computed(
-  () => !isPending.value && !isSnoozed.value
+  () =>
+    !isPending.value &&
+    !isSnoozed.value &&
+    (showSnoozeOption.value || showPendingOption.value)
 );
 
 const showOpenButton = computed(() => {
@@ -81,7 +109,13 @@ const openSnoozeModal = () => {
   ninja.open({ parent: 'snooze_conversation' });
 };
 
-const toggleStatus = (status, snoozedUntil, customAttributes = null) => {
+const toggleStatus = (
+  status,
+  snoozedUntil,
+  customAttributes = null,
+  silent = false,
+  inactivity = false
+) => {
   closeDropdown();
   isLoading.value = true;
 
@@ -95,10 +129,50 @@ const toggleStatus = (status, snoozedUntil, customAttributes = null) => {
     payload.customAttributes = customAttributes;
   }
 
-  store.dispatch('toggleStatus', payload).then(() => {
-    useAlert(t('CONVERSATION.CHANGE_STATUS'));
-    isLoading.value = false;
-  });
+  if (silent) {
+    payload.silent = true;
+  }
+
+  if (inactivity) {
+    payload.inactivity = true;
+  }
+
+  store
+    .dispatch('toggleStatus', payload)
+    .then(() => {
+      useAlert(t('CONVERSATION.CHANGE_STATUS'));
+    })
+    .catch(error => {
+      useAlert(
+        error?.response?.data?.error ||
+          t('CONVERSATION_WORKFLOW.RESOLVE_RESTRICTIONS.BLOCKED_ACTION')
+      );
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
+};
+
+const workflowBlockReason = status => {
+  const settings = currentAccount.value?.settings || {};
+
+  if (
+    status === wootConstants.STATUS_TYPE.RESOLVED &&
+    settings.require_label_before_resolve &&
+    !savedLabels.value.length
+  ) {
+    return t('CONVERSATION_WORKFLOW.RESOLVE_RESTRICTIONS.LABEL_REQUIRED');
+  }
+
+  if (
+    status === wootConstants.STATUS_TYPE.RESOLVED &&
+    settings.require_priority_before_resolve &&
+    !currentChat.value.priority
+  ) {
+    return t('CONVERSATION_WORKFLOW.RESOLVE_RESTRICTIONS.PRIORITY_REQUIRED');
+  }
+
+  return null;
 };
 
 const handleResolveWithAttributes = ({ attributes, context }) => {
@@ -118,6 +192,12 @@ const onCmdOpenConversation = () => {
 };
 
 const onCmdResolveConversation = () => {
+  const blockReason = workflowBlockReason(wootConstants.STATUS_TYPE.RESOLVED);
+  if (blockReason) {
+    useAlert(blockReason);
+    return;
+  }
+
   const currentCustomAttributes = currentChat.value.custom_attributes || {};
   const { hasMissing, missing } = checkMissingAttributes(
     currentCustomAttributes
@@ -136,6 +216,28 @@ const onCmdResolveConversation = () => {
   } else {
     toggleStatus(wootConstants.STATUS_TYPE.RESOLVED);
   }
+};
+
+const onSilentResolve = () => {
+  const settings = currentAccount.value?.settings || {};
+
+  if (settings.require_priority_before_resolve && !currentChat.value.priority) {
+    useAlert(t('CONVERSATION_WORKFLOW.RESOLVE_RESTRICTIONS.PRIORITY_REQUIRED'));
+    return;
+  }
+
+  toggleStatus(wootConstants.STATUS_TYPE.RESOLVED, null, null, true);
+};
+
+const onInactivityResolve = () => {
+  const settings = currentAccount.value?.settings || {};
+
+  if (settings.require_priority_before_resolve && !currentChat.value.priority) {
+    useAlert(t('CONVERSATION_WORKFLOW.RESOLVE_RESTRICTIONS.PRIORITY_REQUIRED'));
+    return;
+  }
+
+  toggleStatus(wootConstants.STATUS_TYPE.RESOLVED, null, null, false, true);
 };
 
 const keyboardEvents = {
@@ -187,7 +289,14 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
         size="sm"
         color="slate"
         no-animation
-        class="ltr:rounded-r-none rtl:rounded-l-none !outline-0"
+        class="!outline-0"
+        :class="
+          showSilentResolveOption ||
+          showInactivityResolveOption ||
+          showAdditionalActions
+            ? 'ltr:rounded-r-none rtl:rounded-l-none'
+            : ''
+        "
         :is-loading="isLoading"
         @click="onCmdResolveConversation"
       />
@@ -197,7 +306,10 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
         size="sm"
         color="slate"
         no-animation
-        class="ltr:rounded-r-none rtl:rounded-l-none !outline-0"
+        class="!outline-0"
+        :class="
+          showAdditionalActions ? 'ltr:rounded-r-none rtl:rounded-l-none' : ''
+        "
         :is-loading="isLoading"
         @click="onCmdOpenConversation"
       />
@@ -209,6 +321,36 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
         no-animation
         :is-loading="isLoading"
         @click="onCmdOpenConversation"
+      />
+      <Button
+        v-if="showSilentResolveOption"
+        v-tooltip="t('CONVERSATION.RESOLVE_DROPDOWN.SILENT_RESOLVE')"
+        icon="i-lucide-bell-off"
+        size="sm"
+        color="slate"
+        no-animation
+        class="!outline-0 ltr:rounded-l-none rtl:rounded-r-none"
+        :class="
+          showInactivityResolveOption || showAdditionalActions
+            ? 'ltr:rounded-r-none rtl:rounded-l-none'
+            : ''
+        "
+        :disabled="isLoading"
+        @click="onSilentResolve"
+      />
+      <Button
+        v-if="showInactivityResolveOption"
+        v-tooltip="t('CONVERSATION.RESOLVE_DROPDOWN.INACTIVITY_RESOLVE')"
+        icon="i-lucide-clock-alert"
+        size="sm"
+        color="slate"
+        no-animation
+        class="!outline-0 ltr:rounded-l-none rtl:rounded-r-none"
+        :class="
+          showAdditionalActions ? 'ltr:rounded-r-none rtl:rounded-l-none' : ''
+        "
+        :disabled="isLoading"
+        @click="onInactivityResolve"
       />
       <Button
         v-if="showAdditionalActions"
@@ -229,7 +371,7 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
       class="border rounded-lg shadow-lg border-n-strong dark:border-n-strong box-content p-2 w-fit z-10 bg-n-alpha-3 backdrop-blur-[100px] absolute block left-auto top-full mt-0.5 start-0 xl:start-auto xl:end-0 max-w-[12.5rem] min-w-[9.75rem] [&_ul>li]:mb-0"
     >
       <WootDropdownMenu class="mb-0">
-        <WootDropdownItem v-if="!isPending">
+        <WootDropdownItem v-if="showSnoozeOption">
           <Button
             :label="t('CONVERSATION.RESOLVE_DROPDOWN.SNOOZE_UNTIL')"
             ghost
@@ -241,7 +383,7 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
             @click="() => openSnoozeModal()"
           />
         </WootDropdownItem>
-        <WootDropdownItem v-if="!isPending">
+        <WootDropdownItem v-if="showPendingOption">
           <Button
             :label="t('CONVERSATION.RESOLVE_DROPDOWN.MARK_PENDING')"
             ghost
