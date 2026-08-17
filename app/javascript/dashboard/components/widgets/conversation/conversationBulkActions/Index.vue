@@ -6,6 +6,7 @@ import { getUnixTime } from 'date-fns';
 import { findSnoozeTime } from 'dashboard/helper/snoozeHelpers';
 import { emitter } from 'shared/helpers/mitt';
 import { useBulkActions } from 'dashboard/composables/chatlist/useBulkActions.js';
+import { useAccount } from 'dashboard/composables/useAccount';
 import wootConstants from 'dashboard/constants/globals';
 import {
   CMD_BULK_ACTION_SNOOZE_CONVERSATION,
@@ -67,6 +68,11 @@ const {
 } = useBulkActions();
 
 const getConversationById = useMapGetter('getConversationById');
+
+const { currentAccount } = useAccount();
+const disableSnooze = computed(
+  () => !!currentAccount.value?.settings?.disable_snooze
+);
 
 const appliedLabelsForSelection = computed(() => {
   const applied = new Set();
@@ -188,7 +194,7 @@ onUnmounted(() => {
           <BulkUpdateActions
             :show-resolve="!showResolvedAction"
             :show-reopen="!showOpenAction"
-            :show-snooze="!showSnoozedAction"
+            :show-snooze="!showSnoozedAction && !disableSnooze"
             @update="onUpdateConversations"
           />
           <BulkAgentActions

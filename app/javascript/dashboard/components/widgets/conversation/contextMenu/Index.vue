@@ -124,6 +124,16 @@ export default {
         label: this.$t('CONVERSATION.CARD_CONTEXT_MENU.SNOOZE.TITLE'),
         icon: 'snooze',
       },
+      silentResolveOption: {
+        key: 'silent-resolve',
+        label: this.$t('CONVERSATION.RESOLVE_DROPDOWN.SILENT_RESOLVE'),
+        icon: 'speaker-mute',
+      },
+      inactivityResolveOption: {
+        key: 'inactivity-resolve',
+        label: this.$t('CONVERSATION.RESOLVE_DROPDOWN.INACTIVITY_RESOLVE'),
+        icon: 'send-clock',
+      },
       priorityConfig: {
         key: MENU.PRIORITY,
         label: this.$t('CONVERSATION.PRIORITY.TITLE'),
@@ -190,7 +200,32 @@ export default {
       assignableAgentsUiFlags: 'inboxAssignableAgents/getUIFlags',
       currentUser: 'getCurrentUser',
       currentAccountId: 'getCurrentAccountId',
+      getAccount: 'accounts/getAccount',
     }),
+    isSnoozeDisabled() {
+      return !!this.getAccount(this.currentAccountId)?.settings?.disable_snooze;
+    },
+    isPendingDisabled() {
+      return !!this.getAccount(this.currentAccountId)?.settings
+        ?.disable_pending;
+    },
+    visibleStatusMenuConfig() {
+      if (!this.isPendingDisabled) return this.statusMenuConfig;
+      return this.statusMenuConfig.filter(
+        option => option.key !== wootConstants.STATUS_TYPE.PENDING
+      );
+    },
+    hiddenPriorities() {
+      return (
+        this.getAccount(this.currentAccountId)?.settings?.hidden_priorities ||
+        []
+      );
+    },
+    visiblePriorityOptions() {
+      return this.priorityConfig.options.filter(
+        option => !this.hiddenPriorities.includes(option.key)
+      );
+    },
     filteredAgentOnAvailability() {
       const agents = this.$store.getters[
         'inboxAssignableAgents/getAssignableAgents'
@@ -220,7 +255,23 @@ export default {
     },
     showSnooze() {
       // Don't show snooze if the conversation is already snoozed/resolved/pending
-      return this.status === wootConstants.STATUS_TYPE.OPEN;
+      return (
+        this.status === wootConstants.STATUS_TYPE.OPEN && !this.isSnoozeDisabled
+      );
+    },
+    showSilentResolve() {
+      return (
+        this.status === wootConstants.STATUS_TYPE.OPEN &&
+        !!this.getAccount(this.currentAccountId)?.settings
+          ?.silent_resolve_enabled
+      );
+    },
+    showInactivityResolve() {
+      return (
+        this.status === wootConstants.STATUS_TYPE.OPEN &&
+        !!this.getAccount(this.currentAccountId)?.settings
+          ?.inactivity_resolve_enabled
+      );
     },
     filteredLabels() {
       const labels = this.labelSearchQuery
@@ -241,6 +292,47 @@ export default {
     },
     toggleStatus(status, snoozedUntil) {
       this.$emit('updateConversation', status, snoozedUntil);
+    },
+    silentResolveConversation() {
+      const requirePriority = this.getAccount(this.currentAccountId)?.settings
+        ?.require_priority_before_resolve;
+
+      if (requirePriority && !this.priority) {
+        useAlert(
+          this.$t(
+            'CONVERSATION_WORKFLOW.RESOLVE_RESTRICTIONS.PRIORITY_REQUIRED'
+          )
+        );
+        return;
+      }
+
+      this.$emit(
+        'updateConversation',
+        wootConstants.STATUS_TYPE.RESOLVED,
+        null,
+        true
+      );
+    },
+    inactivityResolveConversation() {
+      const requirePriority = this.getAccount(this.currentAccountId)?.settings
+        ?.require_priority_before_resolve;
+
+      if (requirePriority && !this.priority) {
+        useAlert(
+          this.$t(
+            'CONVERSATION_WORKFLOW.RESOLVE_RESTRICTIONS.PRIORITY_REQUIRED'
+          )
+        );
+        return;
+      }
+
+      this.$emit(
+        'updateConversation',
+        wootConstants.STATUS_TYPE.RESOLVED,
+        null,
+        false,
+        true
+      );
     },
     async snoozeConversation() {
       await this.$store.dispatch('setContextMenuChatId', this.chatId);
@@ -313,7 +405,7 @@ export default {
       <hr class="m-1 rounded border-b border-n-weak dark:border-n-weak" />
     </template>
     <template v-if="isAllowed([MENU.STATUS, MENU.SNOOZE])">
-      <template v-for="option in statusMenuConfig">
+      <template v-for="option in visibleStatusMenuConfig">
         <MenuItem
           v-if="show(option.key) && isAllowed([MENU.STATUS])"
           :key="option.key"
@@ -328,6 +420,18 @@ export default {
         variant="icon"
         @click.stop="snoozeConversation()"
       />
+      <MenuItem
+        v-if="showSilentResolve && isAllowed([MENU.STATUS])"
+        :option="silentResolveOption"
+        variant="icon"
+        @click.stop="silentResolveConversation()"
+      />
+      <MenuItem
+        v-if="showInactivityResolve && isAllowed([MENU.STATUS])"
+        :option="inactivityResolveOption"
+        variant="icon"
+        @click.stop="inactivityResolveConversation()"
+      />
       <hr class="m-1 rounded border-b border-n-weak dark:border-n-weak" />
     </template>
     <template
@@ -338,7 +442,7 @@ export default {
         :option="priorityConfig"
       >
         <MenuItem
-          v-for="(option, i) in priorityConfig.options"
+          v-for="(option, i) in visiblePriorityOptions"
           :key="i"
           :option="option"
           @click.stop="assignPriority(option.key)"
