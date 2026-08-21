@@ -34,5 +34,18 @@ json.active_timers do
     json.iniciado_em timer.iniciado_em
   end
 end
+json.worklogs do
+  json.array! resource.worklogs.order(inicio: :desc) do |worklog|
+    json.id worklog.id
+    json.colaborador_id worklog.colaborador_id
+    json.colaborador_nome worklog.colaborador&.name
+    json.inicio worklog.inicio
+    json.fim worklog.fim
+    json.duracao_segundos worklog.duracao_segundos
+    json.origem worklog.origem
+    json.editado_manualmente worklog.editado_manualmente
+    json.motivo worklog.motivo
+  end
+end
 json.created_at resource.created_at
 json.updated_at resource.updated_at

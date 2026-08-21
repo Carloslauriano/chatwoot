@@ -92,6 +92,10 @@ class TicketsAPI extends ApiClient {
     );
   }
 
+  deleteWorklog(ticketId, worklogId) {
+    return axios.delete(`${this.url}/${ticketId}/worklogs/${worklogId}`);
+  }
+
   getTimeline(ticketId) {
     return axios.get(`${this.url}/${ticketId}/timeline`);
   }

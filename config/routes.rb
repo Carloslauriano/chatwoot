@@ -165,7 +165,7 @@ Rails.application.routes.draw do
               get :audit_logs
             end
             resources :assignments, only: [:create, :update, :destroy], controller: 'ticket_assignments'
-            resources :worklogs, only: [:create, :update]
+            resources :worklogs, only: [:create, :update, :destroy]
             resources :labels, only: [:index, :create], controller: 'tickets/labels'
           end
           resources :ticket_statuses, only: [:index, :create, :update, :destroy]
