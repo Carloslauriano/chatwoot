@@ -76,6 +76,12 @@ const selectedTeam = computed(
   () => teamOptions.value.find(team => team.id === formState.teamId) || {}
 );
 
+// Se houver um time marcado como padrão para tickets, pula o seletor —
+// o time padrão sempre prevalece sobre o time da conversa.
+const defaultTeam = computed(() =>
+  (teams.value || []).find(team => team.default_for_tickets)
+);
+
 const isSubmitDisabled = computed(() => {
   return (
     !formState.titulo.trim() ||
@@ -112,7 +118,7 @@ const closeLabelDropdown = () => {
 
 // Pré-preenche com os dados da conversa (agente, time, prioridade, etiquetas).
 // O usuário ainda pode editar todos os campos antes de criar o ticket.
-onMounted(() => {
+onMounted(async () => {
   const chat = currentChat.value || {};
   const assignee = chat.meta?.assignee;
   const team = chat.meta?.team;
@@ -129,6 +135,10 @@ onMounted(() => {
   if (!accountLabels.value?.length) {
     store.dispatch('labels/get');
   }
+  if (!teams.value?.length) {
+    await store.dispatch('teams/get');
+  }
+  if (defaultTeam.value) formState.teamId = defaultTeam.value.id;
 });
 
 const onClose = () => emit('close');
@@ -219,7 +229,7 @@ const createTicket = async () => {
       />
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div v-if="!defaultTeam" class="flex flex-col gap-1">
       <span class="text-sm font-medium text-n-slate-12">
         {{ $t('TICKETS.CREATE.TEAM.LABEL') }}
       </span>
