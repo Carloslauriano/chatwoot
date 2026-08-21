@@ -91,6 +91,22 @@ export const describeTicketEvent = (event, t) => {
         duration: formatDuration(payload.duracao_segundos),
       }),
     },
+    membro_added: {
+      dot: 'bg-teal-500',
+      icon: 'i-lucide-user-plus',
+      label: t('TICKETS.TIMELINE.EVENTS.MEMBER_ADDED', {
+        agent: autor || agentFallback,
+        member: payload.colaborador_nome,
+      }),
+    },
+    membro_removed: {
+      dot: 'bg-n-ruby-9',
+      icon: 'i-lucide-user-minus',
+      label: t('TICKETS.TIMELINE.EVENTS.MEMBER_REMOVED', {
+        agent: autor || agentFallback,
+        member: payload.colaborador_nome,
+      }),
+    },
   };
 
   return (
