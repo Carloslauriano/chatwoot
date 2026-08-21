@@ -1,0 +1,11 @@
+json.id resource.id
+json.ticket_id resource.ticket_id
+json.colaborador_id resource.colaborador_id
+json.inicio resource.inicio
+json.fim resource.fim
+json.duracao_segundos resource.duracao_segundos
+json.origem resource.origem
+json.editado_manualmente resource.editado_manualmente
+json.motivo resource.motivo
+json.created_at resource.created_at
+json.updated_at resource.updated_at
