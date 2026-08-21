@@ -13,10 +13,19 @@ class AddTicketStatusIdToTickets < ActiveRecord::Migration[7.1]
     # Backfill: cria as 5 colunas padrão por conta (mesmos nomes do enum
     # legado status_macro) e liga os tickets existentes a elas. status_macro
     # NÃO é removido — fica como legado não usado.
+    #
+    # INSERT via SQL puro (não TicketStatus.create!): o model tem um
+    # before_save que chama is_default?, coluna que só existe a partir da
+    # migração 20260820133600 — instanciar o model aqui quebra numa base
+    # nova, migrando tudo em sequência a partir do zero.
     Account.find_each do |account|
       status_by_macro_value = STATUS_MACRO_SEED.map do |name, position|
-        status = TicketStatus.create!(account: account, name: name, position: position)
-        [position, status.id]
+        result = execute(<<~SQL.squish)
+          INSERT INTO ticket_statuses (account_id, name, position, created_at, updated_at)
+          VALUES (#{account.id}, #{connection.quote(name)}, #{position}, NOW(), NOW())
+          RETURNING id
+        SQL
+        [position, result.first['id']]
       end.to_h
 
       status_by_macro_value.each do |status_macro_value, ticket_status_id|
