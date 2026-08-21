@@ -719,14 +719,14 @@ const menuItems = computed(() => {
       icon: 'i-lucide-ticket',
       children: [
         {
-          name: 'Tickets',
-          label: t('SIDEBAR.TICKETS_LIST'),
-          to: accountScopedRoute('tickets_index'),
-        },
-        {
           name: 'Kanban',
           label: t('SIDEBAR.TICKETS_KANBAN'),
           to: accountScopedRoute('tickets_kanban'),
+        },
+        {
+          name: 'Tickets',
+          label: t('SIDEBAR.TICKETS_LIST'),
+          to: accountScopedRoute('tickets_index'),
         },
       ],
     },
