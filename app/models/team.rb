@@ -2,12 +2,13 @@
 #
 # Table name: teams
 #
-#  id                :bigint           not null, primary key
-#  allow_auto_assign :boolean          default(TRUE)
-#  description       :text
-#  icon              :string           default("")
-#  icon_color        :string           default("")
-#  name              :string           not null
+#  id                   :bigint           not null, primary key
+#  allow_auto_assign    :boolean          default(TRUE)
+#  default_for_tickets  :boolean          default(FALSE), not null
+#  description          :text
+#  icon                 :string           default("")
+#  icon_color           :string           default("")
+#  name                 :string           not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #  account_id        :bigint           not null
@@ -27,6 +28,7 @@ class Team < ApplicationRecord
 
   before_destroy :capture_filtered_unread_count_member_ids, prepend: true
   after_destroy_commit :invalidate_filtered_unread_counts_after_destroy
+  before_save :unset_other_default_for_tickets, if: :default_for_tickets?
 
   validates :name,
             presence: { message: I18n.t('errors.validations.presence') },
@@ -83,6 +85,12 @@ class Team < ApplicationRecord
     invalidator = ::Conversations::UnreadCounts::FilteredCountInvalidator.new(account)
     invalidator.conversation_changed!
     invalidator.users_visibility_changed!(user_ids: @filtered_unread_count_member_ids)
+  end
+
+  # Só um time padrão para tickets por conta — usado pelo popup de criação de
+  # ticket para pular o seletor de time quando há um definido.
+  def unset_other_default_for_tickets
+    account.teams.where.not(id: id).update_all(default_for_tickets: false)
   end
 end
 
