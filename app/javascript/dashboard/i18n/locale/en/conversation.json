@@ -572,12 +572,14 @@
   "TICKETS": {
     "NO_TICKET": "No escalation ticket linked to this conversation yet",
     "CREATE_OR_LINK_BUTTON": "Create or link ticket",
+    "OPEN_TICKET_BUTTON": "Open ticket",
     "SHOW": {
       "OPEN_CONVERSATION": "Open conversation",
       "LOAD_ERROR": "Could not load this ticket"
     },
     "QUICK_VIEW": {
       "TITLE": "Ticket #{id}",
+      "TITLE_WITH_NAME": "Ticket #{id} — {titulo}",
       "ACTIVITY": "Activity"
     },
     "KANBAN": {
@@ -675,6 +677,7 @@
       "CATEGORY": "Category",
       "PRIORITY": "Priority",
       "RESPONSIBLE": "Responsible",
+      "MAKE_RESPONSIBLE": "Make responsible",
       "TRANSFER_SECTOR": "Transfer sector",
       "TRANSFER_SUCCESS": "Sector transferred successfully",
       "TRANSFER_ERROR": "Could not transfer the sector. Please try again",
@@ -713,20 +716,18 @@
         "WORKED": "{agent} worked {duration}",
         "WORKED_MANUAL": "{agent} added {duration} manually",
         "STATUS_MACRO_CHANGED": "{agent} moved this card from {from} to {to}",
-        "STATUS_MICRO_CHANGED": "{agent}: {from} → {to}"
+        "STATUS_MICRO_CHANGED": "{agent}: {from} → {to}",
+        "MEMBER_ADDED": "{agent} added {member} as a member",
+        "MEMBER_REMOVED": "{agent} removed {member} from the ticket"
       },
       "FETCH_ERROR": "Could not load the ticket timeline"
     },
     "TIMER": {
       "START": "Play",
-      "PAUSE": "Pause",
+      "STOP": "Stop",
       "START_ERROR": "Could not start the timer",
-      "STOP_TITLE": "You worked {duration} on this ticket. What do you want to do?",
-      "STOP_FINISHED": "Finished",
-      "STOP_PAUSED": "Paused",
       "STOP_ERROR": "Could not stop the timer",
       "AUTO_PAUSED_TOAST": "Your timer on this ticket was paused automatically because you started the timer on ticket #{ticketId}",
-      "PAUSED_NOT_COUNTED_TOAST": "Paused — this time was not recorded. Use 'add time' if you want to add it manually",
       "ADD_TIME": "Add time"
     },
     "HISTORY": {
@@ -758,7 +759,12 @@
       "SUBMIT": "Save",
       "CANCEL": "Cancel",
       "SUCCESS": "Worklog saved successfully",
-      "ERROR": "Could not save the worklog"
+      "ERROR": "Could not save the worklog",
+      "LIST_TITLE": "Time entries",
+      "EDIT": "Edit",
+      "DELETE": "Delete",
+      "CONFIRM_DELETE": "Click again to confirm",
+      "DELETE_ERROR": "Could not delete the worklog"
     }
   }
 }
