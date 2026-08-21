@@ -24,6 +24,7 @@ import ShopifyOrdersList from 'dashboard/components/widgets/conversation/Shopify
 import SidebarActionsHeader from 'dashboard/components-next/SidebarActionsHeader.vue';
 import LinearIssuesList from 'dashboard/components/widgets/conversation/linear/IssuesList.vue';
 import LinearSetupCTA from 'dashboard/components/widgets/conversation/linear/LinearSetupCTA.vue';
+import TicketsList from 'dashboard/components/widgets/conversation/tickets/TicketsList.vue';
 
 const props = defineProps({
   conversationId: {
@@ -268,6 +269,19 @@ onMounted(() => {
             >
               <LinearSetupCTA v-if="!isLinearConnected" />
               <LinearIssuesList v-else :conversation-id="conversationId" />
+            </AccordionItem>
+          </div>
+          <div v-else-if="element.name === 'escalation_tickets'">
+            <AccordionItem
+              :title="$t('CONVERSATION_SIDEBAR.ACCORDION.ESCALATION_TICKETS')"
+              :is-open="isContactSidebarItemOpen('is_escalation_tickets_open')"
+              compact
+              @toggle="
+                value =>
+                  toggleSidebarUIState('is_escalation_tickets_open', value)
+              "
+            >
+              <TicketsList :conversation-id="conversationId" />
             </AccordionItem>
           </div>
           <div

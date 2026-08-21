@@ -1,0 +1,4 @@
+export const SET_TICKET_UI_FLAG = 'SET_TICKET_UI_FLAG';
+export const CLEAR_TICKETS = 'CLEAR_TICKETS';
+export const SET_TICKETS = 'SET_TICKETS';
+export const SET_TICKET_ITEM = 'SET_TICKET_ITEM';
