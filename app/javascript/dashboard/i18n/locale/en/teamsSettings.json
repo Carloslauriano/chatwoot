@@ -87,7 +87,9 @@
     "FINISH": {
       "TITLE": "Your team is ready!",
       "MESSAGE": "You can now collaborate as a team on conversations. Happy supporting ",
-      "BUTTON_TEXT": "Finish"
+      "BUTTON_TEXT": "Finish",
+      "DEFAULT_FOR_TICKETS_LABEL": "Default team for tickets",
+      "DEFAULT_FOR_TICKETS_UPDATE_ERROR": "Could not update the default team for tickets"
     },
     "DELETE": {
       "BUTTON_TEXT": "Delete",

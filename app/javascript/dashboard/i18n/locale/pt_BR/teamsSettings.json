@@ -87,7 +87,9 @@
     "FINISH": {
       "TITLE": "Sua caixa de entrada está pronta!",
       "MESSAGE": "Agora você pode colaborar como um time em conversas",
-      "BUTTON_TEXT": "Finalizar"
+      "BUTTON_TEXT": "Finalizar",
+      "DEFAULT_FOR_TICKETS_LABEL": "Equipe padrão para tickets",
+      "DEFAULT_FOR_TICKETS_UPDATE_ERROR": "Não foi possível atualizar a equipe padrão para tickets"
     },
     "DELETE": {
       "BUTTON_TEXT": "Excluir",
