@@ -26,7 +26,7 @@ const props = defineProps({
 const emit = defineEmits(['worklogCreated']);
 const { t } = useI18n();
 
-// stopped | running | awaiting_decision
+// stopped | running
 const timerState = ref(
   props.initialState === 'running' ? 'running' : 'stopped'
 );
@@ -103,27 +103,20 @@ const startTimer = async () => {
   }
 };
 
-const requestStop = () => {
-  timerState.value = 'awaiting_decision';
-};
-
-const confirmStop = async decisao => {
+// Sem opção de pausar: parar sempre registra o worklog. Ao voltar, o
+// colaborador dá start em um timer novo — não existe "retomar".
+const stopTimer = async () => {
   try {
     isSubmitting.value = true;
-    const response = await TicketsAPI.timerStop(props.ticketId, decisao);
+    const response = await TicketsAPI.timerStop(props.ticketId, 'finalizado');
     timerState.value = 'stopped';
     startedAt.value = null;
     if (activeTimerTicketId.value === props.ticketId) {
       activeTimerTicketId.value = null;
     }
-    if (decisao === 'pausado') {
-      useAlert(t('TICKETS.TIMER.PAUSED_NOT_COUNTED_TOAST'));
-    } else {
-      emit('worklogCreated', response.data.worklog);
-    }
+    emit('worklogCreated', response.data.worklog);
   } catch (error) {
     useAlert(t('TICKETS.TIMER.STOP_ERROR'));
-    timerState.value = 'running';
   } finally {
     isSubmitting.value = false;
   }
@@ -154,44 +147,18 @@ onBeforeUnmount(stopTick);
       />
     </template>
 
-    <template v-else-if="timerState === 'running'">
+    <template v-else>
       <span class="text-sm font-mono text-n-slate-12">{{
         formattedElapsed
       }}</span>
       <Button
-        icon="i-lucide-pause"
+        icon="i-lucide-square"
         size="small"
         slate
-        :label="$t('TICKETS.TIMER.PAUSE')"
+        :label="$t('TICKETS.TIMER.STOP')"
         :disabled="isSubmitting"
-        @click="requestStop"
+        @click="stopTimer"
       />
-    </template>
-
-    <template v-else>
-      <div
-        class="flex flex-col gap-2 p-3 border rounded-xl border-n-weak bg-n-alpha-black2"
-      >
-        <p class="text-sm text-n-slate-12">
-          {{ $t('TICKETS.TIMER.STOP_TITLE', { duration: formattedElapsed }) }}
-        </p>
-        <div class="flex gap-2">
-          <Button
-            size="small"
-            :label="$t('TICKETS.TIMER.STOP_FINISHED')"
-            :disabled="isSubmitting"
-            @click="confirmStop('finalizado')"
-          />
-          <Button
-            size="small"
-            faded
-            slate
-            :label="$t('TICKETS.TIMER.STOP_PAUSED')"
-            :disabled="isSubmitting"
-            @click="confirmStop('pausado')"
-          />
-        </div>
-      </div>
     </template>
   </div>
 </template>
