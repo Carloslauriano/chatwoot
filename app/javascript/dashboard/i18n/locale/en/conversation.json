@@ -689,6 +689,8 @@
       "SAVE": "Save",
       "RESPONSIBLE_UPDATE_SUCCESS": "Responsible updated successfully",
       "RESPONSIBLE_UPDATE_ERROR": "Could not update the responsible collaborator",
+      "MEMBER_ADD_ERROR": "Could not add the member",
+      "MEMBER_REMOVE_ERROR": "Could not remove the member",
       "LABELS_UPDATE_ERROR": "Could not update the labels",
       "DESCRIPTION_UPDATE_ERROR": "Could not update the description"
     },

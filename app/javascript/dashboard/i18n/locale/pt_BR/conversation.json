@@ -650,6 +650,8 @@
       "SAVE": "Salvar",
       "RESPONSIBLE_UPDATE_SUCCESS": "Responsável atualizado com sucesso",
       "RESPONSIBLE_UPDATE_ERROR": "Não foi possível atualizar o colaborador responsável",
+      "MEMBER_ADD_ERROR": "Não foi possível adicionar o membro",
+      "MEMBER_REMOVE_ERROR": "Não foi possível remover o membro",
       "LABELS_UPDATE_ERROR": "Não foi possível atualizar as etiquetas",
       "DESCRIPTION_UPDATE_ERROR": "Não foi possível atualizar a descrição"
     },
