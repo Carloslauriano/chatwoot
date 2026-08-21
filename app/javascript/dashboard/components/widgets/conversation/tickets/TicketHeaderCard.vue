@@ -1,10 +1,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { format } from 'date-fns';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
-import { useAgentsList } from 'dashboard/composables/useAgentsList';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
+import { useAdmin } from 'dashboard/composables/useAdmin';
+import { formatDuration } from 'shared/helpers/timeHelper';
 import TicketsAPI from 'dashboard/api/tickets';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
 import AddLabel from 'shared/components/ui/dropdown/AddLabel.vue';
@@ -34,9 +36,13 @@ const store = useStore();
 const { formatMessage } = useMessageFormatter();
 
 const currentUser = useMapGetter('getCurrentUser');
+const { isAdmin } = useAdmin();
 const teams = useMapGetter('teams/getTeams');
 const ticketStatuses = useMapGetter('ticketStatuses/getTicketStatuses');
-const { agentsList } = useAgentsList(false);
+// Agentes da conta inteira, não os assignable do inbox da conversa aberta —
+// o card do ticket também é usado fora do contexto de uma conversa (Kanban,
+// TicketShow), onde não há inbox_id para o useAgentsList filtrar por.
+const agentsList = useMapGetter('agents/getAgents');
 const accountLabels = useMapGetter('labels/getLabels');
 
 const ticket = computed(() => props.ticket);
@@ -96,45 +102,55 @@ const onSelectStatus = async item => {
   }
 };
 
-const onSelectResponsible = async item => {
-  try {
-    await TicketsAPI.update(ticket.value.id, {
-      ticket: { responsavel_id: item.id },
-    });
-    useAlert(t('TICKETS.HEADER.RESPONSIBLE_UPDATE_SUCCESS'));
-    emit('updated');
-  } catch (error) {
-    useAlert(t('TICKETS.HEADER.RESPONSIBLE_UPDATE_ERROR'));
-  }
-};
+// Membros — bloco único (estilo Trello: avatares em fileira + "+" para
+// adicionar) que reúne o responsável (marcado com estrela) e os demais
+// colaboradores (ticket_assignments). Trocar o responsável = clicar na
+// estrela de outro membro; para isso ele precisa já estar na lista.
+const agentFor = colaboradorId =>
+  agentsList.value.find(agent => agent.id === colaboradorId);
 
-// Responsável — avatar clicável (estilo Trello: círculo com foto, ou pontilhado
-// com "+" quando não há responsável) abre um painel simples com a lista de
-// agentes, em vez do MultiselectDropdown padrão (largo/pesado demais aqui).
-const showResponsibleDropdown = ref(false);
-const closeResponsibleDropdown = () => {
-  showResponsibleDropdown.value = false;
-};
-const selectResponsibleAgent = async agent => {
-  showResponsibleDropdown.value = false;
-  await onSelectResponsible(agent);
-};
+const members = computed(() => {
+  const assignments = ticket.value.assignments || [];
+  const responsavelId = ticket.value.responsavel_id;
+  const responsavelAssignment = assignments.find(
+    assignment => assignment.colaborador_id === responsavelId
+  );
 
-// Membros — lista de colaboradores (ticket_assignments), distinta do
-// responsável: um ticket pode ter vários membros, cada um com seu próprio
-// status_micro e cronômetro.
+  const responsavelMember = responsavelId
+    ? {
+        key: `responsavel-${responsavelId}`,
+        colaboradorId: responsavelId,
+        nome: ticket.value.responsavel_nome,
+        avatarUrl: ticket.value.responsavel_avatar_url,
+        assignmentId: responsavelAssignment?.id || null,
+        isResponsible: true,
+      }
+    : null;
+
+  const otherMembers = assignments
+    .filter(assignment => assignment.colaborador_id !== responsavelId)
+    .map(assignment => ({
+      key: `assignment-${assignment.id}`,
+      colaboradorId: assignment.colaborador_id,
+      nome: assignment.colaborador_nome,
+      avatarUrl: agentFor(assignment.colaborador_id)?.thumbnail,
+      assignmentId: assignment.id,
+      isResponsible: false,
+    }));
+
+  return responsavelMember
+    ? [responsavelMember, ...otherMembers]
+    : otherMembers;
+});
+
 const showAddMemberDropdown = ref(false);
 const closeAddMemberDropdown = () => {
   showAddMemberDropdown.value = false;
 };
 const memberOptions = computed(() => {
-  const memberIds = (ticket.value.assignments || []).map(
-    assignment => assignment.colaborador_id
-  );
+  const memberIds = members.value.map(member => member.colaboradorId);
   return agentsList.value.filter(agent => !memberIds.includes(agent.id));
 });
-const agentFor = colaboradorId =>
-  agentsList.value.find(agent => agent.id === colaboradorId);
 
 const addMember = async agent => {
   showAddMemberDropdown.value = false;
@@ -146,12 +162,25 @@ const addMember = async agent => {
   }
 };
 
-const removeMember = async assignment => {
+const removeMember = async member => {
+  if (!member.assignmentId) return;
   try {
-    await TicketsAPI.removeMember(ticket.value.id, assignment.id);
+    await TicketsAPI.removeMember(ticket.value.id, member.assignmentId);
     emit('updated');
   } catch (error) {
     useAlert(t('TICKETS.HEADER.MEMBER_REMOVE_ERROR'));
+  }
+};
+
+const promoteToResponsible = async member => {
+  if (member.isResponsible) return;
+  try {
+    await TicketsAPI.update(ticket.value.id, {
+      ticket: { responsavel_id: member.colaboradorId },
+    });
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.HEADER.RESPONSIBLE_UPDATE_ERROR'));
   }
 };
 
@@ -260,13 +289,42 @@ const saveDescription = async () => {
 const onWorklogCreated = () => emit('updated');
 
 const showManualTimeModal = ref(false);
-const openManualTimeModal = () => {
+const editingWorklog = ref(null);
+const openManualTimeModal = (worklog = null) => {
+  editingWorklog.value = worklog;
   showManualTimeModal.value = true;
 };
 const onManualTimeSaved = () => {
   showManualTimeModal.value = false;
+  editingWorklog.value = null;
   emit('updated');
 };
+
+// Apagar exige confirmação: primeiro clique destaca o botão, segundo clique
+// (ou clicar fora) efetiva ou cancela — evita um modal só para isso.
+const confirmingDeleteWorklogId = ref(null);
+const cancelDeleteWorklog = () => {
+  confirmingDeleteWorklogId.value = null;
+};
+const deleteWorklog = async worklog => {
+  confirmingDeleteWorklogId.value = null;
+  try {
+    await TicketsAPI.deleteWorklog(ticket.value.id, worklog.id);
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.MANUAL_TIME.DELETE_ERROR'));
+  }
+};
+const askDeleteWorklog = worklog => {
+  if (confirmingDeleteWorklogId.value === worklog.id) {
+    deleteWorklog(worklog);
+  } else {
+    confirmingDeleteWorklogId.value = worklog.id;
+  }
+};
+
+const formatWorklogDate = value =>
+  value ? format(new Date(value), 'dd/MM/yyyy HH:mm') : '';
 
 onMounted(() => {
   if (!ticketStatuses.value.length) {
@@ -274,6 +332,9 @@ onMounted(() => {
   }
   if (!accountLabels.value?.length) {
     store.dispatch('labels/get');
+  }
+  if (!agentsList.value.length) {
+    store.dispatch('agents/get');
   }
 });
 </script>
@@ -334,34 +395,36 @@ onMounted(() => {
     </div>
 
     <!-- Status / Time -->
-    <div class="flex flex-col gap-1">
-      <span class="text-xs text-n-slate-11">
-        {{ t('TICKETS.HEADER.STATUS_MACRO') }}
-      </span>
-      <MultiselectDropdown
-        class="w-full"
-        :options="ticketStatuses"
-        :selected-item="selectedStatus"
-        :multiselector-placeholder="t('TICKETS.HEADER.STATUS_MACRO')"
-        :input-placeholder="t('TICKETS.HEADER.STATUS_MACRO')"
-        :has-thumbnail="false"
-        @select="onSelectStatus"
-      />
-    </div>
+    <div class="flex items-start gap-2">
+      <div class="flex flex-col flex-1 min-w-0 gap-1">
+        <span class="text-xs text-n-slate-11">
+          {{ t('TICKETS.HEADER.STATUS_MACRO') }}
+        </span>
+        <MultiselectDropdown
+          class="w-full"
+          :options="ticketStatuses"
+          :selected-item="selectedStatus"
+          :multiselector-placeholder="t('TICKETS.HEADER.STATUS_MACRO')"
+          :input-placeholder="t('TICKETS.HEADER.STATUS_MACRO')"
+          :has-thumbnail="false"
+          @select="onSelectStatus"
+        />
+      </div>
 
-    <div class="flex flex-col gap-1">
-      <span class="text-xs text-n-slate-11">
-        {{ t('TICKETS.HEADER.TEAM') }}
-      </span>
-      <MultiselectDropdown
-        class="w-full"
-        :options="teamOptions"
-        :selected-item="selectedTeam"
-        :multiselector-placeholder="t('TICKETS.CREATE.TEAM.PLACEHOLDER')"
-        :input-placeholder="t('TICKETS.CREATE.TEAM.PLACEHOLDER')"
-        :has-thumbnail="false"
-        @select="onSelectTeam"
-      />
+      <div class="flex flex-col flex-1 min-w-0 gap-1">
+        <span class="text-xs text-n-slate-11">
+          {{ t('TICKETS.HEADER.TEAM') }}
+        </span>
+        <MultiselectDropdown
+          class="w-full"
+          :options="teamOptions"
+          :selected-item="selectedTeam"
+          :multiselector-placeholder="t('TICKETS.CREATE.TEAM.PLACEHOLDER')"
+          :input-placeholder="t('TICKETS.CREATE.TEAM.PLACEHOLDER')"
+          :has-thumbnail="false"
+          @select="onSelectTeam"
+        />
+      </div>
     </div>
 
     <label
@@ -384,78 +447,46 @@ onMounted(() => {
       </select>
     </label>
 
-    <!-- Responsável -->
-    <div class="flex flex-col gap-1">
-      <span class="text-xs font-medium text-n-slate-11">
-        {{ t('TICKETS.HEADER.RESPONSIBLE') }}
-      </span>
-      <div v-on-clickaway="closeResponsibleDropdown" class="relative w-fit">
-        <button
-          type="button"
-          class="block"
-          @click="showResponsibleDropdown = !showResponsibleDropdown"
-        >
-          <Avatar
-            v-if="ticket.responsavel_nome"
-            v-tooltip="ticket.responsavel_nome"
-            :src="ticket.responsavel_avatar_url"
-            :name="ticket.responsavel_nome"
-            :size="28"
-            rounded-full
-          />
-          <span
-            v-else
-            class="flex items-center justify-center w-7 h-7 border border-dashed rounded-full text-n-slate-10 border-n-slate-6 hover:border-n-slate-8 hover:text-n-slate-11"
-          >
-            <span class="text-sm i-lucide-plus" />
-          </span>
-        </button>
-        <div
-          v-show="showResponsibleDropdown"
-          class="absolute z-[100] w-56 p-1 mt-1 overflow-y-auto border rounded-lg shadow-lg top-full max-h-60 bg-n-alpha-3 backdrop-blur-[100px] border-n-strong"
-        >
-          <button
-            v-for="agent in agentsList"
-            :key="agent.id"
-            type="button"
-            class="flex items-center w-full gap-2 px-2 py-1.5 text-sm text-left rounded-md hover:bg-n-alpha-1"
-            :class="{ 'bg-n-alpha-1': agent.id === ticket.responsavel_id }"
-            @click="selectResponsibleAgent(agent)"
-          >
-            <Avatar
-              :src="agent.thumbnail"
-              :name="agent.name"
-              :size="20"
-              rounded-full
-            />
-            <span class="truncate text-n-slate-12">{{ agent.name }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Membros -->
+    <!-- Membros (responsável + colaboradores em um único bloco) -->
     <div class="flex flex-col gap-1">
       <span class="text-xs font-medium text-n-slate-11">
         {{ t('TICKETS.HEADER.MEMBERS') }}
       </span>
-      <div class="flex flex-wrap items-center gap-1">
+      <div class="flex flex-wrap items-center gap-2">
         <div
-          v-for="assignment in ticket.assignments"
-          :key="assignment.id"
-          v-tooltip="assignment.colaborador_nome"
+          v-for="member in members"
+          :key="member.key"
+          v-tooltip="member.nome"
           class="relative group"
         >
           <Avatar
-            :src="agentFor(assignment.colaborador_id)?.thumbnail"
-            :name="assignment.colaborador_nome"
+            :src="member.avatarUrl"
+            :name="member.nome"
             :size="28"
             rounded-full
           />
           <button
             type="button"
+            class="absolute -bottom-1 -right-1 flex items-center justify-center w-4 h-4 rounded-full"
+            :class="
+              member.isResponsible
+                ? 'bg-n-amber-9 text-white'
+                : 'hidden text-n-slate-11 bg-n-slate-3 group-hover:flex'
+            "
+            :title="
+              member.isResponsible
+                ? t('TICKETS.HEADER.RESPONSIBLE')
+                : t('TICKETS.HEADER.MAKE_RESPONSIBLE')
+            "
+            @click="promoteToResponsible(member)"
+          >
+            <span class="text-[10px] i-lucide-star" />
+          </button>
+          <button
+            v-if="!member.isResponsible"
+            type="button"
             class="absolute -top-1 -right-1 items-center justify-center hidden w-4 h-4 text-white rounded-full bg-n-ruby-9 group-hover:flex"
-            @click="removeMember(assignment)"
+            @click="removeMember(member)"
           >
             <span class="text-[10px] i-lucide-x" />
           </button>
@@ -574,7 +605,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div v-if="myAssignment" class="flex items-center justify-between">
+    <div class="flex items-center justify-between">
       <TimerWidget
         :ticket-id="ticket.id"
         :initial-state="myActiveTimer ? 'running' : 'stopped'"
@@ -584,10 +615,64 @@ onMounted(() => {
       <button
         type="button"
         class="text-xs text-n-slate-11 hover:underline"
-        @click="openManualTimeModal"
+        @click="openManualTimeModal()"
       >
         {{ t('TICKETS.TIMER.ADD_TIME') }}
       </button>
+    </div>
+
+    <!-- Registros de tempo -->
+    <div v-if="ticket.worklogs?.length" class="flex flex-col gap-1">
+      <span class="text-xs font-medium text-n-slate-11">
+        {{ t('TICKETS.MANUAL_TIME.LIST_TITLE') }}
+      </span>
+      <ul class="flex flex-col divide-y divide-n-weak">
+        <li
+          v-for="worklog in ticket.worklogs"
+          :key="worklog.id"
+          class="flex items-center justify-between gap-2 py-1.5 text-xs"
+        >
+          <div class="flex flex-col min-w-0">
+            <span class="text-n-slate-12">
+              {{ worklog.colaborador_nome }} —
+              {{ formatDuration(worklog.duracao_segundos) }}
+            </span>
+            <span class="text-n-slate-10">
+              {{ formatWorklogDate(worklog.inicio) }}
+              <span v-if="worklog.motivo"> · {{ worklog.motivo }}</span>
+            </span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              class="text-n-slate-11 hover:text-n-slate-12"
+              :title="t('TICKETS.MANUAL_TIME.EDIT')"
+              @click="openManualTimeModal(worklog)"
+            >
+              <span class="text-sm i-lucide-pencil" />
+            </button>
+            <button
+              v-if="isAdmin"
+              v-on-clickaway="cancelDeleteWorklog"
+              type="button"
+              class="hover:text-n-ruby-9"
+              :class="
+                confirmingDeleteWorklogId === worklog.id
+                  ? 'text-n-ruby-9'
+                  : 'text-n-slate-11'
+              "
+              :title="
+                confirmingDeleteWorklogId === worklog.id
+                  ? t('TICKETS.MANUAL_TIME.CONFIRM_DELETE')
+                  : t('TICKETS.MANUAL_TIME.DELETE')
+              "
+              @click="askDeleteWorklog(worklog)"
+            >
+              <span class="text-sm i-lucide-trash-2" />
+            </button>
+          </div>
+        </li>
+      </ul>
     </div>
 
     <woot-modal
@@ -596,7 +681,7 @@ onMounted(() => {
     >
       <ManualTimeEntryModal
         :ticket-id="ticket.id"
-        :worklog="null"
+        :worklog="editingWorklog"
         @close="showManualTimeModal = false"
         @saved="onManualTimeSaved"
       />
