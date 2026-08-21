@@ -108,7 +108,7 @@ const onSelectResponsible = async item => {
   }
 };
 
-// Membros — avatar clicável (estilo Trello: círculo com foto, ou pontilhado
+// Responsável — avatar clicável (estilo Trello: círculo com foto, ou pontilhado
 // com "+" quando não há responsável) abre um painel simples com a lista de
 // agentes, em vez do MultiselectDropdown padrão (largo/pesado demais aqui).
 const showResponsibleDropdown = ref(false);
@@ -118,6 +118,41 @@ const closeResponsibleDropdown = () => {
 const selectResponsibleAgent = async agent => {
   showResponsibleDropdown.value = false;
   await onSelectResponsible(agent);
+};
+
+// Membros — lista de colaboradores (ticket_assignments), distinta do
+// responsável: um ticket pode ter vários membros, cada um com seu próprio
+// status_micro e cronômetro.
+const showAddMemberDropdown = ref(false);
+const closeAddMemberDropdown = () => {
+  showAddMemberDropdown.value = false;
+};
+const memberOptions = computed(() => {
+  const memberIds = (ticket.value.assignments || []).map(
+    assignment => assignment.colaborador_id
+  );
+  return agentsList.value.filter(agent => !memberIds.includes(agent.id));
+});
+const agentFor = colaboradorId =>
+  agentsList.value.find(agent => agent.id === colaboradorId);
+
+const addMember = async agent => {
+  showAddMemberDropdown.value = false;
+  try {
+    await TicketsAPI.addMember(ticket.value.id, agent.id);
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.HEADER.MEMBER_ADD_ERROR'));
+  }
+};
+
+const removeMember = async assignment => {
+  try {
+    await TicketsAPI.removeMember(ticket.value.id, assignment.id);
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.HEADER.MEMBER_REMOVE_ERROR'));
+  }
 };
 
 const onChangeStatusMicro = async event => {
@@ -349,10 +384,10 @@ onMounted(() => {
       </select>
     </label>
 
-    <!-- Membros -->
+    <!-- Responsável -->
     <div class="flex flex-col gap-1">
       <span class="text-xs font-medium text-n-slate-11">
-        {{ t('TICKETS.HEADER.MEMBERS') }}
+        {{ t('TICKETS.HEADER.RESPONSIBLE') }}
       </span>
       <div v-on-clickaway="closeResponsibleDropdown" class="relative w-fit">
         <button
@@ -395,6 +430,64 @@ onMounted(() => {
             />
             <span class="truncate text-n-slate-12">{{ agent.name }}</span>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Membros -->
+    <div class="flex flex-col gap-1">
+      <span class="text-xs font-medium text-n-slate-11">
+        {{ t('TICKETS.HEADER.MEMBERS') }}
+      </span>
+      <div class="flex flex-wrap items-center gap-1">
+        <div
+          v-for="assignment in ticket.assignments"
+          :key="assignment.id"
+          v-tooltip="assignment.colaborador_nome"
+          class="relative group"
+        >
+          <Avatar
+            :src="agentFor(assignment.colaborador_id)?.thumbnail"
+            :name="assignment.colaborador_nome"
+            :size="28"
+            rounded-full
+          />
+          <button
+            type="button"
+            class="absolute -top-1 -right-1 items-center justify-center hidden w-4 h-4 text-white rounded-full bg-n-ruby-9 group-hover:flex"
+            @click="removeMember(assignment)"
+          >
+            <span class="text-[10px] i-lucide-x" />
+          </button>
+        </div>
+        <div v-on-clickaway="closeAddMemberDropdown" class="relative">
+          <button
+            type="button"
+            class="flex items-center justify-center w-7 h-7 border border-dashed rounded-full text-n-slate-10 border-n-slate-6 hover:border-n-slate-8 hover:text-n-slate-11"
+            @click="showAddMemberDropdown = !showAddMemberDropdown"
+          >
+            <span class="text-sm i-lucide-plus" />
+          </button>
+          <div
+            v-show="showAddMemberDropdown"
+            class="absolute z-[100] w-56 p-1 mt-1 overflow-y-auto border rounded-lg shadow-lg top-full max-h-60 bg-n-alpha-3 backdrop-blur-[100px] border-n-strong"
+          >
+            <button
+              v-for="agent in memberOptions"
+              :key="agent.id"
+              type="button"
+              class="flex items-center w-full gap-2 px-2 py-1.5 text-sm text-left rounded-md hover:bg-n-alpha-1"
+              @click="addMember(agent)"
+            >
+              <Avatar
+                :src="agent.thumbnail"
+                :name="agent.name"
+                :size="20"
+                rounded-full
+              />
+              <span class="truncate text-n-slate-12">{{ agent.name }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

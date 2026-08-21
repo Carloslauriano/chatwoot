@@ -63,6 +63,16 @@ class TicketsAPI extends ApiClient {
     });
   }
 
+  addMember(ticketId, colaboradorId) {
+    return axios.post(`${this.url}/${ticketId}/assignments`, {
+      ticket_assignment: { colaborador_id: colaboradorId },
+    });
+  }
+
+  removeMember(ticketId, assignmentId) {
+    return axios.delete(`${this.url}/${ticketId}/assignments/${assignmentId}`);
+  }
+
   timerStart(ticketId) {
     return axios.post(`${this.url}/${ticketId}/timer/start`);
   }
