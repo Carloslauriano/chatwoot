@@ -164,7 +164,7 @@ Rails.application.routes.draw do
               get :timeline
               get :audit_logs
             end
-            resources :assignments, only: [:update], controller: 'ticket_assignments'
+            resources :assignments, only: [:create, :update, :destroy], controller: 'ticket_assignments'
             resources :worklogs, only: [:create, :update]
             resources :labels, only: [:index, :create], controller: 'tickets/labels'
           end

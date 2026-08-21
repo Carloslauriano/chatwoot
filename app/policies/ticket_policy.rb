@@ -17,6 +17,10 @@ class TicketPolicy < ApplicationPolicy
     true
   end
 
+  def destroy?
+    true
+  end
+
   def link_conversation?
     true
   end
