@@ -5,10 +5,12 @@ class Api::V1::Accounts::TicketAssignmentsController < Api::V1::Accounts::BaseCo
 
   # Membros: qualquer colaborador do setor pode adicionar outro colaborador ao ticket.
   def create
-    @assignment = @ticket.ticket_assignments.create!(colaborador_id: create_params[:colaborador_id])
+    @assignment = @ticket.ticket_assignments.create!(
+      account: Current.account, colaborador_id: create_params[:colaborador_id]
+    )
     @ticket.ticket_timeline_events.create!(
       account: Current.account, tipo_evento: :membro_added, origem: :interno, autor_id: Current.user.id,
-      payload: { colaborador_id: @assignment.colaborador_id }
+      payload: { colaborador_id: @assignment.colaborador_id, colaborador_nome: @assignment.colaborador.name }
     )
     @ticket.ticket_audit_logs.create!(
       account: Current.account, autor_id: Current.user.id, acao: 'membro_added',
@@ -32,10 +34,11 @@ class Api::V1::Accounts::TicketAssignmentsController < Api::V1::Accounts::BaseCo
 
   def destroy
     colaborador_id = @assignment.colaborador_id
+    colaborador_nome = @assignment.colaborador.name
     @assignment.destroy!
     @ticket.ticket_timeline_events.create!(
       account: Current.account, tipo_evento: :membro_removed, origem: :interno, autor_id: Current.user.id,
-      payload: { colaborador_id: colaborador_id }
+      payload: { colaborador_id: colaborador_id, colaborador_nome: colaborador_nome }
     )
     @ticket.ticket_audit_logs.create!(
       account: Current.account, autor_id: Current.user.id, acao: 'membro_removed',
