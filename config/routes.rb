@@ -154,6 +154,22 @@ Rails.application.routes.draw do
             end
           end
           resources :dashboard_apps, only: [:index, :show, :create, :update, :destroy]
+          resources :tickets, only: [:index, :create, :show, :update] do
+            member do
+              post :link_conversation
+              patch :transfer
+              patch :ticket_status
+              post 'timer/start', action: :timer_start, as: :timer_start
+              post 'timer/stop', action: :timer_stop, as: :timer_stop
+              get :timeline
+              get :audit_logs
+            end
+            resources :assignments, only: [:update], controller: 'ticket_assignments'
+            resources :worklogs, only: [:create, :update]
+            resources :labels, only: [:index, :create], controller: 'tickets/labels'
+          end
+          resources :ticket_statuses, only: [:index, :create, :update, :destroy]
+          resources :ticket_automation_rules, only: [:index, :create, :update, :destroy]
           namespace :channels do
             resource :twilio_channel, only: [:create]
           end

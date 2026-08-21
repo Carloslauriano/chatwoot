@@ -48,6 +48,9 @@ import sidebarSortPreferences from './modules/sidebarSortPreferences';
 import summaryReports from './modules/summaryReports';
 import teamMembers from './modules/teamMembers';
 import teams from './modules/teams';
+import tickets from './modules/tickets';
+import ticketStatuses from './modules/ticketStatuses';
+import ticketAutomationRules from './modules/ticketAutomationRules';
 import userNotificationSettings from './modules/userNotificationSettings';
 import webhooks from './modules/webhooks';
 import captainAgentSessions from './captain/agentSessions';
@@ -115,6 +118,9 @@ export default createStore({
     summaryReports,
     teamMembers,
     teams,
+    tickets,
+    ticketStatuses,
+    ticketAutomationRules,
     userNotificationSettings,
     webhooks,
     captainAgentSessions,

@@ -714,6 +714,23 @@ const menuItems = computed(() => {
       ],
     },
     {
+      name: 'Tickets',
+      label: t('SIDEBAR.TICKETS'),
+      icon: 'i-lucide-ticket',
+      children: [
+        {
+          name: 'Tickets',
+          label: t('SIDEBAR.TICKETS_LIST'),
+          to: accountScopedRoute('tickets_index'),
+        },
+        {
+          name: 'Kanban',
+          label: t('SIDEBAR.TICKETS_KANBAN'),
+          to: accountScopedRoute('tickets_kanban'),
+        },
+      ],
+    },
+    {
       name: 'Campaigns',
       label: t('SIDEBAR.CAMPAIGNS'),
       icon: 'i-lucide-megaphone',
@@ -824,6 +841,18 @@ const menuItems = computed(() => {
             'settings_teams_edit_finish',
           ],
           to: accountScopedRoute('settings_teams_list'),
+        },
+        {
+          name: 'Settings Ticket Statuses',
+          label: t('SIDEBAR.TICKET_STATUSES'),
+          icon: 'i-lucide-columns-3',
+          to: accountScopedRoute('settings_ticket_statuses'),
+        },
+        {
+          name: 'Settings Ticket Automation Rules',
+          label: t('SIDEBAR.TICKET_AUTOMATION_RULES'),
+          icon: 'i-lucide-zap',
+          to: accountScopedRoute('settings_ticket_automation_rules'),
         },
         ...(hasAdvancedAssignment.value
           ? [
