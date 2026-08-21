@@ -2,7 +2,6 @@
 import { reactive, computed, ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
-import { useAgentsList } from 'dashboard/composables/useAgentsList';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
 import TicketsAPI from 'dashboard/api/tickets';
@@ -25,7 +24,9 @@ const emit = defineEmits(['close', 'created']);
 const { t } = useI18n();
 
 const store = useStore();
-const { agentsList } = useAgentsList(false);
+// Agentes da conta inteira, não os assignable do inbox da conversa aberta —
+// o responsável do ticket pode ser qualquer agente da conta.
+const agentsList = useMapGetter('agents/getAgents');
 const teams = useMapGetter('teams/getTeams');
 const currentChat = useMapGetter('getSelectedChat');
 const accountLabels = useMapGetter('labels/getLabels');
@@ -134,6 +135,9 @@ onMounted(async () => {
 
   if (!accountLabels.value?.length) {
     store.dispatch('labels/get');
+  }
+  if (!agentsList.value?.length) {
+    store.dispatch('agents/get');
   }
   if (!teams.value?.length) {
     await store.dispatch('teams/get');
