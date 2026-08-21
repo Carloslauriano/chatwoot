@@ -327,6 +327,13 @@
     "ACTIVE": "Ativo",
     "COMPANIES": "Empresas",
     "ALL_COMPANIES": "Todas as empresas",
+    "TICKETS": "Tickets",
+    "TICKETS_LIST": "Tickets",
+    "TICKETS_KANBAN": "Kanban",
+    "TICKETS_FILTER_MINE": "Meus times",
+    "TICKETS_FILTER_ALL": "Todos os times",
+    "TICKET_STATUSES": "Status de tickets",
+    "TICKET_AUTOMATION_RULES": "Automação de tickets",
     "CAPTAIN": "Capitão",
     "CALLS": "Chamadas",
     "CAPTAIN_ASSISTANTS": "Assistentes",
@@ -1160,6 +1167,99 @@
       "DESCRIPTION": "Tem certeza de que deseja excluir esta política? Essa ação não pode ser desfeita.",
       "CONFIRM_BUTTON_LABEL": "Excluir",
       "CANCEL_BUTTON_LABEL": "Cancelar"
+    }
+  },
+  "TICKET_STATUSES_SETTINGS": {
+    "HEADER": "Status de tickets",
+    "DESCRIPTION": "Configure as colunas do quadro Kanban e quais times veem cada uma",
+    "NEW_BUTTON": "Novo status",
+    "CONFIGURE_BUTTON": "Configurar colunas",
+    "LOADING": "Carregando status de tickets",
+    "EMPTY": "Ainda não há status de tickets",
+    "TEAMS_LABEL": "Times",
+    "ALL_TEAMS": "Todos os times",
+    "DEFAULT_BADGE": "Padrão",
+    "FORM": {
+      "NEW_TITLE": "Novo status",
+      "EDIT_TITLE": "Editar status",
+      "NAME_LABEL": "Nome",
+      "NAME_PLACEHOLDER": "ex.: Aguardando versão",
+      "POSITION_LABEL": "Posição",
+      "TEAMS_LABEL": "Times",
+      "TEAMS_HELP": "Deixe em branco para mostrar esta coluna para todos os times",
+      "TEAMS_SELECTED_COUNT": "{count} selecionado(s)",
+      "NO_TEAMS": "Nenhum time criado ainda",
+      "TEAM_POSITION_HELP": "Para um time selecionado, você pode definir uma posição que sobrepõe a posição global da coluna quando o Kanban estiver filtrado por aquele time",
+      "TEAM_POSITION_PLACEHOLDER": "Posição",
+      "IS_DEFAULT_LABEL": "Status padrão para criação de ticket",
+      "IS_DEFAULT_HELP": "Novos tickets entram automaticamente nesta coluna. Só um status pode ser o padrão.",
+      "SUBMIT": "Salvar",
+      "CANCEL": "Cancelar",
+      "SUCCESS": "Status salvo com sucesso",
+      "ERROR": "Não foi possível salvar o status"
+    },
+    "DELETE": {
+      "TITLE": "Excluir status",
+      "MESSAGE": "Tem certeza que deseja excluir este status? Os tickets que o usam perderão esse status.",
+      "PLACE_HOLDER": "Digite {statusName} para confirmar",
+      "CONFIRM": "Sim, excluir",
+      "CANCEL": "Não, manter",
+      "SUCCESS": "Status excluído com sucesso",
+      "ERROR": "Não foi possível excluir o status"
+    }
+  },
+  "TICKET_AUTOMATION_RULES_SETTINGS": {
+    "HEADER": "Automação de tickets",
+    "DESCRIPTION": "Mude status/time, adicione etiquetas ou atribua um responsável automaticamente quando uma condição for satisfeita",
+    "NEW_BUTTON": "Nova automação",
+    "LOADING": "Carregando automações",
+    "EMPTY": "Ainda não há automações de tickets",
+    "ACTIVE_LABEL": "Ativa",
+    "EVENTS": {
+      "STATUS_CHANGED": "Status do ticket mudou",
+      "LABEL_ADDED": "Etiqueta adicionada ao ticket"
+    },
+    "ACTIONS": {
+      "CHANGE_STATUS": "Mudar status",
+      "TRANSFER_TEAM": "Transferir time",
+      "ADD_LABEL": "Adicionar etiqueta",
+      "ASSIGN_RESPONSIBLE": "Atribuir responsável"
+    },
+    "FORM": {
+      "NEW_TITLE": "Nova automação",
+      "EDIT_TITLE": "Editar automação",
+      "NAME_LABEL": "Nome",
+      "NAME_PLACEHOLDER": "ex.: Mover para suporte quando marcar urgente",
+      "DESCRIPTION_LABEL": "Descrição",
+      "EVENT_LABEL": "Quando",
+      "CONDITIONS_TITLE": "Condições",
+      "TO_STATUS_LABEL": "O novo status for",
+      "LABEL_ADDED_LABEL": "A etiqueta adicionada for",
+      "CURRENT_STATUS_LABEL": "Só se o status atual for",
+      "CURRENT_TEAM_LABEL": "Só se o time atual for",
+      "SELECT_PLACEHOLDER": "Selecione uma opção",
+      "ANY_OPTION": "Qualquer",
+      "ACTIONS_TITLE": "Então faça isso",
+      "ACTION_LABEL": "Ação",
+      "STATUS_VALUE_LABEL": "Novo status",
+      "TEAM_VALUE_LABEL": "Novo time",
+      "LABEL_VALUE_LABEL": "Etiqueta",
+      "RESPONSIBLE_VALUE_LABEL": "Agente responsável",
+      "ADD_ACTION": "Adicionar ação",
+      "ACTIVE_LABEL": "Ativa",
+      "SUBMIT": "Salvar",
+      "CANCEL": "Cancelar",
+      "SUCCESS": "Automação salva com sucesso",
+      "ERROR": "Não foi possível salvar a automação"
+    },
+    "DELETE": {
+      "TITLE": "Excluir automação",
+      "MESSAGE": "Tem certeza que deseja excluir esta automação?",
+      "PLACE_HOLDER": "Digite {ruleName} para confirmar",
+      "CONFIRM": "Sim, excluir",
+      "CANCEL": "Não, manter",
+      "SUCCESS": "Automação excluída com sucesso",
+      "ERROR": "Não foi possível excluir a automação"
     }
   }
 }

@@ -469,7 +469,8 @@
       "MACROS": "Macros",
       "LINEAR_ISSUES": "Linked Linear Issues",
       "SHOPIFY_ORDERS": "Shopify Orders",
-      "SHARED_FILES": "Attachments"
+      "SHARED_FILES": "Attachments",
+      "ESCALATION_TICKETS": "Escalation Ticket"
     },
     "SHARED_FILES": {
       "EMPTY": "No attachments yet",
@@ -567,5 +568,195 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Unable to download attachment. Please try again"
+  },
+  "TICKETS": {
+    "NO_TICKET": "No escalation ticket linked to this conversation yet",
+    "CREATE_OR_LINK_BUTTON": "Create or link ticket",
+    "SHOW": {
+      "OPEN_CONVERSATION": "Open conversation",
+      "LOAD_ERROR": "Could not load this ticket"
+    },
+    "QUICK_VIEW": {
+      "TITLE": "Ticket #{id}",
+      "ACTIVITY": "Activity"
+    },
+    "KANBAN": {
+      "FILTER": {
+        "TOOLTIP": "Filter and sort",
+        "MINE": "My teams",
+        "ALL": "All teams",
+        "TEAM_LABEL": "Team",
+        "SORT_LABEL": "Sort by"
+      },
+      "SORT": {
+        "PRIORITY": "Priority",
+        "NEWEST": "Newest first",
+        "OLDEST": "Oldest first"
+      }
+    },
+    "CREATE_OR_LINK": {
+      "TITLE": "Escalation ticket",
+      "DESCRIPTION": "Create a new escalation ticket or link this conversation to an existing one",
+      "TABS": {
+        "CREATE": "Create",
+        "LINK": "Link existing"
+      }
+    },
+    "CREATE": {
+      "TITLE": {
+        "LABEL": "Title",
+        "PLACEHOLDER": "Short summary of the ticket",
+        "REQUIRED_ERROR": "Title is required"
+      },
+      "DESCRIPTION": {
+        "LABEL": "Ticket description",
+        "PLACEHOLDER": "Describe the problem that needs escalation",
+        "REQUIRED_ERROR": "Description is required"
+      },
+      "CATEGORY": {
+        "LABEL": "Category",
+        "PLACEHOLDER": "Select a category",
+        "REQUIRED_ERROR": "Category is required"
+      },
+      "PRIORITY": {
+        "LABEL": "Priority",
+        "PLACEHOLDER": "Select a priority",
+        "REQUIRED_ERROR": "Priority is required"
+      },
+      "RESPONSIBLE": {
+        "LABEL": "Responsible collaborator",
+        "PLACEHOLDER": "Select a responsible agent",
+        "REQUIRED_ERROR": "A responsible collaborator is required"
+      },
+      "TEAM": {
+        "LABEL": "Team",
+        "PLACEHOLDER": "Select a team (optional)",
+        "NONE": "No team"
+      },
+      "LABELS": {
+        "LABEL": "Labels"
+      },
+      "SUBMIT": "Create ticket",
+      "CANCEL": "Cancel",
+      "SUCCESS": "Ticket created successfully",
+      "ERROR": "Could not create the ticket. Please try again"
+    },
+    "LINK": {
+      "SEARCH_PLACEHOLDER": "Search open tickets for this contact",
+      "EMPTY": "No open tickets found for this contact",
+      "SUBMIT": "Link ticket",
+      "SUCCESS": "Ticket linked successfully",
+      "ERROR": "Could not link the ticket. Please try again",
+      "RESOLVED_ERROR": "This ticket is already resolved. Please create a new ticket instead."
+    },
+    "PRIORITY_OPTIONS": {
+      "BAIXA": "Low",
+      "MEDIA": "Medium",
+      "ALTA": "High",
+      "CRITICA": "Critical"
+    },
+    "STATUS_MACRO_OPTIONS": {
+      "CAIXA_ENTRADA": "Inbox",
+      "A_FAZER": "To do",
+      "FAZENDO": "In progress",
+      "AGUARDANDO_VERSAO": "Awaiting release",
+      "RESOLVIDO": "Resolved"
+    },
+    "STATUS_MICRO_OPTIONS": {
+      "A_FAZER": "To do",
+      "FAZENDO": "In progress",
+      "FINALIZADO": "Done"
+    },
+    "HEADER": {
+      "SECTOR": "Sector",
+      "TEAM": "Team",
+      "STATUS_MACRO": "Status",
+      "MY_STATUS": "My status",
+      "CATEGORY": "Category",
+      "PRIORITY": "Priority",
+      "RESPONSIBLE": "Responsible",
+      "TRANSFER_SECTOR": "Transfer sector",
+      "TRANSFER_SUCCESS": "Sector transferred successfully",
+      "TRANSFER_ERROR": "Could not transfer the sector. Please try again",
+      "STATUS_MACRO_UPDATE_ERROR": "Could not update the sector status",
+      "STATUS_MICRO_UPDATE_ERROR": "Could not update your status",
+      "MEMBERS": "Members",
+      "LABELS": "Labels",
+      "TITLE": "Title",
+      "TITLE_UPDATE_ERROR": "Could not update the title",
+      "DESCRIPTION": "Description",
+      "EDIT": "Edit",
+      "SAVE": "Save",
+      "RESPONSIBLE_UPDATE_SUCCESS": "Responsible updated successfully",
+      "RESPONSIBLE_UPDATE_ERROR": "Could not update the responsible collaborator",
+      "LABELS_UPDATE_ERROR": "Could not update the labels",
+      "DESCRIPTION_UPDATE_ERROR": "Could not update the description"
+    },
+    "TABS": {
+      "TIMELINE": "Timeline",
+      "HISTORY": "History"
+    },
+    "TIMELINE": {
+      "EMPTY": "No activity yet",
+      "ORIGIN": {
+        "LABEL": "Ticket created",
+        "FROM_CONVERSATION": "from conversation #{id}"
+      },
+      "EVENTS": {
+        "CUSTOMER_MESSAGE": "Customer",
+        "AGENT_MESSAGE": "{agent} replied",
+        "AGENT_FALLBACK": "Agent",
+        "INTERNAL_NOTE": "Internal note",
+        "SECTOR_TRANSFERRED": "{agent} moved this card from {from} to {to}",
+        "WORKED": "{agent} worked {duration}",
+        "WORKED_MANUAL": "{agent} added {duration} manually",
+        "STATUS_MACRO_CHANGED": "{agent} moved this card from {from} to {to}",
+        "STATUS_MICRO_CHANGED": "{agent}: {from} → {to}"
+      },
+      "FETCH_ERROR": "Could not load the ticket timeline"
+    },
+    "TIMER": {
+      "START": "Play",
+      "PAUSE": "Pause",
+      "START_ERROR": "Could not start the timer",
+      "STOP_TITLE": "You worked {duration} on this ticket. What do you want to do?",
+      "STOP_FINISHED": "Finished",
+      "STOP_PAUSED": "Paused",
+      "STOP_ERROR": "Could not stop the timer",
+      "AUTO_PAUSED_TOAST": "Your timer on this ticket was paused automatically because you started the timer on ticket #{ticketId}",
+      "PAUSED_NOT_COUNTED_TOAST": "Paused — this time was not recorded. Use 'add time' if you want to add it manually",
+      "ADD_TIME": "Add time"
+    },
+    "HISTORY": {
+      "EMPTY": "No audit records yet",
+      "COLUMNS": {
+        "WHEN": "When",
+        "WHO": "Who",
+        "ACTION": "Action",
+        "DETAILS": "Details"
+      },
+      "VIEW_DETAILS": "View",
+      "FETCH_ERROR": "Could not load the audit history",
+      "EDITED_MANUALLY": "Edited",
+      "VALUE_CHANGE": "{from} → {to}"
+    },
+    "MANUAL_TIME": {
+      "TITLE": "Add or edit time",
+      "DURATION": {
+        "LABEL": "Duration (hh:mm:ss)",
+        "REQUIRED_ERROR": "Duration is required"
+      },
+      "STARTED_AT": {
+        "LABEL": "Date and time"
+      },
+      "REASON": {
+        "LABEL": "Reason (optional)",
+        "PLACEHOLDER": "e.g. worked 30min and forgot to press play"
+      },
+      "SUBMIT": "Save",
+      "CANCEL": "Cancel",
+      "SUCCESS": "Worklog saved successfully",
+      "ERROR": "Could not save the worklog"
+    }
   }
 }

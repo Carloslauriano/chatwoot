@@ -529,5 +529,195 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Não foi possível baixar o anexo. Por favor, tente novamente"
+  },
+  "TICKETS": {
+    "NO_TICKET": "Nenhum ticket de escalonamento vinculado a esta conversa ainda",
+    "CREATE_OR_LINK_BUTTON": "Criar ou vincular ticket",
+    "SHOW": {
+      "OPEN_CONVERSATION": "Abrir conversa",
+      "LOAD_ERROR": "Não foi possível carregar este ticket"
+    },
+    "QUICK_VIEW": {
+      "TITLE": "Ticket #{id}",
+      "ACTIVITY": "Atividade"
+    },
+    "KANBAN": {
+      "FILTER": {
+        "TOOLTIP": "Filtrar e ordenar",
+        "MINE": "Meus times",
+        "ALL": "Todos os times",
+        "TEAM_LABEL": "Time",
+        "SORT_LABEL": "Ordenar por"
+      },
+      "SORT": {
+        "PRIORITY": "Prioridade",
+        "NEWEST": "Mais recentes primeiro",
+        "OLDEST": "Mais antigos primeiro"
+      }
+    },
+    "CREATE_OR_LINK": {
+      "TITLE": "Ticket de escalonamento",
+      "DESCRIPTION": "Crie um novo ticket de escalonamento ou vincule esta conversa a um já existente",
+      "TABS": {
+        "CREATE": "Criar",
+        "LINK": "Vincular existente"
+      }
+    },
+    "CREATE": {
+      "TITLE": {
+        "LABEL": "Título",
+        "PLACEHOLDER": "Resumo curto do ticket",
+        "REQUIRED_ERROR": "O título é obrigatório"
+      },
+      "DESCRIPTION": {
+        "LABEL": "Descrição do ticket",
+        "PLACEHOLDER": "Descreva o problema que precisa ser escalonado",
+        "REQUIRED_ERROR": "A descrição é obrigatória"
+      },
+      "CATEGORY": {
+        "LABEL": "Categoria",
+        "PLACEHOLDER": "Selecione uma categoria",
+        "REQUIRED_ERROR": "A categoria é obrigatória"
+      },
+      "PRIORITY": {
+        "LABEL": "Prioridade",
+        "PLACEHOLDER": "Selecione uma prioridade",
+        "REQUIRED_ERROR": "A prioridade é obrigatória"
+      },
+      "RESPONSIBLE": {
+        "LABEL": "Colaborador responsável",
+        "PLACEHOLDER": "Selecione um agente responsável",
+        "REQUIRED_ERROR": "É necessário um colaborador responsável"
+      },
+      "TEAM": {
+        "LABEL": "Time",
+        "PLACEHOLDER": "Selecione um time (opcional)",
+        "NONE": "Sem time"
+      },
+      "LABELS": {
+        "LABEL": "Etiquetas"
+      },
+      "SUBMIT": "Criar ticket",
+      "CANCEL": "Cancelar",
+      "SUCCESS": "Ticket criado com sucesso",
+      "ERROR": "Não foi possível criar o ticket. Tente novamente"
+    },
+    "LINK": {
+      "SEARCH_PLACEHOLDER": "Buscar tickets abertos deste contato",
+      "EMPTY": "Nenhum ticket aberto encontrado para este contato",
+      "SUBMIT": "Vincular ticket",
+      "SUCCESS": "Ticket vinculado com sucesso",
+      "ERROR": "Não foi possível vincular o ticket. Tente novamente",
+      "RESOLVED_ERROR": "Este ticket já está resolvido. Crie um novo ticket."
+    },
+    "PRIORITY_OPTIONS": {
+      "BAIXA": "Baixa",
+      "MEDIA": "Média",
+      "ALTA": "Alta",
+      "CRITICA": "Crítica"
+    },
+    "STATUS_MACRO_OPTIONS": {
+      "CAIXA_ENTRADA": "Caixa de Entrada",
+      "A_FAZER": "A Fazer",
+      "FAZENDO": "Fazendo",
+      "AGUARDANDO_VERSAO": "Aguardando Versão",
+      "RESOLVIDO": "Resolvido"
+    },
+    "STATUS_MICRO_OPTIONS": {
+      "A_FAZER": "A Fazer",
+      "FAZENDO": "Fazendo",
+      "FINALIZADO": "Finalizado"
+    },
+    "HEADER": {
+      "SECTOR": "Setor",
+      "TEAM": "Time",
+      "STATUS_MACRO": "Status",
+      "MY_STATUS": "Meu status",
+      "CATEGORY": "Categoria",
+      "PRIORITY": "Prioridade",
+      "RESPONSIBLE": "Responsável",
+      "TRANSFER_SECTOR": "Transferir setor",
+      "TRANSFER_SUCCESS": "Setor transferido com sucesso",
+      "TRANSFER_ERROR": "Não foi possível transferir o setor. Tente novamente",
+      "STATUS_MACRO_UPDATE_ERROR": "Não foi possível atualizar o status do setor",
+      "STATUS_MICRO_UPDATE_ERROR": "Não foi possível atualizar seu status",
+      "MEMBERS": "Membros",
+      "LABELS": "Etiquetas",
+      "TITLE": "Título",
+      "TITLE_UPDATE_ERROR": "Não foi possível atualizar o título",
+      "DESCRIPTION": "Descrição",
+      "EDIT": "Editar",
+      "SAVE": "Salvar",
+      "RESPONSIBLE_UPDATE_SUCCESS": "Responsável atualizado com sucesso",
+      "RESPONSIBLE_UPDATE_ERROR": "Não foi possível atualizar o colaborador responsável",
+      "LABELS_UPDATE_ERROR": "Não foi possível atualizar as etiquetas",
+      "DESCRIPTION_UPDATE_ERROR": "Não foi possível atualizar a descrição"
+    },
+    "TABS": {
+      "TIMELINE": "Linha do tempo",
+      "HISTORY": "Histórico"
+    },
+    "TIMELINE": {
+      "EMPTY": "Ainda não há atividade",
+      "ORIGIN": {
+        "LABEL": "Ticket criado",
+        "FROM_CONVERSATION": "a partir da conversa #{id}"
+      },
+      "EVENTS": {
+        "CUSTOMER_MESSAGE": "Cliente",
+        "AGENT_MESSAGE": "{agent} respondeu",
+        "AGENT_FALLBACK": "Agente",
+        "INTERNAL_NOTE": "Nota interna",
+        "SECTOR_TRANSFERRED": "{agent} moveu este cartão de {from} para {to}",
+        "WORKED": "{agent} trabalhou {duration}",
+        "WORKED_MANUAL": "{agent} adicionou {duration} manualmente",
+        "STATUS_MACRO_CHANGED": "{agent} moveu este cartão de {from} para {to}",
+        "STATUS_MICRO_CHANGED": "{agent}: {from} → {to}"
+      },
+      "FETCH_ERROR": "Não foi possível carregar a linha do tempo do ticket"
+    },
+    "TIMER": {
+      "START": "Iniciar",
+      "PAUSE": "Pausar",
+      "START_ERROR": "Não foi possível iniciar o timer",
+      "STOP_TITLE": "Você trabalhou {duration} neste ticket. O que deseja fazer?",
+      "STOP_FINISHED": "Finalizado",
+      "STOP_PAUSED": "Pausado",
+      "STOP_ERROR": "Não foi possível pausar o timer",
+      "AUTO_PAUSED_TOAST": "Seu timer neste ticket foi pausado automaticamente porque você iniciou o timer no ticket #{ticketId}",
+      "PAUSED_NOT_COUNTED_TOAST": "Pausado — este tempo não foi registrado. Use 'adicionar tempo' se quiser adicioná-lo manualmente",
+      "ADD_TIME": "Adicionar tempo"
+    },
+    "HISTORY": {
+      "EMPTY": "Ainda não há registros de auditoria",
+      "COLUMNS": {
+        "WHEN": "Quando",
+        "WHO": "Quem",
+        "ACTION": "Ação",
+        "DETAILS": "Detalhes"
+      },
+      "VIEW_DETAILS": "Ver",
+      "FETCH_ERROR": "Não foi possível carregar o histórico de auditoria",
+      "EDITED_MANUALLY": "Editado",
+      "VALUE_CHANGE": "{from} → {to}"
+    },
+    "MANUAL_TIME": {
+      "TITLE": "Adicionar ou editar tempo",
+      "DURATION": {
+        "LABEL": "Duração (hh:mm:ss)",
+        "REQUIRED_ERROR": "A duração é obrigatória"
+      },
+      "STARTED_AT": {
+        "LABEL": "Data e hora"
+      },
+      "REASON": {
+        "LABEL": "Motivo (opcional)",
+        "PLACEHOLDER": "ex.: trabalhei 30min e esqueci de dar play"
+      },
+      "SUBMIT": "Salvar",
+      "CANCEL": "Cancelar",
+      "SUCCESS": "Apontamento salvo com sucesso",
+      "ERROR": "Não foi possível salvar o apontamento"
+    }
   }
 }

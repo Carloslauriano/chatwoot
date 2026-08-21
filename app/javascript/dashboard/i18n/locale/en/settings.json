@@ -327,6 +327,13 @@
     "ACTIVE": "Active",
     "COMPANIES": "Companies",
     "ALL_COMPANIES": "All Companies",
+    "TICKETS": "Tickets",
+    "TICKETS_LIST": "Tickets",
+    "TICKETS_KANBAN": "Kanban",
+    "TICKETS_FILTER_MINE": "My teams",
+    "TICKETS_FILTER_ALL": "All teams",
+    "TICKET_STATUSES": "Ticket statuses",
+    "TICKET_AUTOMATION_RULES": "Ticket automation",
     "CAPTAIN": "Captain",
     "CALLS": "Calls",
     "CAPTAIN_ASSISTANTS": "Assistants",
@@ -1160,6 +1167,99 @@
       "DESCRIPTION": "Are you sure you want to delete this policy? This action cannot be undone.",
       "CONFIRM_BUTTON_LABEL": "Delete",
       "CANCEL_BUTTON_LABEL": "Cancel"
+    }
+  },
+  "TICKET_STATUSES_SETTINGS": {
+    "HEADER": "Ticket statuses",
+    "DESCRIPTION": "Configure the Kanban board columns and which teams see each one",
+    "NEW_BUTTON": "New status",
+    "CONFIGURE_BUTTON": "Configure columns",
+    "LOADING": "Loading ticket statuses",
+    "EMPTY": "No ticket statuses yet",
+    "TEAMS_LABEL": "Teams",
+    "ALL_TEAMS": "All teams",
+    "DEFAULT_BADGE": "Default",
+    "FORM": {
+      "NEW_TITLE": "New status",
+      "EDIT_TITLE": "Edit status",
+      "NAME_LABEL": "Name",
+      "NAME_PLACEHOLDER": "e.g. Awaiting release",
+      "POSITION_LABEL": "Position",
+      "TEAMS_LABEL": "Teams",
+      "TEAMS_HELP": "Leave empty to show this column to every team",
+      "TEAMS_SELECTED_COUNT": "{count} selected",
+      "NO_TEAMS": "No teams created yet",
+      "TEAM_POSITION_HELP": "For a selected team, you can set a position that overrides the column's global position when the Kanban is filtered by that team",
+      "TEAM_POSITION_PLACEHOLDER": "Position",
+      "IS_DEFAULT_LABEL": "Default status for new tickets",
+      "IS_DEFAULT_HELP": "New tickets are placed in this column automatically. Only one status can be the default.",
+      "SUBMIT": "Save",
+      "CANCEL": "Cancel",
+      "SUCCESS": "Status saved successfully",
+      "ERROR": "Could not save the status"
+    },
+    "DELETE": {
+      "TITLE": "Delete status",
+      "MESSAGE": "Are you sure you want to delete this status? Tickets using it will lose this status.",
+      "PLACE_HOLDER": "Please type {statusName} to confirm",
+      "CONFIRM": "Yes, delete",
+      "CANCEL": "No, keep it",
+      "SUCCESS": "Status deleted successfully",
+      "ERROR": "Could not delete the status"
+    }
+  },
+  "TICKET_AUTOMATION_RULES_SETTINGS": {
+    "HEADER": "Ticket automation",
+    "DESCRIPTION": "Automatically change ticket status/team, add labels or assign a responsible agent when a condition is met",
+    "NEW_BUTTON": "New automation",
+    "LOADING": "Loading automations",
+    "EMPTY": "No ticket automations yet",
+    "ACTIVE_LABEL": "Active",
+    "EVENTS": {
+      "STATUS_CHANGED": "Ticket status changed",
+      "LABEL_ADDED": "Label added to ticket"
+    },
+    "ACTIONS": {
+      "CHANGE_STATUS": "Change status",
+      "TRANSFER_TEAM": "Transfer team",
+      "ADD_LABEL": "Add label",
+      "ASSIGN_RESPONSIBLE": "Assign responsible"
+    },
+    "FORM": {
+      "NEW_TITLE": "New automation",
+      "EDIT_TITLE": "Edit automation",
+      "NAME_LABEL": "Name",
+      "NAME_PLACEHOLDER": "e.g. Move to support when tagged urgent",
+      "DESCRIPTION_LABEL": "Description",
+      "EVENT_LABEL": "When",
+      "CONDITIONS_TITLE": "Conditions",
+      "TO_STATUS_LABEL": "New status is",
+      "LABEL_ADDED_LABEL": "Label added is",
+      "CURRENT_STATUS_LABEL": "Only if current status is",
+      "CURRENT_TEAM_LABEL": "Only if current team is",
+      "SELECT_PLACEHOLDER": "Select an option",
+      "ANY_OPTION": "Any",
+      "ACTIONS_TITLE": "Then do this",
+      "ACTION_LABEL": "Action",
+      "STATUS_VALUE_LABEL": "New status",
+      "TEAM_VALUE_LABEL": "New team",
+      "LABEL_VALUE_LABEL": "Label",
+      "RESPONSIBLE_VALUE_LABEL": "Responsible agent",
+      "ADD_ACTION": "Add action",
+      "ACTIVE_LABEL": "Active",
+      "SUBMIT": "Save",
+      "CANCEL": "Cancel",
+      "SUCCESS": "Automation saved successfully",
+      "ERROR": "Could not save the automation"
+    },
+    "DELETE": {
+      "TITLE": "Delete automation",
+      "MESSAGE": "Are you sure you want to delete this automation?",
+      "PLACE_HOLDER": "Please type {ruleName} to confirm",
+      "CONFIRM": "Yes, delete",
+      "CANCEL": "No, keep it",
+      "SUCCESS": "Automation deleted successfully",
+      "ERROR": "Could not delete the automation"
     }
   }
 }
