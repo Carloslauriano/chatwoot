@@ -3,11 +3,17 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
                                        :timer_start, :timer_stop, :timeline, :audit_logs]
   before_action :check_authorization
 
-  # Sem team_id[]: retorna todos os tickets da conta (página "Tickets").
-  # Com team_id[]: filtra (usado pela página "Kanban", ex.: times do usuário logado).
+  # Sem filtros: retorna todos os tickets da conta (página "Tickets").
+  # team_id[]: usado pela página "Kanban". conversation_id/contact_id:
+  # usados para checar se já existe ticket vinculado (TicketsList,
+  # OpenTicketButton, LinkTicket) — sem isso, qualquer ticket da conta
+  # era retornado e o frontend pegava o primeiro, errado, da lista.
   def index
     @tickets = Current.account.tickets
     @tickets = @tickets.where(team_id: params[:team_id]) if params[:team_id].present?
+    @tickets = @tickets.where(conversation_id: params[:conversation_id]) if params[:conversation_id].present?
+    @tickets = @tickets.where(contact_id: params[:contact_id]) if params[:contact_id].present?
+    @tickets = @tickets.where.not(status_macro: params[:exclude_status]) if params[:exclude_status].present?
   end
 
   def show; end
@@ -96,14 +102,11 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
     end
   end
 
-  # Mescla os eventos internos do ticket com as mensagens reais da conversa
-  # de origem (US04) — sem isso, a timeline não mostrava o histórico da
-  # conversa que motivou o escalonamento, só os eventos criados depois do
-  # ticket existir.
   def timeline
-    ticket_events = @ticket.ticket_timeline_events.map { |event| serialize_ticket_event(event) }
-    conversation_events = @ticket.conversation.messages.chat.map { |message| serialize_message(message) }
-    @timeline_events = (ticket_events + conversation_events).sort_by { |event| event[:created_at] }.reverse
+    @timeline_events = @ticket.ticket_timeline_events
+                               .map { |event| serialize_ticket_event(event) }
+                               .sort_by { |event| event[:created_at] }
+                               .reverse
   end
 
   def audit_logs
@@ -176,19 +179,6 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
       autor_avatar_url: user_avatar_url_for(event.autor_id),
       payload: event.payload,
       created_at: event.created_at,
-    }
-  end
-
-  def serialize_message(message)
-    {
-      id: "message-#{message.id}",
-      tipo_evento: 'mensagem_cliente',
-      origem: 'chatwoot',
-      autor_id: nil,
-      autor_nome: message.incoming? ? nil : message.sender.try(:name),
-      autor_avatar_url: message.incoming? ? nil : message.sender.try(:avatar_url),
-      payload: { texto: message.content, incoming: message.incoming? },
-      created_at: message.created_at,
     }
   end
 
