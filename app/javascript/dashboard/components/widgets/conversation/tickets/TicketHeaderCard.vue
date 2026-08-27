@@ -15,6 +15,7 @@ import Label from 'dashboard/components-next/label/Label.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
+import AccordionItem from 'dashboard/components/Accordion/AccordionItem.vue';
 import {
   PRIORITY_COLOR,
   PRIORITY_ICON,
@@ -326,6 +327,25 @@ const askDeleteWorklog = worklog => {
 const formatWorklogDate = value =>
   value ? format(new Date(value), 'dd/MM/yyyy HH:mm') : '';
 
+const isWorklogsAccordionOpen = ref(false);
+
+const isArchiving = ref(false);
+const toggleArchive = async () => {
+  try {
+    isArchiving.value = true;
+    if (ticket.value.archived) {
+      await store.dispatch('tickets/unarchive', ticket.value.id);
+    } else {
+      await store.dispatch('tickets/archive', ticket.value.id);
+    }
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.HEADER.ARCHIVE_ERROR'));
+  } finally {
+    isArchiving.value = false;
+  }
+};
+
 onMounted(() => {
   if (!ticketStatuses.value.length) {
     store.dispatch('ticketStatuses/get');
@@ -392,6 +412,20 @@ onMounted(() => {
           />
         </template>
       </Label>
+      <Button
+        v-if="isAdmin"
+        faded
+        slate
+        size="small"
+        class="shrink-0"
+        :is-loading="isArchiving"
+        :label="
+          ticket.archived
+            ? t('TICKETS.HEADER.UNARCHIVE')
+            : t('TICKETS.HEADER.ARCHIVE')
+        "
+        @click="toggleArchive"
+      />
     </div>
 
     <!-- Status / Time -->
@@ -622,10 +656,18 @@ onMounted(() => {
     </div>
 
     <!-- Registros de tempo -->
-    <div v-if="ticket.worklogs?.length" class="flex flex-col gap-1">
-      <span class="text-xs font-medium text-n-slate-11">
-        {{ t('TICKETS.MANUAL_TIME.LIST_TITLE') }}
-      </span>
+    <AccordionItem
+      v-if="ticket.worklogs?.length"
+      :title="t('TICKETS.MANUAL_TIME.LIST_TITLE')"
+      :is-open="isWorklogsAccordionOpen"
+      compact
+      @toggle="isWorklogsAccordionOpen = !isWorklogsAccordionOpen"
+    >
+      <template #button>
+        <span class="text-xs font-medium text-n-slate-11">
+          {{ formatDuration(ticket.tempo_liquido_segundos || 0) }}
+        </span>
+      </template>
       <ul class="flex flex-col divide-y divide-n-weak">
         <li
           v-for="worklog in ticket.worklogs"
@@ -673,7 +715,7 @@ onMounted(() => {
           </div>
         </li>
       </ul>
-    </div>
+    </AccordionItem>
 
     <woot-modal
       v-model:show="showManualTimeModal"

@@ -15,6 +15,7 @@ json.team_name resource.team&.name
 json.ticket_status_id resource.ticket_status_id
 json.ticket_status_name resource.ticket_status&.name
 json.status_macro resource.status_macro
+json.archived resource.archived
 json.resolvido_em resource.resolvido_em
 json.tempo_bruto_segundos resource.tempo_bruto_segundos
 json.tempo_liquido_segundos resource.tempo_liquido_segundos

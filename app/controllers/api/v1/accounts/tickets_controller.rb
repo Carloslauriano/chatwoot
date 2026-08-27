@@ -1,6 +1,6 @@
 class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
   before_action :fetch_ticket, only: [:show, :update, :link_conversation, :transfer, :ticket_status,
-                                       :timer_start, :timer_stop, :timeline, :audit_logs]
+                                       :timer_start, :timer_stop, :timeline, :audit_logs, :archive, :unarchive]
   before_action :check_authorization
 
   # Sem filtros: retorna todos os tickets da conta (página "Tickets").
@@ -14,6 +14,7 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
     @tickets = @tickets.where(conversation_id: params[:conversation_id]) if params[:conversation_id].present?
     @tickets = @tickets.where(contact_id: params[:contact_id]) if params[:contact_id].present?
     @tickets = @tickets.where.not(status_macro: params[:exclude_status]) if params[:exclude_status].present?
+    @tickets = @tickets.where(archived: params[:archived].present? ? ActiveModel::Type::Boolean.new.cast(params[:archived]) : false)
   end
 
   def show; end
@@ -111,6 +112,18 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
 
   def audit_logs
     @audit_logs = @ticket.ticket_audit_logs.order(created_at: :desc)
+  end
+
+  # Admin-only (ver TicketPolicy#archive?). Ticket arquivado some de todas as
+  # listas (Kanban, página Tickets, widgets) via filtro padrão do #index.
+  def archive
+    @ticket.update!(archived: true)
+    log_audit!(@ticket, 'archived')
+  end
+
+  def unarchive
+    @ticket.update!(archived: false)
+    log_audit!(@ticket, 'unarchived')
   end
 
   private

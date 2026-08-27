@@ -656,7 +656,10 @@
       "MEMBER_ADD_ERROR": "Não foi possível adicionar o membro",
       "MEMBER_REMOVE_ERROR": "Não foi possível remover o membro",
       "LABELS_UPDATE_ERROR": "Não foi possível atualizar as etiquetas",
-      "DESCRIPTION_UPDATE_ERROR": "Não foi possível atualizar a descrição"
+      "DESCRIPTION_UPDATE_ERROR": "Não foi possível atualizar a descrição",
+      "ARCHIVE": "Arquivar",
+      "UNARCHIVE": "Desarquivar",
+      "ARCHIVE_ERROR": "Não foi possível arquivar/desarquivar o ticket"
     },
     "TABS": {
       "TIMELINE": "Linha do tempo",

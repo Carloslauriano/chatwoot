@@ -163,6 +163,8 @@ Rails.application.routes.draw do
               post 'timer/stop', action: :timer_stop, as: :timer_stop
               get :timeline
               get :audit_logs
+              patch :archive
+              patch :unarchive
             end
             resources :assignments, only: [:create, :update, :destroy], controller: 'ticket_assignments'
             resources :worklogs, only: [:create, :update, :destroy]

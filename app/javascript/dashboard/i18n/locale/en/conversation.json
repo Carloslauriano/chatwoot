@@ -695,7 +695,10 @@
       "MEMBER_ADD_ERROR": "Could not add the member",
       "MEMBER_REMOVE_ERROR": "Could not remove the member",
       "LABELS_UPDATE_ERROR": "Could not update the labels",
-      "DESCRIPTION_UPDATE_ERROR": "Could not update the description"
+      "DESCRIPTION_UPDATE_ERROR": "Could not update the description",
+      "ARCHIVE": "Archive",
+      "UNARCHIVE": "Unarchive",
+      "ARCHIVE_ERROR": "Could not archive/unarchive the ticket"
     },
     "TABS": {
       "TIMELINE": "Timeline",

@@ -107,6 +107,14 @@ class TicketsAPI extends ApiClient {
   updateLabels(ticketId, labels) {
     return axios.post(`${this.url}/${ticketId}/labels`, { labels });
   }
+
+  archive(ticketId) {
+    return axios.patch(`${this.url}/${ticketId}/archive`);
+  }
+
+  unarchive(ticketId) {
+    return axios.patch(`${this.url}/${ticketId}/unarchive`);
+  }
 }
 
 export default new TicketsAPI();

@@ -48,4 +48,18 @@ class TicketPolicy < ApplicationPolicy
   def audit_logs?
     true
   end
+
+  def archive?
+    administrator?
+  end
+
+  def unarchive?
+    administrator?
+  end
+
+  private
+
+  def administrator?
+    account_user&.administrator?
+  end
 end
