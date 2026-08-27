@@ -12,7 +12,7 @@ module Integrations::Cloudflare::RealtimeKitCredentialsValidator
   def self.validate(account_id, app_id, api_token)
     return failure(:missing_credentials) if account_id.blank? || app_id.blank? || api_token.blank?
 
-    token_result = validate_token(api_token)
+    token_result = validate_token(account_id, api_token)
     return token_result unless token_result.success?
 
     validate_realtimekit_app(account_id, app_id, api_token)
@@ -21,8 +21,12 @@ module Integrations::Cloudflare::RealtimeKitCredentialsValidator
     failure(:verification_failed)
   end
 
-  def self.validate_token(api_token)
-    response = connection.get("#{BASE_URL}/user/tokens/verify") do |req|
+  # RealtimeKit tokens are account-owned tokens (scoped to a Cloudflare
+  # account, not a user), so they must be verified via the account-scoped
+  # endpoint. /user/tokens/verify only works for tokens owned by a Cloudflare
+  # user and reports account-owned tokens as invalid even when they're active.
+  def self.validate_token(account_id, api_token)
+    response = connection.get("#{BASE_URL}/accounts/#{account_id}/tokens/verify") do |req|
       req.headers['Authorization'] = "Bearer #{api_token}"
     end
 

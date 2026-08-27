@@ -4,7 +4,7 @@ RSpec.describe Integrations::Cloudflare::RealtimeKitCredentialsValidator do
   let(:account_id) { 'account_id' }
   let(:app_id) { 'app_id' }
   let(:api_token) { 'api_token' }
-  let(:token_verify_url) { 'https://api.cloudflare.com/client/v4/user/tokens/verify' }
+  let(:token_verify_url) { "https://api.cloudflare.com/client/v4/accounts/#{account_id}/tokens/verify" }
   let(:apps_url) { "https://api.cloudflare.com/client/v4/accounts/#{account_id}/realtime/kit/apps" }
   let(:apps_page_size) { described_class::APPS_PAGE_SIZE }
 
