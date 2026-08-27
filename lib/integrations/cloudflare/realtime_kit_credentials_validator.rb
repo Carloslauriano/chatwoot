@@ -44,7 +44,7 @@ module Integrations::Cloudflare::RealtimeKitCredentialsValidator
       return failure(:invalid_account_or_permissions) unless response.status == 200
 
       body = parse_response(response)
-      apps = body['data'] || []
+      apps = body['result'] || []
       return success if apps.any? { |app| app['id'] == app_id }
       break unless next_apps_page?(body, page_no, apps)
 
