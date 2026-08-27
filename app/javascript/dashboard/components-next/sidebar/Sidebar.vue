@@ -1040,7 +1040,9 @@ const menuItems = computed(() => {
       </div>
       <div
         class="flex gap-2"
-        :class="isEffectivelyCollapsed ? 'flex-col items-center' : 'px-2'"
+        :class="
+          isEffectivelyCollapsed ? 'flex-col items-center' : 'px-2 justify-center'
+        "
       >
         <Button
           v-if="!isMobile"
