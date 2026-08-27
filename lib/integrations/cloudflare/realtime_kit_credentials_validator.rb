@@ -48,7 +48,7 @@ module Integrations::Cloudflare::RealtimeKitCredentialsValidator
       return failure(:invalid_account_or_permissions) unless response.status == 200
 
       body = parse_response(response)
-      apps = body['result'] || []
+      apps = body['data'] || []
       return success if apps.any? { |app| app['id'] == app_id }
       break unless next_apps_page?(body, page_no, apps)
 
@@ -69,7 +69,7 @@ module Integrations::Cloudflare::RealtimeKitCredentialsValidator
   private_class_method :fetch_realtimekit_apps
 
   def self.next_apps_page?(body, page_no, apps)
-    total_count = body.dig('paging', 'total_count') || body.dig('result_info', 'total_count')
+    total_count = body.dig('paging', 'total_count')
     return page_no * APPS_PAGE_SIZE < total_count.to_i if total_count.present?
 
     apps.size == APPS_PAGE_SIZE

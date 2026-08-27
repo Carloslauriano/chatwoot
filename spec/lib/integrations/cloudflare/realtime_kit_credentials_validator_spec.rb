@@ -91,6 +91,6 @@ RSpec.describe Integrations::Cloudflare::RealtimeKitCredentialsValidator do
   end
 
   def apps_response_body(apps, total_count: apps.size)
-    { success: true, result: apps.map(&:stringify_keys), result_info: { total_count: total_count } }
+    { success: true, data: apps.map(&:stringify_keys), paging: { total_count: total_count } }
   end
 end
