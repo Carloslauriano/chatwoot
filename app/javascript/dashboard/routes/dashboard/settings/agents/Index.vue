@@ -250,6 +250,12 @@ const confirmDeletion = () => {
                 >
                   {{ $t('AGENT_MGMT.LIST.VERIFICATION_PENDING') }}
                 </span>
+                <template v-if="agent.archived">
+                  <div class="w-px h-3 bg-n-strong rounded-lg" />
+                  <span class="text-body-main text-n-ruby-11">
+                    {{ $t('AGENT_MGMT.LIST.ARCHIVED') }}
+                  </span>
+                </template>
               </div>
             </div>
           </div>
