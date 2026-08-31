@@ -1,6 +1,7 @@
 class Api::V1::Accounts::InboxMembersController < Api::V1::Accounts::BaseController
   before_action :fetch_inbox
   before_action :current_agents_ids, only: [:create, :update]
+  before_action :validate_new_members_not_archived, only: [:create, :update]
 
   def show
     authorize @inbox, :show?
@@ -56,6 +57,13 @@ class Api::V1::Accounts::InboxMembersController < Api::V1::Accounts::BaseControl
 
   def current_agents_ids
     @current_agents_ids = @inbox.members.pluck(:id)
+  end
+
+  def validate_new_members_not_archived
+    new_member_ids = params[:user_ids] - @current_agents_ids
+    archived_ids = AccountUser.where(account_id: Current.account.id, user_id: new_member_ids, archived: true).pluck(:user_id)
+
+    render json: { error: 'Invalid User IDs' }, status: :unprocessable_entity and return if archived_ids.present?
   end
 
   def fetch_inbox

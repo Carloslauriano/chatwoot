@@ -2,6 +2,7 @@ class Api::V1::Accounts::TeamMembersController < Api::V1::Accounts::BaseControll
   before_action :fetch_team
   before_action :check_authorization
   before_action :validate_member_id_params, only: [:create, :update, :destroy]
+  before_action :validate_new_members_not_archived, only: [:create, :update]
 
   def index
     @team_members = @team.team_members.map(&:user)
@@ -51,5 +52,12 @@ class Api::V1::Accounts::TeamMembersController < Api::V1::Accounts::BaseControll
     invalid_ids = params[:user_ids].map(&:to_i) - @team.account.user_ids
 
     render json: { error: 'Invalid User IDs' }, status: :unauthorized and return if invalid_ids.present?
+  end
+
+  def validate_new_members_not_archived
+    new_member_ids = params[:user_ids] - current_members_ids
+    archived_ids = AccountUser.where(account_id: @team.account_id, user_id: new_member_ids, archived: true).pluck(:user_id)
+
+    render json: { error: 'Invalid User IDs' }, status: :unprocessable_entity and return if archived_ids.present?
   end
 end
