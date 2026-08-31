@@ -46,7 +46,7 @@ class Integrations::Dyte::ProcessorService
         inbox_id: conversation.inbox_id,
         message_type: :outgoing,
         content_type: :integrations,
-        content: title,
+        content: message_content(meeting['id'], title),
         content_attributes: {
           type: 'dyte',
           data: {
@@ -56,6 +56,19 @@ class Integrations::Dyte::ProcessorService
         sender: agent
       }
     )
+  end
+
+  # Channels other than the web widget don't render the Dyte message bubble
+  # (Vue-only UI), so the customer needs a plain-text link they can actually
+  # click — the widget already has its own authenticated join flow.
+  def message_content(meeting_id, title)
+    return title if conversation.inbox.web_widget?
+
+    "#{title} #{public_join_url(meeting_id)}"
+  end
+
+  def public_join_url(meeting_id)
+    "#{ENV.fetch('FRONTEND_URL', nil)}/public/api/v1/dyte_meetings/#{conversation.uuid}/#{meeting_id}/join"
   end
 
   def avatar_url(user)

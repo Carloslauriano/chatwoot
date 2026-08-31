@@ -653,6 +653,11 @@ Rails.application.routes.draw do
     end
   end
 
+  # Renders an HTML page (not JSON), so it lives outside the
+  # `defaults: { format: 'json' }` namespace above, same as the `hc/:slug`
+  # routes below.
+  get 'dyte_meetings/:conversation_uuid/:meeting_id/join', to: 'public/api/v1/dyte_meetings#join', as: :dyte_meeting_join
+
   get 'hc/:slug', to: 'public/api/v1/portals#show'
   get 'hc/:slug/sitemap.xml', to: 'public/api/v1/portals#sitemap'
   get 'hc/:slug/:locale', to: 'public/api/v1/portals#show', as: :public_portal_locale

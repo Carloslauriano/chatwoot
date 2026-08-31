@@ -39,6 +39,18 @@ describe Integrations::Dyte::ProcessorService do
         expect(response[:content]).to eq("#{agent.available_name} has started a meeting")
         expect(conversation.reload.messages.last.content_type).to eq('integrations')
       end
+
+      context 'when the conversation is on a non-widget channel (e.g. Channel::Api)' do
+        let(:api_inbox) { create(:channel_api, account: account).inbox }
+        let(:conversation) { create(:conversation, account: account, status: :pending, inbox: api_inbox) }
+
+        it 'appends a public join link to the message content' do
+          response = processor.create_a_meeting(agent)
+          expected_link = "#{ENV.fetch('FRONTEND_URL', nil)}/public/api/v1/dyte_meetings/#{conversation.uuid}/meeting_id/join"
+
+          expect(response[:content]).to eq("#{agent.available_name} has started a meeting #{expected_link}")
+        end
+      end
     end
 
     context 'when the API response is errored' do
