@@ -13,6 +13,7 @@ class AccountUserDashboard < Administrate::BaseDashboard
     inviter: Field::BelongsToSearch.with_options(class_name: 'User', searchable: true, searchable_field: [:name, :email, :id], order: 'id DESC'),
     id: Field::Number,
     role: Field::Select.with_options(collection: AccountUser.roles.keys),
+    archived: Field::Boolean,
     created_at: Field::DateTime,
     updated_at: Field::DateTime
   }.freeze
@@ -27,6 +28,7 @@ class AccountUserDashboard < Administrate::BaseDashboard
     user
     inviter
     role
+    archived
   ].freeze
 
   # SHOW_PAGE_ATTRIBUTES
@@ -37,6 +39,7 @@ class AccountUserDashboard < Administrate::BaseDashboard
     inviter
     id
     role
+    archived
     created_at
     updated_at
   ].freeze
@@ -48,6 +51,7 @@ class AccountUserDashboard < Administrate::BaseDashboard
     account
     user
     role
+    archived
   ].freeze
 
   # COLLECTION_FILTERS
@@ -60,7 +64,9 @@ class AccountUserDashboard < Administrate::BaseDashboard
   #   COLLECTION_FILTERS = {
   #     open: ->(resources) { resources.where(open: true) }
   #   }.freeze
-  COLLECTION_FILTERS = {}.freeze
+  COLLECTION_FILTERS = {
+    archived: ->(resources) { resources.where(archived: true) }
+  }.freeze
 
   # Overwrite this method to customize how account users are displayed
   # across all pages of the admin dashboard.
