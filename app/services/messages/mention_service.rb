@@ -40,7 +40,8 @@ class Messages::MentionService
   def valid_mentionable_user_ids
     @valid_mentionable_user_ids ||= begin
       inbox = message.inbox
-      inbox.account.administrators.pluck(:id) + inbox.members.pluck(:id)
+      non_archived_member_ids = AccountUser.where(account_id: inbox.account_id, user_id: inbox.members.select(:id)).not_archived.pluck(:user_id)
+      inbox.account.administrators.pluck(:id) + non_archived_member_ids
     end
   end
 

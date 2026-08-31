@@ -10,7 +10,7 @@ class Api::V1::Accounts::AssignableAgentsController < Api::V1::Accounts::BaseCon
       member_ids
     end
     agent_ids = agent_ids.inject(:&)
-    agents = Current.account.users.where(id: agent_ids)
+    agents = Current.account.users.where(id: agent_ids, account_users: { archived: false })
     @assignable_agents = (agents + Current.account.administrators).uniq
     @agent_bots = @include_agent_bots ? AgentBot.accessible_to(Current.account) : []
   end

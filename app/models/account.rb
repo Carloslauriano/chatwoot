@@ -126,11 +126,11 @@ class Account < ApplicationRecord
   after_destroy :remove_account_sequences
 
   def agents
-    users.where(account_users: { role: :agent })
+    users.where(account_users: { role: :agent, archived: false })
   end
 
   def administrators
-    users.where(account_users: { role: :administrator })
+    users.where(account_users: { role: :administrator, archived: false })
   end
 
   def all_conversation_tags
