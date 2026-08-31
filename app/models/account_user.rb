@@ -4,6 +4,7 @@
 #
 #  id                       :bigint           not null, primary key
 #  active_at                :datetime
+#  archived                 :boolean          default(FALSE), not null
 #  auto_offline             :boolean          default(TRUE), not null
 #  availability             :integer          default("online"), not null
 #  role                     :integer          default("agent")
@@ -18,6 +19,7 @@
 # Indexes
 #
 #  index_account_users_on_account_id                (account_id)
+#  index_account_users_on_account_id_and_archived   (account_id,archived)
 #  index_account_users_on_agent_capacity_policy_id  (agent_capacity_policy_id)
 #  index_account_users_on_custom_role_id            (custom_role_id)
 #  index_account_users_on_user_id                   (user_id)
@@ -34,6 +36,8 @@ class AccountUser < ApplicationRecord
   enum role: { agent: 0, administrator: 1 }
   enum availability: { online: 0, offline: 1, busy: 2 }
 
+  scope :not_archived, -> { where(archived: false) }
+
   accepts_nested_attributes_for :account
 
   after_create_commit :notify_creation, :create_notification_setting
@@ -43,6 +47,7 @@ class AccountUser < ApplicationRecord
   after_update_commit :invalidate_filtered_unread_count_visibility_update, if: :filtered_unread_count_visibility_changed?
 
   validates :user_id, uniqueness: { scope: :account_id }
+  validate :prevent_archiving_last_administrator, if: -> { archived_changed? && archived? }
 
   def create_notification_setting
     setting = user.notification_settings.new(account_id: account.id)
@@ -69,6 +74,13 @@ class AccountUser < ApplicationRecord
   end
 
   private
+
+  def prevent_archiving_last_administrator
+    return unless administrator?
+    return if account.account_users.administrator.not_archived.where.not(id: id).exists?
+
+    errors.add(:archived, 'não pode arquivar o último administrador ativo da conta')
+  end
 
   def notify_creation
     Rails.configuration.dispatcher.dispatch(AGENT_ADDED, Time.zone.now, account: account)
