@@ -4,6 +4,7 @@ json.account_id Current.account&.id
 json.availability_status resource.availability_status
 json.auto_offline resource.auto_offline
 json.confirmed resource.confirmed?
+json.archived resource.current_account_user&.archived || false
 json.email resource.email
 json.provider resource.provider
 json.available_name resource.available_name
