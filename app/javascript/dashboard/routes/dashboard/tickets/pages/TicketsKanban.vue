@@ -217,7 +217,7 @@ onMounted(async () => {
       v-model:show="showTicketModal"
       :on-close="closeTicketModal"
       size="medium"
-      class="!items-start [&>div]:!top-12 [&>div]:sticky"
+      class="!items-start [&>div]:!top-12 [&>div]:sticky [&>div]:!max-h-[calc(100vh-6rem)]"
     >
       <TicketQuickViewModal
         v-if="openTicketId"

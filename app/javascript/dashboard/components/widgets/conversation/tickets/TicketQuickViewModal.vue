@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import TicketsAPI from 'dashboard/api/tickets';
@@ -84,21 +84,11 @@ onMounted(() => {
   loadActivity();
 });
 
-const headerTitle = computed(() =>
-  ticket.value
-    ? t('TICKETS.QUICK_VIEW.TITLE_WITH_NAME', {
-        id: props.ticketId,
-        titulo: ticket.value.titulo,
-      })
-    : t('TICKETS.QUICK_VIEW.TITLE', { id: props.ticketId })
-);
 </script>
 
 <template>
   <div class="flex flex-col h-auto overflow-auto">
-    <woot-modal-header :header-title="headerTitle" />
-
-    <div class="flex flex-col gap-6 px-8 pb-6 lg:flex-row">
+    <div class="flex flex-col gap-6 px-8 pt-8 pb-6 lg:flex-row">
       <div v-if="isLoading" class="flex justify-center flex-1 p-8">
         <Spinner />
       </div>
