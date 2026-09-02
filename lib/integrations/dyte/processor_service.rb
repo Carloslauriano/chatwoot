@@ -68,7 +68,10 @@ class Integrations::Dyte::ProcessorService
   end
 
   def public_join_url(meeting_id)
-    "#{ENV.fetch('FRONTEND_URL', nil)}/public/api/v1/dyte_meetings/#{conversation.uuid}/#{meeting_id}/join"
+    Rails.application.routes.url_helpers.dyte_meeting_join_url(
+      conversation_uuid: conversation.uuid,
+      meeting_id: meeting_id
+    )
   end
 
   def avatar_url(user)
