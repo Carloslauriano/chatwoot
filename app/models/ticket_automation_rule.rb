@@ -4,7 +4,7 @@
 # como o AutomationRule nativo (sem operadores/atributos configuráveis) —
 # escopo fechado no que foi pedido; ver TicketAutomationRules::RunnerService.
 class TicketAutomationRule < ApplicationRecord
-  EVENTS = %w[ticket_status_changed ticket_label_added].freeze
+  EVENTS = %w[ticket_status_changed ticket_label_added ticket_team_changed].freeze
   ACTION_NAMES = %w[change_status transfer_team add_label assign_responsible].freeze
 
   belongs_to :account

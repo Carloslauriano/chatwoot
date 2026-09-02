@@ -38,6 +38,8 @@ module TicketAutomationRules
         return false if present_and_different?(conditions['to_ticket_status_id'], @ticket.ticket_status_id)
       when 'ticket_label_added'
         return false if conditions['label'].present? && conditions['label'] != @label
+      when 'ticket_team_changed'
+        return false if present_and_different?(conditions['to_team_id'], @ticket.team_id)
       end
 
       return false if present_and_different?(conditions['team_id'], @ticket.team_id)

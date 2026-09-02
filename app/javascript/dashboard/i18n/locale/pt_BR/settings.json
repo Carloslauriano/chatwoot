@@ -1272,7 +1272,8 @@
     "ACTIVE_LABEL": "Ativa",
     "EVENTS": {
       "STATUS_CHANGED": "Status do ticket mudou",
-      "LABEL_ADDED": "Etiqueta adicionada ao ticket"
+      "LABEL_ADDED": "Etiqueta adicionada ao ticket",
+      "TEAM_CHANGED": "Time do ticket mudou"
     },
     "ACTIONS": {
       "CHANGE_STATUS": "Mudar status",
@@ -1289,6 +1290,7 @@
       "EVENT_LABEL": "Quando",
       "CONDITIONS_TITLE": "Condições",
       "TO_STATUS_LABEL": "O novo status for",
+      "TO_TEAM_LABEL": "O novo time for",
       "LABEL_ADDED_LABEL": "A etiqueta adicionada for",
       "CURRENT_STATUS_LABEL": "Só se o status atual for",
       "CURRENT_TEAM_LABEL": "Só se o time atual for",

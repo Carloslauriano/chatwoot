@@ -32,6 +32,7 @@ const formState = reactive({
   active: true,
   conditions: {
     to_ticket_status_id: '',
+    to_team_id: '',
     label: '',
     team_id: '',
     ticket_status_id: '',
@@ -42,6 +43,7 @@ const formState = reactive({
 const EVENT_OPTIONS = [
   { id: 'ticket_status_changed', name: 'STATUS_CHANGED' },
   { id: 'ticket_label_added', name: 'LABEL_ADDED' },
+  { id: 'ticket_team_changed', name: 'TEAM_CHANGED' },
 ];
 
 const ACTION_OPTIONS = [
@@ -58,6 +60,7 @@ const resetForm = () => {
   formState.active = true;
   formState.conditions = {
     to_ticket_status_id: '',
+    to_team_id: '',
     label: '',
     team_id: '',
     ticket_status_id: '',
@@ -79,6 +82,7 @@ const openEditModal = rule => {
   formState.active = rule.active;
   formState.conditions = {
     to_ticket_status_id: rule.conditions?.to_ticket_status_id || '',
+    to_team_id: rule.conditions?.to_team_id || '',
     label: rule.conditions?.label || '',
     team_id: rule.conditions?.team_id || '',
     ticket_status_id: rule.conditions?.ticket_status_id || '',
@@ -99,6 +103,9 @@ const isSubmitDisabled = computed(() => {
   if (!formState.name.trim()) return true;
   if (formState.eventName === 'ticket_status_changed') {
     return !formState.conditions.to_ticket_status_id;
+  }
+  if (formState.eventName === 'ticket_team_changed') {
+    return !formState.conditions.to_team_id;
   }
   return !formState.conditions.label.trim();
 });
@@ -121,6 +128,8 @@ const submit = async () => {
     conditions.to_ticket_status_id = Number(
       formState.conditions.to_ticket_status_id
     );
+  } else if (formState.eventName === 'ticket_team_changed') {
+    conditions.to_team_id = Number(formState.conditions.to_team_id);
   } else {
     conditions.label = formState.conditions.label.trim();
   }
@@ -338,6 +347,28 @@ onMounted(() => {
                 :value="status.id"
               >
                 {{ status.name }}
+              </option>
+            </select>
+          </label>
+
+          <label
+            v-else-if="formState.eventName === 'ticket_team_changed'"
+            class="flex flex-col gap-1"
+          >
+            <span class="text-xs text-n-slate-11">
+              {{ t('TICKET_AUTOMATION_RULES_SETTINGS.FORM.TO_TEAM_LABEL') }}
+            </span>
+            <select
+              v-model="formState.conditions.to_team_id"
+              class="text-sm rounded-lg border border-n-weak"
+            >
+              <option value="">
+                {{
+                  t('TICKET_AUTOMATION_RULES_SETTINGS.FORM.SELECT_PLACEHOLDER')
+                }}
+              </option>
+              <option v-for="team in teams" :key="team.id" :value="team.id">
+                {{ team.name }}
               </option>
             </select>
           </label>

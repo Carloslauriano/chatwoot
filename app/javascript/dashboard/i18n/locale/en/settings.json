@@ -1272,7 +1272,8 @@
     "ACTIVE_LABEL": "Active",
     "EVENTS": {
       "STATUS_CHANGED": "Ticket status changed",
-      "LABEL_ADDED": "Label added to ticket"
+      "LABEL_ADDED": "Label added to ticket",
+      "TEAM_CHANGED": "Ticket team changed"
     },
     "ACTIONS": {
       "CHANGE_STATUS": "Change status",
@@ -1289,6 +1290,7 @@
       "EVENT_LABEL": "When",
       "CONDITIONS_TITLE": "Conditions",
       "TO_STATUS_LABEL": "New status is",
+      "TO_TEAM_LABEL": "New team is",
       "LABEL_ADDED_LABEL": "Label added is",
       "CURRENT_STATUS_LABEL": "Only if current status is",
       "CURRENT_TEAM_LABEL": "Only if current team is",

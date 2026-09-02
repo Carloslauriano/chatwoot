@@ -59,6 +59,7 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
     ActiveRecord::Base.transaction do
       @ticket.active_timers.find_each { |timer| pause_timer_without_worklog(timer) }
       @ticket.update!(setor_atual: setor_destino, team: team_destino || @ticket.team)
+      TicketAutomationRules::RunnerService.new(@ticket, event_name: 'ticket_team_changed').perform if team_destino
       @ticket.ticket_timeline_events.create!(
         account: Current.account, tipo_evento: :setor_changed, origem: :interno, autor_id: Current.user.id,
         payload: { setor_origem: setor_origem, setor_destino: setor_destino }

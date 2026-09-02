@@ -30,7 +30,7 @@ class Api::V1::Accounts::TicketAutomationRulesController < Api::V1::Accounts::Ba
   def ticket_automation_rule_params
     params.require(:ticket_automation_rule).permit(
       :name, :description, :event_name, :active,
-      conditions: [:to_ticket_status_id, :team_id, :label, :ticket_status_id],
+      conditions: [:to_ticket_status_id, :to_team_id, :team_id, :label, :ticket_status_id],
       actions: [:action_name, :ticket_status_id, :team_id, :label, :responsavel_id]
     )
   end
