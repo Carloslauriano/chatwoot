@@ -31,6 +31,7 @@
     "LOADING_INBOXES": "Carregando caixas de entrada",
     "LOADING_CONVERSATIONS": "Carregando conversas",
     "CANNOT_REPLY": "Você não pode responder porque",
+    "PRIORITY_GATING_BANNER": "Você não pode responder até que esta conversa tenha uma prioridade ou um agente atribuído.",
     "24_HOURS_WINDOW": "Restrições de janela de mensagem de 24 horas",
     "48_HOURS_WINDOW": "Restrição da janela de mensagens de 48 horas",
     "API_HOURS_WINDOW": "Você só pode responder a esta conversa em {hours} horas",
@@ -235,6 +236,7 @@
       "MESSAGING_RESTRICTED": "Você não pode responder esta conversa",
       "MESSAGING_RESTRICTED_WHATSAPP": "Você só pode responder usando uma mensagem de modelo devido à restrição da janela de 24 horas",
       "MESSAGING_RESTRICTED_API": "Você só pode responder usando uma mensagem de template devido à restrição da janela de mensagens",
+      "MESSAGING_RESTRICTED_PRIORITY": "Defina uma prioridade ou um agente atribuído para esta conversa antes de responder",
       "MESSAGE_SIGNATURE_NOT_CONFIGURED": "A assinatura da mensagem não está configurada. Por favor, configure-a nas configurações do perfil.",
       "COPILOT_MSG_INPUT": "Forneça instruções adicionais ao Copiloto ou pergunte algo mais... Pressione Enter para enviar",
       "CLICK_HERE": "Clique aqui para atualizar",
@@ -293,6 +295,7 @@
     "CHANGE_STATUS": "Estado da conversa mudou",
     "CHANGE_STATUS_FAILED": "Mudança de status da conversa falhou",
     "CHANGE_AGENT": "Novo agente atribuído",
+    "CHANGE_AGENT_ERROR": "Não foi possível atribuir este agente, tente novamente",
     "CHANGE_AGENT_FAILED": "Falha ao atribuir outro agente",
     "ASSIGN_LABEL_SUCCESFUL": "Etiqueta atribuída com sucesso",
     "ASSIGN_LABEL_FAILED": "Falha ao atribuir etiqueta",
@@ -544,6 +547,10 @@
       "ACTIVITY": "Atividade"
     },
     "KANBAN": {
+      "NEW_TICKET": "Novo ticket",
+      "CREATE_MODAL": {
+        "TITLE": "Novo ticket"
+      },
       "FILTER": {
         "TOOLTIP": "Filtrar e ordenar",
         "MINE": "Meus times",
@@ -669,7 +676,8 @@
       "EMPTY": "Ainda não há atividade",
       "ORIGIN": {
         "LABEL": "Ticket criado",
-        "FROM_CONVERSATION": "a partir da conversa #{id}"
+        "FROM_CONVERSATION": "a partir da conversa #{id}",
+        "CREATED_STANDALONE": "criado diretamente (sem conversa)"
       },
       "EVENTS": {
         "CUSTOMER_MESSAGE": "Cliente",

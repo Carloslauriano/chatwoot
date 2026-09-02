@@ -261,6 +261,9 @@ export default {
         if (this.isAPIInbox) {
           return this.$t('CONVERSATION.FOOTER.MESSAGING_RESTRICTED_API');
         }
+        if (this.isPriorityGatingBlocked) {
+          return this.$t('CONVERSATION.FOOTER.MESSAGING_RESTRICTED_PRIORITY');
+        }
         return this.$t('CONVERSATION.FOOTER.MESSAGING_RESTRICTED');
       }
       return this.isPrivate
@@ -489,10 +492,15 @@ export default {
     },
     isEditorDisabled() {
       return (
-        (this.isAWhatsAppChannel || this.isAPIInbox) &&
-        !this.isOnPrivateNote &&
-        !this.currentChat.can_reply
+        ((this.isAWhatsAppChannel || this.isAPIInbox) &&
+          !this.isOnPrivateNote &&
+          !this.currentChat.can_reply) ||
+        this.isPriorityGatingBlocked
       );
+    },
+    isPriorityGatingBlocked() {
+      if (this.isOnPrivateNote) return false;
+      return !!this.currentChat?.priority_gate_blocked_for_reply;
     },
   },
   watch: {

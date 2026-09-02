@@ -1,5 +1,6 @@
 class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::Conversations::BaseController
   before_action :ensure_api_inbox, only: :update
+  before_action :ensure_conversation_prioritized, only: :create
 
   def index
     @messages = message_finder.perform
@@ -92,5 +93,13 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   def ensure_api_inbox
     # Only API inboxes can update messages
     render json: { error: 'Message status update is only allowed for API inboxes' }, status: :forbidden unless @conversation.inbox.api?
+  end
+
+  def ensure_conversation_prioritized
+    return unless Current.originated_from_ui == true
+    return if ActiveModel::Type::Boolean.new.cast(params[:private])
+    return unless @conversation.priority_gate_blocked_for_reply?
+
+    render json: { error: I18n.t('errors.conversations.workflow.priority_required_for_reply') }, status: :unprocessable_entity
   end
 end

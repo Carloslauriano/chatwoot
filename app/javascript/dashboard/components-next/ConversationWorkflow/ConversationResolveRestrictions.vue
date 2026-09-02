@@ -11,6 +11,7 @@ const { currentAccount, updateAccount } = useAccount();
 
 const requireLabelBeforeResolve = ref(false);
 const requirePriorityBeforeResolve = ref(false);
+const requireAssigneeBeforeResolve = ref(false);
 const disableSnooze = ref(false);
 const disablePending = ref(false);
 const isSubmitting = ref(false);
@@ -22,11 +23,13 @@ watch(
   ({
     require_label_before_resolve,
     require_priority_before_resolve,
+    require_assignee_before_resolve,
     disable_snooze,
     disable_pending,
   } = {}) => {
     requireLabelBeforeResolve.value = !!require_label_before_resolve;
     requirePriorityBeforeResolve.value = !!require_priority_before_resolve;
+    requireAssigneeBeforeResolve.value = !!require_assignee_before_resolve;
     disableSnooze.value = !!disable_snooze;
     disablePending.value = !!disable_pending;
   },
@@ -39,6 +42,8 @@ const hasChanges = computed(() => {
       !!savedSettings.value.require_label_before_resolve ||
     requirePriorityBeforeResolve.value !==
       !!savedSettings.value.require_priority_before_resolve ||
+    requireAssigneeBeforeResolve.value !==
+      !!savedSettings.value.require_assignee_before_resolve ||
     disableSnooze.value !== !!savedSettings.value.disable_snooze ||
     disablePending.value !== !!savedSettings.value.disable_pending
   );
@@ -51,6 +56,7 @@ const handleSave = async () => {
       {
         require_label_before_resolve: requireLabelBeforeResolve.value,
         require_priority_before_resolve: requirePriorityBeforeResolve.value,
+        require_assignee_before_resolve: requireAssigneeBeforeResolve.value,
         disable_snooze: disableSnooze.value,
         disable_pending: disablePending.value,
       },
@@ -100,6 +106,16 @@ const handleSave = async () => {
             }}
           </span>
           <Switch v-model="requirePriorityBeforeResolve" />
+        </div>
+        <div class="p-3 h-12 flex items-center justify-between">
+          <span>
+            {{
+              t(
+                'CONVERSATION_WORKFLOW.RESOLVE_RESTRICTIONS.REQUIRE_ASSIGNEE.LABEL'
+              )
+            }}
+          </span>
+          <Switch v-model="requireAssigneeBeforeResolve" />
         </div>
       </div>
       <div class="flex flex-col gap-2 mt-4">

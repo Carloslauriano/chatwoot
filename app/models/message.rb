@@ -377,7 +377,9 @@ class Message < ApplicationRecord
   end
 
   def dispatch_create_events
-    Rails.configuration.dispatcher.dispatch(MESSAGE_CREATED, Time.zone.now, message: self, performed_by: Current.executed_by)
+    Rails.configuration.dispatcher.dispatch(
+      MESSAGE_CREATED, Time.zone.now, message: self, performed_by: Current.executed_by, originated_from_ui: Current.originated_from_ui
+    )
 
     if valid_first_reply?
       Rails.configuration.dispatcher.dispatch(FIRST_REPLY_CREATED, Time.zone.now, message: self, performed_by: Current.executed_by)

@@ -60,6 +60,7 @@ class Api::V1::AccountsController < Api::BaseController
     @account.settings.merge!(settings_params)
     @account.custom_attributes['onboarding_step'] = 'invite_team' if @account.custom_attributes['onboarding_step'] == 'account_update'
     @account.save!
+    AgentBot.robot_for(@account) if @account.robot_sender_user_id.present?
   end
 
   def update_active_at
@@ -122,7 +123,10 @@ class Api::V1::AccountsController < Api::BaseController
   def permitted_settings_attributes
     [
       :auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting, :audio_transcriptions, :auto_resolve_label,
-      :require_label_before_resolve, :require_priority_before_resolve, :disable_snooze, :disable_pending,
+      :require_label_before_resolve, :require_priority_before_resolve, :require_assignee_before_resolve, :disable_snooze, :disable_pending,
+      :require_priority_before_assignment, :require_priority_before_reply,
+      :require_team_fully_prioritized_before_assignment, :require_team_fully_prioritized_before_reply,
+      :auto_assign_on_agent_reply, :robot_sender_user_id,
       :silent_resolve_enabled, :silent_resolve_label,
       :inactivity_resolve_enabled, :inactivity_resolve_label, :inactivity_resolve_message
     ]

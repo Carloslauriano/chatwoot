@@ -119,6 +119,9 @@ en:
       workflow:
         label_required: 'This conversation cannot be resolved without at least one label.'
         priority_required: 'This conversation cannot be resolved without a priority set.'
+        assignee_required: 'This conversation cannot be resolved without an agent assigned.'
+        priority_required_for_assignment: 'This conversation cannot be assigned to an agent without a priority set.'
+        priority_required_for_reply: 'This conversation cannot be replied to from the dashboard without a priority set.'
         snooze_disabled: 'Snoozing conversations is disabled for this account.'
         pending_disabled: 'Marking conversations as pending is disabled for this account.'
         priority_hidden: 'This priority is disabled for this account.'

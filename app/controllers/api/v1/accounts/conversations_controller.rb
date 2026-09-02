@@ -220,6 +220,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     if params[:status] == 'resolved'
       return I18n.t('errors.conversations.workflow.label_required') if account.require_label_before_resolve && @conversation.label_list.blank?
       return I18n.t('errors.conversations.workflow.priority_required') if account.require_priority_before_resolve && @conversation.priority.blank?
+      return I18n.t('errors.conversations.workflow.assignee_required') if account.require_assignee_before_resolve && @conversation.assignee_id.blank?
     end
 
     return I18n.t('errors.conversations.workflow.pending_disabled') if params[:status] == 'pending' && account.disable_pending

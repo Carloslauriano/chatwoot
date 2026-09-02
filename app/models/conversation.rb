@@ -150,6 +150,31 @@ class Conversation < ApplicationRecord
     Conversations::MessageWindowService.new(self).can_reply?
   end
 
+  def gating_team_id
+    team_id || Current.user&.teams&.where(account_id: account_id)&.first&.id
+  end
+
+  def team_backlog_missing_priority?
+    scope_team_id = gating_team_id
+    return false if scope_team_id.blank?
+
+    account.conversations.open.where(team_id: scope_team_id, priority: nil).exists?
+  end
+
+  def priority_gate_blocked_for_assignment?
+    return false unless account.require_priority_before_assignment
+
+    priority.blank? ||
+      (account.require_team_fully_prioritized_before_assignment && team_backlog_missing_priority?)
+  end
+
+  def priority_gate_blocked_for_reply?
+    return false unless account.require_priority_before_reply
+
+    (priority.blank? && assignee_id.blank?) ||
+      (account.require_team_fully_prioritized_before_reply && team_backlog_missing_priority?)
+  end
+
   def language
     additional_attributes&.dig('conversation_language')
   end

@@ -99,6 +99,9 @@ export default {
       currentAccountId: 'getCurrentAccountId',
       isMetaMessageSendingDisabled: 'globalConfig/isMetaMessageSendingDisabled',
     }),
+    isPriorityGatingBlocked() {
+      return !!this.currentChat?.priority_gate_blocked_for_reply;
+    },
     isOpen() {
       return this.currentChat?.status === wootConstants.STATUS_TYPE.OPEN;
     },
@@ -488,6 +491,12 @@ export default {
         color-scheme="alert"
         class="mx-2 mt-2 overflow-hidden rounded-lg"
         :banner-message="$t('CONVERSATION.OLD_INSTAGRAM_INBOX_REPLY_BANNER')"
+      />
+      <Banner
+        v-if="isPriorityGatingBlocked"
+        color-scheme="alert"
+        class="mx-2 mt-2 overflow-hidden rounded-lg"
+        :banner-message="$t('CONVERSATION.PRIORITY_GATING_BANNER')"
       />
     </div>
     <MessageList

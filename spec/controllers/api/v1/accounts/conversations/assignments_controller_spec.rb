@@ -136,6 +136,53 @@ RSpec.describe 'Conversation Assignment API', type: :request do
       end
     end
 
+    context 'when require_priority_before_assignment is enabled' do
+      let(:agent) { create(:user, account: account, role: :agent) }
+
+      before do
+        create(:inbox_member, inbox: conversation.inbox, user: agent)
+        account.update!(require_priority_before_assignment: true)
+      end
+
+      it 'does not assign an agent when the conversation has no priority' do
+        params = { assignee_id: agent.id }
+
+        post api_v1_account_conversation_assignments_url(account_id: account.id, conversation_id: conversation.display_id),
+             params: params,
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(conversation.reload.assignee).to be_nil
+      end
+
+      it 'assigns an agent when the conversation has a priority set' do
+        conversation.update!(priority: 'high')
+        params = { assignee_id: agent.id }
+
+        post api_v1_account_conversation_assignments_url(account_id: account.id, conversation_id: conversation.display_id),
+             params: params,
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(conversation.reload.assignee).to eq(agent)
+      end
+
+      it 'allows unassigning even without a priority set' do
+        conversation.update!(assignee: agent)
+        params = { assignee_id: nil }
+
+        post api_v1_account_conversation_assignments_url(account_id: account.id, conversation_id: conversation.display_id),
+             params: params,
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(conversation.reload.assignee).to be_nil
+      end
+    end
+
     context 'when conversation already has an assignee' do
       let(:agent) { create(:user, account: account, role: :agent) }
 

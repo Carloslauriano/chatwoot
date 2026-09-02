@@ -134,9 +134,18 @@ class Messages::MessageBuilder
   end
 
   def message_sender
-    return if @params[:sender_type] != 'AgentBot'
+    return AgentBot.where(account_id: [nil, @conversation.account.id]).find_by(id: @params[:sender_id]) if @params[:sender_type] == 'AgentBot'
+    return robot_sender if swap_to_robot?
+  end
 
-    AgentBot.where(account_id: [nil, @conversation.account.id]).find_by(id: @params[:sender_id])
+  def swap_to_robot?
+    Current.originated_from_ui == false &&
+      @account.robot_sender_user_id.present? &&
+      @user&.id == @account.robot_sender_user_id
+  end
+
+  def robot_sender
+    AgentBot.robot_for(@account)
   end
 
   def message_params

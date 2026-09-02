@@ -98,6 +98,74 @@ RSpec.describe 'Conversation Messages API', type: :request do
         expect(conversation.messages.last.attachments.first.file_type).to eq('image')
       end
 
+      context 'when require_priority_before_reply is enabled' do
+        before do
+          account.update!(require_priority_before_reply: true)
+        end
+
+        it 'does not create a public reply on an unprioritized, unassigned conversation' do
+          params = { content: 'test-message', private: false }
+
+          post api_v1_account_conversation_messages_url(account_id: account.id, conversation_id: conversation.display_id),
+               params: params,
+               headers: agent.create_new_auth_token,
+               as: :json
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(conversation.messages.count).to eq(0)
+        end
+
+        it 'creates a private note even without a priority set' do
+          params = { content: 'internal-note', private: true }
+
+          post api_v1_account_conversation_messages_url(account_id: account.id, conversation_id: conversation.display_id),
+               params: params,
+               headers: agent.create_new_auth_token,
+               as: :json
+
+          expect(response).to have_http_status(:success)
+          expect(conversation.messages.count).to eq(1)
+        end
+
+        it 'creates a public reply once the conversation has a priority set' do
+          conversation.update!(priority: 'high')
+          params = { content: 'test-message', private: false }
+
+          post api_v1_account_conversation_messages_url(account_id: account.id, conversation_id: conversation.display_id),
+               params: params,
+               headers: agent.create_new_auth_token,
+               as: :json
+
+          expect(response).to have_http_status(:success)
+          expect(conversation.messages.count).to eq(1)
+        end
+
+        it 'creates a public reply on an already-assigned conversation even without a priority' do
+          conversation.update!(assignee: agent)
+          params = { content: 'test-message', private: false }
+
+          post api_v1_account_conversation_messages_url(account_id: account.id, conversation_id: conversation.display_id),
+               params: params,
+               headers: agent.create_new_auth_token,
+               as: :json
+
+          expect(response).to have_http_status(:success)
+          expect(conversation.messages.count).to eq(1)
+        end
+
+        it 'creates a public reply via API access token even without a priority' do
+          params = { content: 'test-message', private: false }
+
+          post api_v1_account_conversation_messages_url(account_id: account.id, conversation_id: conversation.display_id),
+               params: params,
+               headers: { api_access_token: agent.access_token.token },
+               as: :json
+
+          expect(response).to have_http_status(:success)
+          expect(conversation.messages.count).to eq(1)
+        end
+      end
+
       context 'when api inbox' do
         let(:api_channel) { create(:channel_api, account: account) }
         let(:api_inbox) { create(:inbox, channel: api_channel, account: account) }

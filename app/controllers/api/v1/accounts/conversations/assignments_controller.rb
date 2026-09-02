@@ -13,6 +13,8 @@ class Api::V1::Accounts::Conversations::AssignmentsController < Api::V1::Account
   private
 
   def set_agent
+    return render_could_not_create_error(I18n.t('errors.conversations.workflow.priority_required_for_assignment')) if assignment_blocked_by_priority?
+
     resource = Conversations::AssignmentService.new(
       conversation: @conversation,
       assignee_id: params[:assignee_id],
@@ -20,6 +22,10 @@ class Api::V1::Accounts::Conversations::AssignmentsController < Api::V1::Account
     ).perform
 
     render_agent(resource)
+  end
+
+  def assignment_blocked_by_priority?
+    params[:assignee_id].present? && !agent_bot_assignment? && @conversation.priority_gate_blocked_for_assignment?
   end
 
   def render_agent(resource)

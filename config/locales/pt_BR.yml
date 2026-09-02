@@ -101,6 +101,9 @@ pt_BR:
       workflow:
         label_required: 'Esta conversa não pode ser resolvida sem pelo menos uma etiqueta.'
         priority_required: 'Esta conversa não pode ser resolvida sem uma prioridade definida.'
+        assignee_required: 'Esta conversa não pode ser resolvida sem um agente atribuído.'
+        priority_required_for_assignment: 'Esta conversa não pode ser atribuída a um agente sem uma prioridade definida.'
+        priority_required_for_reply: 'Esta conversa não pode ser respondida pelo painel sem uma prioridade definida.'
         snooze_disabled: 'Adiar conversas está desativado para esta conta.'
         pending_disabled: 'Marcar conversas como pendentes está desativado para esta conta.'
         priority_hidden: 'Esta prioridade está desativada para esta conta.'

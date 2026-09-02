@@ -38,6 +38,7 @@
     "LOADING_INBOXES": "Loading inboxes",
     "LOADING_CONVERSATIONS": "Loading Conversations",
     "CANNOT_REPLY": "You cannot reply due to",
+    "PRIORITY_GATING_BANNER": "You cannot reply until this conversation has a priority or an assignee set.",
     "24_HOURS_WINDOW": "24 hour message window restriction",
     "48_HOURS_WINDOW": "48 hour message window restriction",
     "API_HOURS_WINDOW": "You can only reply to this conversation within {hours} hours",
@@ -273,6 +274,7 @@
       "MESSAGING_RESTRICTED": "You cannot reply to this conversation",
       "MESSAGING_RESTRICTED_WHATSAPP": "You can only reply using a template message due to 24-hour message window restriction",
       "MESSAGING_RESTRICTED_API": "You can only reply using a template message due to message window restriction",
+      "MESSAGING_RESTRICTED_PRIORITY": "Set a priority or assignee for this conversation before replying",
       "MESSAGE_SIGNATURE_NOT_CONFIGURED": "Message signature is not configured, please configure it in profile settings.",
       "COPILOT_MSG_INPUT": "Give copilot additional prompts, or ask anything else... Press enter to send follow-up",
       "CLICK_HERE": "Click here to update",
@@ -331,6 +333,7 @@
     "CHANGE_STATUS": "Conversation status changed",
     "CHANGE_STATUS_FAILED": "Conversation status change failed",
     "CHANGE_AGENT": "Conversation Assignee changed",
+    "CHANGE_AGENT_ERROR": "Could not assign this agent, please try again",
     "CHANGE_AGENT_FAILED": "Assignee change failed",
     "ASSIGN_LABEL_SUCCESFUL": "Label assigned successfully",
     "ASSIGN_LABEL_FAILED": "Label assignment failed",
@@ -583,6 +586,10 @@
       "ACTIVITY": "Activity"
     },
     "KANBAN": {
+      "NEW_TICKET": "New ticket",
+      "CREATE_MODAL": {
+        "TITLE": "New ticket"
+      },
       "FILTER": {
         "TOOLTIP": "Filter and sort",
         "MINE": "My teams",
@@ -708,7 +715,8 @@
       "EMPTY": "No activity yet",
       "ORIGIN": {
         "LABEL": "Ticket created",
-        "FROM_CONVERSATION": "from conversation #{id}"
+        "FROM_CONVERSATION": "from conversation #{id}",
+        "CREATED_STANDALONE": "created directly (no conversation)"
       },
       "EVENTS": {
         "CUSTOMER_MESSAGE": "Customer",

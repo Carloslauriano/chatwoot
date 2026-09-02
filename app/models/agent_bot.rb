@@ -42,6 +42,10 @@ class AgentBot < ApplicationRecord
 
   validates :outgoing_url, length: { maximum: Limits::URL_LENGTH_LIMIT }
 
+  def self.robot_for(account)
+    account.agent_bots.find_or_create_by!(name: 'Robot')
+  end
+
   def available_name
     name
   end

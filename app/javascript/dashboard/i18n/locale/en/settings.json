@@ -785,6 +785,9 @@
       "REQUIRE_PRIORITY": {
         "LABEL": "Require a priority before resolving"
       },
+      "REQUIRE_ASSIGNEE": {
+        "LABEL": "Require an assigned agent before resolving"
+      },
       "STATUS_ACTIONS": {
         "TITLE": "Status actions"
       },
@@ -802,6 +805,57 @@
       "LABEL_REQUIRED": "This conversation cannot be resolved without at least one label.",
       "PRIORITY_REQUIRED": "This conversation cannot be resolved without a priority set.",
       "BLOCKED_ACTION": "This action is disabled by your account's conversation workflow settings."
+    },
+    "AUTO_ASSIGN_ON_REPLY": {
+      "TITLE": "Auto-assign on reply",
+      "DESCRIPTION": "Automatically assign a conversation to the agent who replies to the customer from the dashboard. Messages created via the API are ignored.",
+      "SAVE_BUTTON": "Save changes",
+      "SAVE": {
+        "SUCCESS": "Auto-assign on reply setting updated",
+        "ERROR": "Could not update this setting, please try again"
+      }
+    },
+    "ROBOT_SENDER": {
+      "TITLE": "Robot sender",
+      "DESCRIPTION": "Messages created via the API by the selected agent will be shown as sent by \"Robot\" instead of the agent's own identity.",
+      "LABEL": "API user to relabel as Robot",
+      "PLACEHOLDER": "Select an agent (optional)",
+      "CLEAR": "Clear",
+      "SAVE_BUTTON": "Save changes",
+      "SAVE": {
+        "SUCCESS": "Robot sender setting updated",
+        "ERROR": "Could not update this setting, please try again"
+      }
+    },
+    "PRIORITY_GATING_ASSIGNMENT": {
+      "TITLE": "Priority gating for assignment",
+      "DESCRIPTION": "Block agents from being assigned to conversations until a priority is set.",
+      "REQUIRE_PRIORITY": {
+        "LABEL": "Block assignment on conversations without a priority"
+      },
+      "REQUIRE_TEAM_FULLY_PRIORITIZED": {
+        "LABEL": "Block assignment until every open conversation in the team has a priority"
+      },
+      "SAVE_BUTTON": "Save changes",
+      "SAVE": {
+        "SUCCESS": "Assignment gating setting updated",
+        "ERROR": "Could not update this setting, please try again"
+      }
+    },
+    "PRIORITY_GATING_REPLY": {
+      "TITLE": "Priority gating for replies",
+      "DESCRIPTION": "Block agents from replying to conversations from the dashboard until a priority is set. Conversations that already have an assigned agent are not affected.",
+      "REQUIRE_PRIORITY": {
+        "LABEL": "Block dashboard replies on conversations without a priority"
+      },
+      "REQUIRE_TEAM_FULLY_PRIORITIZED": {
+        "LABEL": "Block replies until every open conversation in the team has a priority"
+      },
+      "SAVE_BUTTON": "Save changes",
+      "SAVE": {
+        "SUCCESS": "Reply gating setting updated",
+        "ERROR": "Could not update this setting, please try again"
+      }
     },
     "SILENT_RESOLVE": {
       "TITLE": "Silent resolve",

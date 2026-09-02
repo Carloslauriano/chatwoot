@@ -785,6 +785,9 @@
       "REQUIRE_PRIORITY": {
         "LABEL": "Exigir uma prioridade antes de resolver"
       },
+      "REQUIRE_ASSIGNEE": {
+        "LABEL": "Exigir um agente atribuído antes de resolver"
+      },
       "STATUS_ACTIONS": {
         "TITLE": "Ações de status"
       },
@@ -802,6 +805,57 @@
       "LABEL_REQUIRED": "Esta conversa não pode ser resolvida sem pelo menos uma etiqueta.",
       "PRIORITY_REQUIRED": "Esta conversa não pode ser resolvida sem uma prioridade definida.",
       "BLOCKED_ACTION": "Esta ação está desativada pelas configurações de fluxo de conversa da sua conta."
+    },
+    "AUTO_ASSIGN_ON_REPLY": {
+      "TITLE": "Atribuição automática ao responder",
+      "DESCRIPTION": "Atribui automaticamente a conversa ao agente que responder ao cliente pelo painel. Mensagens criadas via API são ignoradas.",
+      "SAVE_BUTTON": "Salvar alterações",
+      "SAVE": {
+        "SUCCESS": "Configuração de atribuição automática atualizada",
+        "ERROR": "Não foi possível atualizar essa configuração, tente novamente"
+      }
+    },
+    "ROBOT_SENDER": {
+      "TITLE": "Remetente Robot",
+      "DESCRIPTION": "Mensagens criadas via API pelo agente selecionado serão exibidas como enviadas por \"Robot\", em vez da identidade do próprio agente.",
+      "LABEL": "Usuário de API a ser identificado como Robot",
+      "PLACEHOLDER": "Selecione um agente (opcional)",
+      "CLEAR": "Limpar",
+      "SAVE_BUTTON": "Salvar alterações",
+      "SAVE": {
+        "SUCCESS": "Configuração de remetente Robot atualizada",
+        "ERROR": "Não foi possível atualizar essa configuração, tente novamente"
+      }
+    },
+    "PRIORITY_GATING_ASSIGNMENT": {
+      "TITLE": "Bloqueio de atribuição por prioridade",
+      "DESCRIPTION": "Impede que agentes sejam atribuídos a conversas até que uma prioridade seja definida.",
+      "REQUIRE_PRIORITY": {
+        "LABEL": "Bloquear atribuição em conversas sem prioridade"
+      },
+      "REQUIRE_TEAM_FULLY_PRIORITIZED": {
+        "LABEL": "Bloquear atribuição até todas as conversas abertas do time terem prioridade"
+      },
+      "SAVE_BUTTON": "Salvar alterações",
+      "SAVE": {
+        "SUCCESS": "Configuração de bloqueio de atribuição atualizada",
+        "ERROR": "Não foi possível atualizar essa configuração, tente novamente"
+      }
+    },
+    "PRIORITY_GATING_REPLY": {
+      "TITLE": "Bloqueio de resposta por prioridade",
+      "DESCRIPTION": "Impede que agentes respondam pelo painel a conversas até que uma prioridade seja definida. Conversas que já têm um agente atribuído não são afetadas.",
+      "REQUIRE_PRIORITY": {
+        "LABEL": "Bloquear resposta pelo painel em conversas sem prioridade"
+      },
+      "REQUIRE_TEAM_FULLY_PRIORITIZED": {
+        "LABEL": "Bloquear resposta até todas as conversas abertas do time terem prioridade"
+      },
+      "SAVE_BUTTON": "Salvar alterações",
+      "SAVE": {
+        "SUCCESS": "Configuração de bloqueio de resposta atualizada",
+        "ERROR": "Não foi possível atualizar essa configuração, tente novamente"
+      }
     },
     "SILENT_RESOLVE": {
       "TITLE": "Finalizar silencioso",

@@ -1,11 +1,16 @@
 class Api::BaseController < ApplicationController
   include AccessTokenAuthHelper
   respond_to :json
+  before_action :set_current_ui_origin
   before_action :authenticate_access_token!, if: :authenticate_by_access_token?
   before_action :validate_bot_access_token!, if: :authenticate_by_access_token?
   before_action :authenticate_user!, unless: :authenticate_by_access_token?
 
   private
+
+  def set_current_ui_origin
+    Current.originated_from_ui = !authenticate_by_access_token?
+  end
 
   def authenticate_by_access_token?
     request.headers[:api_access_token].present? || request.headers[:HTTP_API_ACCESS_TOKEN].present?
