@@ -13,16 +13,16 @@
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  account_id     :bigint           not null
-#  contact_id     :bigint           not null
-#  conversation_id :bigint          not null
+#  contact_id     :bigint
+#  conversation_id :bigint
 #  responsavel_id :bigint           not null
 #
 class Ticket < ApplicationRecord
   include Labelable
 
   belongs_to :account
-  belongs_to :conversation
-  belongs_to :contact
+  belongs_to :conversation, optional: true
+  belongs_to :contact, optional: true
   belongs_to :responsavel, class_name: 'User'
   belongs_to :team, optional: true
   belongs_to :ticket_status, optional: true
@@ -44,7 +44,8 @@ class Ticket < ApplicationRecord
   # US09: tempo bruto = diferença entre abertura da conversa no Chatwoot e resolução do ticket
   def tempo_bruto_segundos
     fim = resolvido_em || Time.current
-    (fim - conversation.created_at).to_i
+    inicio_referencia = conversation&.created_at || created_at
+    (fim - inicio_referencia).to_i
   end
 
   # US09/G4-G5: tempo líquido = soma de worklogs (nunca inferido por status)

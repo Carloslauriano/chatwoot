@@ -82,7 +82,7 @@ const save = async () => {
     useAlert(t('TICKETS.MANUAL_TIME.SUCCESS'));
     emit('saved', response.data);
   } catch (error) {
-    useAlert(t('TICKETS.MANUAL_TIME.ERROR'));
+    useAlert(error.response?.data?.message || t('TICKETS.MANUAL_TIME.ERROR'));
   } finally {
     isSubmitting.value = false;
   }

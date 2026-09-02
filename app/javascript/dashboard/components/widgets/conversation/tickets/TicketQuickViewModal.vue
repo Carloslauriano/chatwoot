@@ -129,7 +129,7 @@ const headerTitle = computed(() =>
                 >
                   <span class="text-[11px] i-lucide-flag" />
                 </span>
-                <div class="flex flex-col gap-1">
+                <div v-if="ticket.conversation_id" class="flex flex-col gap-1">
                   <span class="text-n-slate-12">
                     {{
                       t('TICKETS.TIMELINE.ORIGIN.FROM_CONVERSATION', {
@@ -146,6 +146,11 @@ const headerTitle = computed(() =>
                     class="w-fit"
                     @click="openConversation"
                   />
+                </div>
+                <div v-else class="flex flex-col gap-1">
+                  <span class="text-n-slate-12">
+                    {{ t('TICKETS.TIMELINE.ORIGIN.CREATED_STANDALONE') }}
+                  </span>
                 </div>
               </template>
               <template v-else>

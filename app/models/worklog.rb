@@ -22,5 +22,16 @@ class Worklog < ApplicationRecord
 
   enum origem: { timer: 0, manual: 1 }
 
+  before_validation :derive_fim_from_duration
+
   validates :inicio, :fim, :duracao_segundos, presence: true
+
+  private
+
+  def derive_fim_from_duration
+    return if fim.present?
+    return if inicio.blank? || duracao_segundos.blank?
+
+    self.fim = inicio + duracao_segundos.seconds
+  end
 end

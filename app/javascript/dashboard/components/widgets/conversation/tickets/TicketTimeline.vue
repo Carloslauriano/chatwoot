@@ -145,6 +145,7 @@ onMounted(loadTimeline);
                 <span>{{ formatEventDate(event.created_at) }}</span>
               </div>
               <div
+                v-if="ticket.conversation_id"
                 class="flex flex-wrap items-center justify-between gap-2 p-2 mt-1 text-sm rounded-lg rounded-tl-none bg-n-alpha-black2 text-n-slate-12"
               >
                 <span>
@@ -163,6 +164,15 @@ onMounted(loadTimeline);
                   :label="$t('TICKETS.SHOW.OPEN_CONVERSATION')"
                   @click="openConversation"
                 />
+              </div>
+              <div
+                v-else
+                class="flex flex-wrap items-center justify-between gap-2 p-2 mt-1 text-sm rounded-lg rounded-tl-none bg-n-alpha-black2 text-n-slate-12"
+              >
+                <span>
+                  #{{ ticket.id }} —
+                  {{ $t('TICKETS.TIMELINE.ORIGIN.CREATED_STANDALONE') }}
+                </span>
               </div>
             </template>
             <template v-else>

@@ -6,6 +6,7 @@ import { vOnClickOutside } from '@vueuse/components';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import KanbanColumn from '../components/KanbanColumn.vue';
 import TicketQuickViewModal from 'dashboard/components/widgets/conversation/tickets/TicketQuickViewModal.vue';
+import CreateStandaloneTicket from 'dashboard/components/widgets/conversation/tickets/CreateStandaloneTicket.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import SelectMenu from 'dashboard/components-next/selectmenu/SelectMenu.vue';
 
@@ -21,6 +22,7 @@ const getTicketsByTicketStatus = useMapGetter(
 
 const openTicketId = ref(null);
 const showTicketModal = ref(false);
+const showCreateTicketModal = ref(false);
 
 // 'mine' | 'all' | '<teamId>' — só um id de time específico habilita a
 // sobreposição de posição por time (não faz sentido com múltiplos times).
@@ -127,6 +129,15 @@ const closeTicketModal = () => {
   fetchTickets();
 };
 
+const closeCreateTicketModal = () => {
+  showCreateTicketModal.value = false;
+};
+
+const onTicketCreated = () => {
+  showCreateTicketModal.value = false;
+  fetchTickets();
+};
+
 watch(teamFilter, fetchTickets);
 
 onMounted(async () => {
@@ -142,7 +153,13 @@ onMounted(async () => {
       <h1 class="text-xl font-medium text-n-slate-12">
         {{ t('SIDEBAR.TICKETS_KANBAN') }}
       </h1>
-      <div class="relative flex">
+      <div class="relative flex gap-2">
+        <Button
+          icon="i-lucide-plus"
+          :label="t('TICKETS.KANBAN.NEW_TICKET')"
+          xs
+          @click="showCreateTicketModal = true"
+        />
         <Button
           v-tooltip.left="t('TICKETS.KANBAN.FILTER.TOOLTIP')"
           icon="i-lucide-list-filter"
@@ -208,6 +225,24 @@ onMounted(async () => {
         @close="closeTicketModal"
         @updated="fetchTickets"
       />
+    </woot-modal>
+
+    <woot-modal
+      v-model:show="showCreateTicketModal"
+      :on-close="closeCreateTicketModal"
+      size="medium"
+    >
+      <div class="flex flex-col h-auto overflow-auto">
+        <woot-modal-header
+          :header-title="t('TICKETS.KANBAN.CREATE_MODAL.TITLE')"
+        />
+        <div class="flex flex-col px-8 pb-4">
+          <CreateStandaloneTicket
+            @close="closeCreateTicketModal"
+            @created="onTicketCreated"
+          />
+        </div>
+      </div>
     </woot-modal>
   </div>
 </template>
