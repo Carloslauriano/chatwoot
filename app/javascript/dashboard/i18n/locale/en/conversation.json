@@ -705,7 +705,9 @@
       "DESCRIPTION_UPDATE_ERROR": "Could not update the description",
       "ARCHIVE": "Archive",
       "UNARCHIVE": "Unarchive",
-      "ARCHIVE_ERROR": "Could not archive/unarchive the ticket"
+      "ARCHIVE_ERROR": "Could not archive/unarchive the ticket",
+      "MACROS": "Macros",
+      "MACRO_RUN_ERROR": "Could not run the macro. Please try again"
     },
     "TABS": {
       "TIMELINE": "Timeline",

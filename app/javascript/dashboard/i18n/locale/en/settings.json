@@ -333,6 +333,7 @@
     "TICKETS_FILTER_MINE": "My teams",
     "TICKETS_FILTER_ALL": "All teams",
     "TICKET_STATUSES": "Ticket statuses",
+    "TICKET_MACROS": "Ticket macros",
     "TICKET_AUTOMATION_RULES": "Ticket automation",
     "CAPTAIN": "Captain",
     "CALLS": "Calls",

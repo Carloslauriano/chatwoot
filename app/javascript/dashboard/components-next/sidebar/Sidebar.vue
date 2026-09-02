@@ -849,6 +849,12 @@ const menuItems = computed(() => {
           to: accountScopedRoute('settings_ticket_statuses'),
         },
         {
+          name: 'Settings Ticket Macros',
+          label: t('SIDEBAR.TICKET_MACROS'),
+          icon: 'i-lucide-toy-brick',
+          to: accountScopedRoute('settings_ticket_macros'),
+        },
+        {
           name: 'Settings Ticket Automation Rules',
           label: t('SIDEBAR.TICKET_AUTOMATION_RULES'),
           icon: 'i-lucide-zap',

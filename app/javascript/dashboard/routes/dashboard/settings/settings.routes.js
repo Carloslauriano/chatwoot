@@ -22,6 +22,7 @@ import reports from './reports/reports.routes';
 import store from '../../../store';
 import sla from './sla/sla.routes';
 import teams from './teams/teams.routes';
+import ticketMacros from './ticketMacros/ticketMacros.routes';
 import ticketStatuses from './ticketStatuses/ticketStatuses.routes';
 import ticketAutomationRules from './ticketAutomationRules/ticketAutomationRules.routes';
 import customRoles from './customRoles/customRole.routes';
@@ -68,6 +69,7 @@ export default {
     ...reports.routes,
     ...sla.routes,
     ...teams.routes,
+    ...ticketMacros.routes,
     ...ticketStatuses.routes,
     ...ticketAutomationRules.routes,
     ...customRoles.routes,

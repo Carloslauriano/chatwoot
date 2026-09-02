@@ -49,6 +49,7 @@ import summaryReports from './modules/summaryReports';
 import teamMembers from './modules/teamMembers';
 import teams from './modules/teams';
 import tickets from './modules/tickets';
+import ticketMacros from './modules/ticketMacros';
 import ticketStatuses from './modules/ticketStatuses';
 import ticketAutomationRules from './modules/ticketAutomationRules';
 import userNotificationSettings from './modules/userNotificationSettings';
@@ -119,6 +120,7 @@ export default createStore({
     teamMembers,
     teams,
     tickets,
+    ticketMacros,
     ticketStatuses,
     ticketAutomationRules,
     userNotificationSettings,

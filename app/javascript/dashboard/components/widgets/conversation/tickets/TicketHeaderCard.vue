@@ -45,6 +45,8 @@ const ticketStatuses = useMapGetter('ticketStatuses/getTicketStatuses');
 // TicketShow), onde não há inbox_id para o useAgentsList filtrar por.
 const agentsList = useMapGetter('agents/getAgents');
 const accountLabels = useMapGetter('labels/getLabels');
+const ticketMacros = useMapGetter('ticketMacros/getTicketMacros');
+const executingMacroId = ref(null);
 
 const ticket = computed(() => props.ticket);
 
@@ -346,6 +348,21 @@ const toggleArchive = async () => {
   }
 };
 
+const runMacro = async macro => {
+  executingMacroId.value = macro.id;
+  try {
+    await store.dispatch('ticketMacros/execute', {
+      id: macro.id,
+      ticketId: ticket.value.id,
+    });
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.HEADER.MACRO_RUN_ERROR'));
+  } finally {
+    executingMacroId.value = null;
+  }
+};
+
 onMounted(() => {
   if (!ticketStatuses.value.length) {
     store.dispatch('ticketStatuses/get');
@@ -355,6 +372,9 @@ onMounted(() => {
   }
   if (!agentsList.value.length) {
     store.dispatch('agents/get');
+  }
+  if (!ticketMacros.value.length) {
+    store.dispatch('ticketMacros/get');
   }
 });
 </script>
@@ -457,6 +477,25 @@ onMounted(() => {
           :input-placeholder="t('TICKETS.CREATE.TEAM.PLACEHOLDER')"
           :has-thumbnail="false"
           @select="onSelectTeam"
+        />
+      </div>
+    </div>
+
+    <!-- Macros -->
+    <div v-if="ticketMacros.length" class="flex flex-col gap-1">
+      <span class="text-xs font-medium text-n-slate-11">
+        {{ t('TICKETS.HEADER.MACROS') }}
+      </span>
+      <div class="flex flex-wrap gap-1">
+        <Button
+          v-for="macro in ticketMacros"
+          :key="macro.id"
+          faded
+          slate
+          size="small"
+          :label="macro.name"
+          :is-loading="executingMacroId === macro.id"
+          @click="runMacro(macro)"
         />
       </div>
     </div>

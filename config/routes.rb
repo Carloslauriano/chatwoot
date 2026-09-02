@@ -172,6 +172,11 @@ Rails.application.routes.draw do
           end
           resources :ticket_statuses, only: [:index, :create, :update, :destroy]
           resources :ticket_automation_rules, only: [:index, :create, :update, :destroy]
+          resources :ticket_macros, only: [:index, :create, :update, :destroy] do
+            member do
+              post :execute
+            end
+          end
           namespace :channels do
             resource :twilio_channel, only: [:create]
           end

@@ -333,6 +333,7 @@
     "TICKETS_FILTER_MINE": "Meus times",
     "TICKETS_FILTER_ALL": "Todos os times",
     "TICKET_STATUSES": "Status de tickets",
+    "TICKET_MACROS": "Macros de tickets",
     "TICKET_AUTOMATION_RULES": "Automação de tickets",
     "CAPTAIN": "Capitão",
     "CALLS": "Chamadas",

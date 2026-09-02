@@ -1,0 +1,39 @@
+{
+  "TICKET_MACROS": {
+    "HEADER": "Ticket macros",
+    "DESCRIPTION": "Ticket macros are saved sets of actions that can be run on a ticket with a single click, such as changing its status, assigning a team, or updating its priority.",
+    "NEW_BUTTON": "Add a new macro",
+    "LOADING": "Fetching ticket macros",
+    "EMPTY": "No ticket macros found",
+    "ACTIONS": {
+      "CHANGE_TICKET_STATUS": "Change ticket status",
+      "ASSIGN_TEAM": "Assign team",
+      "ADD_LABEL": "Add label",
+      "REMOVE_LABEL": "Remove label",
+      "CHANGE_PRIORITY": "Change priority",
+      "ARCHIVE_TICKET": "Archive ticket",
+      "UNARCHIVE_TICKET": "Unarchive ticket"
+    },
+    "FORM": {
+      "NEW_TITLE": "New ticket macro",
+      "EDIT_TITLE": "Edit ticket macro",
+      "NAME_LABEL": "Macro name",
+      "NAME_PLACEHOLDER": "Enter a name for this macro",
+      "ACTIONS_LABEL": "Actions",
+      "ADD_ACTION_BUTTON": "Add action",
+      "CANCEL": "Cancel",
+      "SUBMIT": "Save macro",
+      "SUCCESS": "Ticket macro saved successfully",
+      "ERROR": "Could not save the ticket macro. Please try again"
+    },
+    "DELETE": {
+      "TITLE": "Delete ticket macro",
+      "MESSAGE": "Are you sure you want to delete this ticket macro? This action cannot be undone.",
+      "PLACE_HOLDER": "Type {macroName} to confirm",
+      "CONFIRM": "Yes, delete",
+      "CANCEL": "No, keep it",
+      "SUCCESS": "Ticket macro deleted successfully",
+      "ERROR": "Could not delete the ticket macro. Please try again"
+    }
+  }
+}

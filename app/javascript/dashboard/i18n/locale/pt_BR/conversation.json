@@ -666,7 +666,9 @@
       "DESCRIPTION_UPDATE_ERROR": "Não foi possível atualizar a descrição",
       "ARCHIVE": "Arquivar",
       "UNARCHIVE": "Desarquivar",
-      "ARCHIVE_ERROR": "Não foi possível arquivar/desarquivar o ticket"
+      "ARCHIVE_ERROR": "Não foi possível arquivar/desarquivar o ticket",
+      "MACROS": "Macros",
+      "MACRO_RUN_ERROR": "Não foi possível executar a macro. Tente novamente"
     },
     "TABS": {
       "TIMELINE": "Linha do tempo",

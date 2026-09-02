@@ -1,0 +1,39 @@
+{
+  "TICKET_MACROS": {
+    "HEADER": "Macros de tickets",
+    "DESCRIPTION": "Macros de tickets são conjuntos salvos de ações que podem ser executadas em um ticket com um único clique, como alterar seu status, atribuir um time ou atualizar sua prioridade.",
+    "NEW_BUTTON": "Adicionar nova macro",
+    "LOADING": "Obtendo macros de tickets",
+    "EMPTY": "Nenhuma macro de ticket encontrada",
+    "ACTIONS": {
+      "CHANGE_TICKET_STATUS": "Alterar status do ticket",
+      "ASSIGN_TEAM": "Atribuir time",
+      "ADD_LABEL": "Adicionar etiqueta",
+      "REMOVE_LABEL": "Remover etiqueta",
+      "CHANGE_PRIORITY": "Alterar prioridade",
+      "ARCHIVE_TICKET": "Arquivar ticket",
+      "UNARCHIVE_TICKET": "Desarquivar ticket"
+    },
+    "FORM": {
+      "NEW_TITLE": "Nova macro de ticket",
+      "EDIT_TITLE": "Editar macro de ticket",
+      "NAME_LABEL": "Nome da macro",
+      "NAME_PLACEHOLDER": "Digite um nome para esta macro",
+      "ACTIONS_LABEL": "Ações",
+      "ADD_ACTION_BUTTON": "Adicionar ação",
+      "CANCEL": "Cancelar",
+      "SUBMIT": "Salvar macro",
+      "SUCCESS": "Macro de ticket salva com sucesso",
+      "ERROR": "Não foi possível salvar a macro de ticket. Tente novamente"
+    },
+    "DELETE": {
+      "TITLE": "Excluir macro de ticket",
+      "MESSAGE": "Tem certeza que deseja excluir esta macro de ticket? Essa ação não pode ser desfeita.",
+      "PLACE_HOLDER": "Digite {macroName} para confirmar",
+      "CONFIRM": "Sim, excluir",
+      "CANCEL": "Não, manter",
+      "SUCCESS": "Macro de ticket excluída com sucesso",
+      "ERROR": "Não foi possível excluir a macro de ticket. Tente novamente"
+    }
+  }
+}
