@@ -1,0 +1,46 @@
+<%#
+# Edit
+
+Extends the default Administrate edit template to also allow editing
+the `role` and `archived` fields of each of this user's existing
+AccountUser associations inline, without navigating to a separate page.
+
+## Local variables:
+
+- `page`:
+  An instance of [Administrate::Page::Form][1].
+
+[1]: http://www.rubydoc.info/gems/administrate/Administrate/Page/Form
+%>
+
+<% content_for(:title) { t("administrate.actions.edit_resource", name: page.page_title) } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">
+    <%= content_for(:title) %>
+  </h1>
+
+  <div>
+    <%= link_to(
+      t("administrate.actions.show_resource", name: page.page_title),
+      [namespace, page.resource],
+      class: "button",
+    ) if accessible_action?(page.resource, :show) %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <%= render "form", page: page %>
+</section>
+
+<% if page.resource.account_users.any? %>
+  <section class="main-content__body">
+    <h2><%= t("helpers.label.user.account_users", default: "Account associations") %></h2>
+    <% page.resource.account_users.includes(:account).each do |account_user| %>
+      <fieldset class="field-unit--nested">
+        <legend><%= account_user.account.name %></legend>
+        <%= render "super_admin/shared/account_user_edit_form", account_user: account_user, namespace: namespace %>
+      </fieldset>
+    <% end %>
+  </section>
+<% end %>

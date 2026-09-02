@@ -1,0 +1,28 @@
+<%#
+# Account User Edit Form Partial
+
+Renders an inline edit form for an existing AccountUser association,
+exposing only the fields that make sense to change after creation
+(role, archived) — account/user are not editable here.
+
+## Local variables:
+
+- `account_user`: The existing AccountUser record to edit.
+- `namespace`: The current namespace (usually :super_admin)
+%>
+
+<% edit_page = Administrate::Page::Form.new(AccountUserDashboard.new, account_user) %>
+<%= form_for([namespace, account_user], html: { class: "form" }) do |f| %>
+  <% edit_page.attributes.each do |title, attributes| %>
+    <% attributes.each do |attribute| %>
+      <% next if attribute.name.in?(%w[account user]) %>
+      <div class="field-unit field-unit--<%= attribute.html_class %> field-unit--<%= requireness(attribute) %>">
+        <%= render_field attribute, f: f %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="form-actions">
+    <%= f.submit %>
+  </div>
+<% end %>
