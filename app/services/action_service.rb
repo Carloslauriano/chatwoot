@@ -42,6 +42,7 @@ class ActionService
 
   def assign_agent(agent_ids = [])
     return @conversation.with_lock { @conversation.update!(assignee_id: nil) } if agent_ids[0] == 'nil'
+    return if @conversation.priority_gate_blocked_for_assignment?
 
     agent_ids = [last_responding_agent_id] if agent_ids[0] == 'last_responding_agent'
     return unless agent_belongs_to_inbox?(agent_ids)

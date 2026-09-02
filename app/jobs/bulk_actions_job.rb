@@ -27,8 +27,15 @@ class BulkActionsJob < ApplicationJob
     records.each do |conversation|
       bulk_add_labels(conversation)
       bulk_snoozed_until(conversation)
-      conversation.update(params) if params
+      conversation.update(conversation_update_params(conversation, params)) if params
     end
+  end
+
+  def conversation_update_params(conversation, params)
+    return params unless params[:assignee_id].present?
+    return params unless conversation.priority_gate_blocked_for_assignment?
+
+    params.except(:assignee_id)
   end
 
   def bulk_remove_labels

@@ -2,6 +2,8 @@ class Api::V1::Accounts::BulkActionsController < Api::V1::Accounts::BaseControll
   def create
     case normalized_type
     when 'Conversation'
+      return render_priority_gate_error if conversation_assignment_blocked_by_priority?
+
       enqueue_conversation_job
       head :ok
     when 'Contact'
@@ -25,6 +27,22 @@ class Api::V1::Accounts::BulkActionsController < Api::V1::Accounts::BaseControll
       user: current_user,
       params: conversation_params
     )
+  end
+
+  def conversation_assignment_blocked_by_priority?
+    assignee_id = conversation_params[:fields]&.dig(:assignee_id)
+    return false if assignee_id.blank?
+
+    target_conversations.any?(&:priority_gate_blocked_for_assignment?)
+  end
+
+  def target_conversations
+    scope = Conversation.where(account_id: @current_account.id, display_id: params[:ids])
+    Conversations::PermissionFilterService.new(scope, current_user, @current_account).perform
+  end
+
+  def render_priority_gate_error
+    render json: { error: I18n.t('errors.conversations.workflow.priority_required_for_assignment') }, status: :unprocessable_entity
   end
 
   def enqueue_contact_job

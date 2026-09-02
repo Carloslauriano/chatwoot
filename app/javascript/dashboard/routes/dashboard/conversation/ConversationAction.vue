@@ -99,6 +99,7 @@ export default {
       set(agent) {
         const agentId = agent ? agent.id : null;
         const assigneeType = agent ? agent.assignee_type || 'User' : null;
+        const previousAssignee = this.assignedAgent;
         this.$store.dispatch('setCurrentChatAssignee', {
           conversationId: this.currentChat.id,
           assignee: agent,
@@ -112,6 +113,17 @@ export default {
           })
           .then(() => {
             useAlert(this.$t('CONVERSATION.CHANGE_AGENT'));
+          })
+          .catch(error => {
+            this.$store.dispatch('setCurrentChatAssignee', {
+              conversationId: this.currentChat.id,
+              assignee: previousAssignee,
+              assigneeType: previousAssignee?.assignee_type,
+            });
+            useAlert(
+              error.response?.data?.error ||
+                this.$t('CONVERSATION.CHANGE_AGENT_ERROR')
+            );
           });
       },
     },

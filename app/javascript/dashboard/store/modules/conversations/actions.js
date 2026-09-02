@@ -213,20 +213,16 @@ const actions = {
     { dispatch },
     { conversationId, agentId, assigneeType }
   ) => {
-    try {
-      const response = await ConversationApi.assignAgent({
-        conversationId,
-        agentId,
-        assigneeType,
-      });
-      dispatch('setCurrentChatAssignee', {
-        conversationId,
-        assignee: response.data,
-        assigneeType,
-      });
-    } catch (error) {
-      // Handle error
-    }
+    const response = await ConversationApi.assignAgent({
+      conversationId,
+      agentId,
+      assigneeType,
+    });
+    dispatch('setCurrentChatAssignee', {
+      conversationId,
+      assignee: response.data,
+      assigneeType,
+    });
   },
 
   setCurrentChatAssignee(
