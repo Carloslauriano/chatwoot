@@ -1,4 +1,6 @@
 class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
+  include TicketTimelineSerializable
+
   before_action :fetch_ticket, only: [:show, :update, :link_conversation, :transfer, :ticket_status,
                                        :timer_start, :timer_stop, :timeline, :audit_logs, :archive, :unarchive]
   before_action :check_authorization
@@ -181,30 +183,5 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
       account: Current.account, autor_id: Current.user.id, acao: acao, campo: campo,
       valor_antes: antes, valor_depois: depois
     )
-  end
-
-  def serialize_ticket_event(event)
-    {
-      id: "event-#{event.id}",
-      tipo_evento: event.tipo_evento,
-      origem: event.origem,
-      autor_id: event.autor_id,
-      autor_nome: user_name_for(event.autor_id),
-      autor_avatar_url: user_avatar_url_for(event.autor_id),
-      payload: event.payload,
-      created_at: event.created_at,
-    }
-  end
-
-  def user_name_for(user_id)
-    return nil if user_id.blank?
-
-    User.find_by(id: user_id)&.name
-  end
-
-  def user_avatar_url_for(user_id)
-    return nil if user_id.blank?
-
-    User.find_by(id: user_id)&.avatar_url
   end
 end

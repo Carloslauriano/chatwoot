@@ -169,6 +169,7 @@ Rails.application.routes.draw do
             resources :assignments, only: [:create, :update, :destroy], controller: 'ticket_assignments'
             resources :worklogs, only: [:create, :update, :destroy]
             resources :labels, only: [:index, :create], controller: 'tickets/labels'
+            resources :comments, only: [:create], controller: 'tickets/comments'
           end
           resources :ticket_statuses, only: [:index, :create, :update, :destroy]
           resources :ticket_automation_rules, only: [:index, :create, :update, :destroy]

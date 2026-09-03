@@ -104,6 +104,10 @@ class TicketsAPI extends ApiClient {
     return axios.get(`${this.url}/${ticketId}/audit_logs`);
   }
 
+  createComment(ticketId, texto) {
+    return axios.post(`${this.url}/${ticketId}/comments`, { texto });
+  }
+
   updateLabels(ticketId, labels) {
     return axios.post(`${this.url}/${ticketId}/labels`, { labels });
   }

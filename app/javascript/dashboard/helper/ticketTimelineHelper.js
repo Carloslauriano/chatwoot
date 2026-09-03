@@ -40,6 +40,13 @@ export const describeTicketEvent = (event, t) => {
       icon: 'i-lucide-sticky-note',
       label: t('TICKETS.TIMELINE.EVENTS.INTERNAL_NOTE'),
     },
+    comentario: {
+      dot: 'bg-n-amber-9',
+      icon: 'i-lucide-message-square-text',
+      label: t('TICKETS.TIMELINE.EVENTS.COMMENT_ADDED', {
+        agent: autor || agentFallback,
+      }),
+    },
     status_macro_changed: {
       dot: 'bg-n-slate-6',
       icon: 'i-lucide-shuffle',

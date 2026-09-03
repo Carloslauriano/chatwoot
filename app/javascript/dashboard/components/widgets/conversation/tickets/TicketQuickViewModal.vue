@@ -4,9 +4,12 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import TicketsAPI from 'dashboard/api/tickets';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useAlert } from 'dashboard/composables';
+import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
+import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
 import {
   describeTicketEvent,
   ticketEventText,
@@ -25,11 +28,14 @@ const emit = defineEmits(['updated']);
 const { t } = useI18n();
 const router = useRouter();
 const { accountId } = useAccount();
+const { formatMessage } = useMessageFormatter();
 
 const ticket = ref(null);
 const isLoading = ref(false);
 const events = ref([]);
 const isLoadingActivity = ref(false);
+const commentDraft = ref('');
+const isSavingComment = ref(false);
 
 const loadTicket = async () => {
   isLoading.value = true;
@@ -58,6 +64,20 @@ const loadActivity = async () => {
 const onUpdated = () => {
   loadTicket();
   emit('updated');
+};
+
+const submitComment = async () => {
+  if (!commentDraft.value.trim()) return;
+  try {
+    isSavingComment.value = true;
+    await TicketsAPI.createComment(props.ticketId, commentDraft.value.trim());
+    commentDraft.value = '';
+    await loadActivity();
+  } catch (error) {
+    useAlert(t('TICKETS.QUICK_VIEW.COMMENT_ERROR'));
+  } finally {
+    isSavingComment.value = false;
+  }
 };
 
 const openConversation = () => {
@@ -101,6 +121,22 @@ onMounted(() => {
           <span class="text-xs font-medium text-n-slate-11">
             {{ t('TICKETS.QUICK_VIEW.ACTIVITY') }}
           </span>
+          <div class="flex flex-col gap-2">
+            <WootMessageEditor
+              v-model="commentDraft"
+              channel-type="Context::Default"
+              :enable-canned-responses="false"
+              :placeholder="t('TICKETS.QUICK_VIEW.COMMENT_PLACEHOLDER')"
+            />
+            <Button
+              size="small"
+              class="self-end"
+              :label="t('TICKETS.QUICK_VIEW.SEND_COMMENT')"
+              :is-loading="isSavingComment"
+              :disabled="!commentDraft.trim()"
+              @click="submitComment"
+            />
+          </div>
           <div v-if="isLoadingActivity" class="flex justify-center p-4">
             <Spinner />
           </div>
@@ -166,7 +202,15 @@ onMounted(() => {
                   <span class="text-n-slate-12">
                     {{ describeTicketEvent(event, t).label }}
                   </span>
-                  <span v-if="ticketEventText(event)" class="text-n-slate-11">
+                  <div
+                    v-if="event.tipo_evento === 'comentario'"
+                    v-dompurify-html="formatMessage(event.payload.texto)"
+                    class="text-sm text-n-slate-12"
+                  />
+                  <span
+                    v-else-if="ticketEventText(event)"
+                    class="text-n-slate-11"
+                  >
                     {{ ticketEventText(event) }}
                   </span>
                   <span class="text-n-slate-10">

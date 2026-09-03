@@ -24,7 +24,8 @@ class TicketTimelineEvent < ApplicationRecord
     worklog: 5,
     worklog_manual: 6,
     membro_added: 7,
-    membro_removed: 8
+    membro_removed: 8,
+    comentario: 9
   }
   enum origem: { chatwoot: 0, interno: 1, sistema: 2 }
 end

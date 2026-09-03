@@ -583,7 +583,10 @@
     "QUICK_VIEW": {
       "TITLE": "Ticket #{id}",
       "TITLE_WITH_NAME": "Ticket #{id} — {titulo}",
-      "ACTIVITY": "Activity"
+      "ACTIVITY": "Activity",
+      "COMMENT_PLACEHOLDER": "Write a comment...",
+      "SEND_COMMENT": "Comment",
+      "COMMENT_ERROR": "Could not add the comment"
     },
     "KANBAN": {
       "NEW_TICKET": "New ticket",
@@ -725,6 +728,7 @@
         "AGENT_MESSAGE": "{agent} replied",
         "AGENT_FALLBACK": "Agent",
         "INTERNAL_NOTE": "Internal note",
+        "COMMENT_ADDED": "{agent} commented",
         "SECTOR_TRANSFERRED": "{agent} moved this card from {from} to {to}",
         "WORKED": "{agent} worked {duration}",
         "WORKED_MANUAL": "{agent} added {duration} manually",
