@@ -775,6 +775,21 @@ describe('#mutations', () => {
       });
       expect(state.allConversations[0].priority).toEqual(priority);
     });
+
+    it('should not throw if the conversation is not found', () => {
+      const priority = { title: 'Urgent', value: 'urgent' };
+      const state = {
+        allConversations: [{ id: 1 }],
+      };
+
+      expect(() =>
+        mutations[types.ASSIGN_PRIORITY](state, {
+          priority,
+          conversationId: 2,
+        })
+      ).not.toThrow();
+      expect(state.allConversations[0].priority).toBeUndefined();
+    });
   });
 
   describe('#MUTE_CONVERSATION', () => {

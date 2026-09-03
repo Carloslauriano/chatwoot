@@ -134,7 +134,9 @@ export const mutations = {
   },
   [types.ASSIGN_PRIORITY](_state, { priority, conversationId }) {
     const [chat] = _state.allConversations.filter(c => c.id === conversationId);
-    chat.priority = priority;
+    if (chat) {
+      chat.priority = priority;
+    }
   },
 
   [types.UPDATE_CONVERSATION_CUSTOM_ATTRIBUTES](
