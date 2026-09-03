@@ -35,6 +35,7 @@ RSpec.describe Conversations::EventDataPresenter do
         updated_at: conversation.updated_at.to_f,
         waiting_since: conversation.waiting_since.to_i,
         priority: nil,
+        priority_gate_blocked_for_reply: conversation.priority_gate_blocked_for_reply?,
         unread_count: 0
       }
     end
