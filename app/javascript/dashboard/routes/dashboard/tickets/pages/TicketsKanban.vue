@@ -148,7 +148,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col w-full h-full p-6 overflow-hidden">
+  <div class="flex flex-col w-full h-full p-6 overflow-y-auto">
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-xl font-medium text-n-slate-12">
         {{ t('SIDEBAR.TICKETS_KANBAN') }}
