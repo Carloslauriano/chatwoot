@@ -27,6 +27,31 @@ const totalWorked = computed(() =>
 const descriptionPreview = computed(() =>
   getPlainText(props.ticket.descricao || '')
 );
+
+const members = computed(() => {
+  const assignments = props.ticket.assignments || [];
+  const responsavelId = props.ticket.responsavel_id;
+
+  const responsavelMember = responsavelId
+    ? {
+        key: `responsavel-${responsavelId}`,
+        nome: props.ticket.responsavel_nome,
+        avatarUrl: props.ticket.responsavel_avatar_url,
+      }
+    : null;
+
+  const otherMembers = assignments
+    .filter(assignment => assignment.colaborador_id !== responsavelId)
+    .map(assignment => ({
+      key: `assignment-${assignment.id}`,
+      nome: assignment.colaborador_nome,
+      avatarUrl: null,
+    }));
+
+  return responsavelMember
+    ? [responsavelMember, ...otherMembers]
+    : otherMembers;
+});
 </script>
 
 <template>
@@ -82,15 +107,18 @@ const descriptionPreview = computed(() =>
           {{ totalWorked }}
         </span>
       </div>
-      <Avatar
-        v-if="ticket.responsavel_nome"
-        v-tooltip="ticket.responsavel_nome"
-        :src="ticket.responsavel_avatar_url"
-        :name="ticket.responsavel_nome"
-        :size="24"
-        rounded-full
-        class="shrink-0"
-      />
+      <div v-if="members.length" class="flex items-center shrink-0 -space-x-2">
+        <Avatar
+          v-for="member in members"
+          :key="member.key"
+          v-tooltip="member.nome"
+          :src="member.avatarUrl"
+          :name="member.nome"
+          :size="24"
+          rounded-full
+          class="ring-2 ring-n-solid-2"
+        />
+      </div>
     </div>
   </div>
 </template>
