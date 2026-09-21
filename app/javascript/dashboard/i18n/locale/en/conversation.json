@@ -586,7 +586,9 @@
       "ACTIVITY": "Activity",
       "COMMENT_PLACEHOLDER": "Write a comment...",
       "SEND_COMMENT": "Comment",
-      "COMMENT_ERROR": "Could not add the comment"
+      "COMMENT_ERROR": "Could not add the comment",
+      "ATTACH_FILE": "Attach file",
+      "ATTACHMENT_REMOVE": "Remove attachment"
     },
     "KANBAN": {
       "NEW_TICKET": "New ticket",
@@ -710,7 +712,16 @@
       "UNARCHIVE": "Unarchive",
       "ARCHIVE_ERROR": "Could not archive/unarchive the ticket",
       "MACROS": "Macros",
-      "MACRO_RUN_ERROR": "Could not run the macro. Please try again"
+      "MACRO_RUN_ERROR": "Could not run the macro. Please try again",
+      "ATTACHMENTS": {
+        "LABEL": "Attachments",
+        "ADD": "Attach file",
+        "REMOVE": "Remove",
+        "UPLOAD_ERROR": "Could not attach the file. Please try again",
+        "SIZE_ERROR": "File is too large",
+        "TYPE_ERROR": "File type not supported",
+        "DELETE_ERROR": "Could not remove the attachment"
+      }
     },
     "TABS": {
       "TIMELINE": "Timeline",

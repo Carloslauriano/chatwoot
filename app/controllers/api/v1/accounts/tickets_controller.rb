@@ -137,7 +137,7 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
 
   def ticket_params
     params.require(:ticket).permit(:conversation_id, :contact_id, :titulo, :descricao, :categoria, :prioridade,
-                                    :setor_atual, :responsavel_id, :team_id)
+                                    :setor_atual, :responsavel_id, :team_id, anexos: [])
   end
 
   def ensure_assignment!(colaborador_id)

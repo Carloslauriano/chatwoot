@@ -148,6 +148,26 @@ export const FORMATTING = {
       'redo',
     ],
   },
+  // Descrição e comentários de tickets (TicketHeaderCard, TicketQuickViewModal).
+  // Cópia de Context::Default + image/imageUpload — não alterar Context::Default
+  // diretamente, ele é usado por ComposeNewConversationForm, CreateTicket,
+  // CreateStandaloneTicket e os editores de canned response.
+  'Context::TicketRichText': {
+    marks: ['strong', 'em', 'code', 'link', 'strike'],
+    nodes: ['bulletList', 'orderedList', 'codeBlock', 'blockquote', 'image'],
+    menu: [
+      'strong',
+      'em',
+      'code',
+      'link',
+      'strike',
+      'bulletList',
+      'orderedList',
+      'imageUpload',
+      'undo',
+      'redo',
+    ],
+  },
   'Context::MessageSignature': {
     marks: ['strong', 'em', 'link'],
     nodes: ['image'],

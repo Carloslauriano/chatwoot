@@ -280,6 +280,14 @@ class Rack::Attack
     match_data[:account_id] if match_data.present?
   end
 
+  ## Prevent abuse of the link preview fetcher (each call makes an outbound HTTP request)
+  throttle('/api/v1/accounts/:account_id/link_previews', limit: ENV.fetch('RATE_LIMIT_LINK_PREVIEWS', '60').to_i, period: 1.minute) do |req|
+    next unless req.post?
+
+    match_data = %r{\A/api/v1/accounts/(?<account_id>\d+)/link_previews/?\z}.match(req.path_without_extensions)
+    match_data[:account_id] if match_data.present?
+  end
+
   reports_api_user_level_limit = ENV.fetch('RATE_LIMIT_REPORTS_API_USER_LEVEL', '100').to_i
   reports_drilldown_api_user_level_limit = ENV.fetch(
     'RATE_LIMIT_REPORTS_DRILLDOWN_API_USER_LEVEL',

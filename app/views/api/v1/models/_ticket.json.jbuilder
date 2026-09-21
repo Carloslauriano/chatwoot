@@ -48,5 +48,14 @@ json.worklogs do
     json.motivo worklog.motivo
   end
 end
+json.anexos do
+  json.array! resource.anexos do |anexo|
+    json.id anexo.id
+    json.filename anexo.filename.to_s
+    json.url url_for(anexo)
+    json.content_type anexo.content_type
+    json.byte_size anexo.byte_size
+  end
+end
 json.created_at resource.created_at
 json.updated_at resource.updated_at

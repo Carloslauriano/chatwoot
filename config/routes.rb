@@ -170,6 +170,7 @@ Rails.application.routes.draw do
             resources :worklogs, only: [:create, :update, :destroy]
             resources :labels, only: [:index, :create], controller: 'tickets/labels'
             resources :comments, only: [:create], controller: 'tickets/comments'
+            resources :attachments, only: [:create, :destroy], controller: 'tickets/attachments'
           end
           resources :ticket_statuses, only: [:index, :create, :update, :destroy]
           resources :ticket_automation_rules, only: [:index, :create, :update, :destroy]
@@ -178,6 +179,7 @@ Rails.application.routes.draw do
               post :execute
             end
           end
+          resources :link_previews, only: [:create]
           namespace :channels do
             resource :twilio_channel, only: [:create]
           end

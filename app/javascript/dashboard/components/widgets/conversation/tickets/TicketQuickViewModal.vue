@@ -6,6 +6,7 @@ import TicketsAPI from 'dashboard/api/tickets';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
+import { useLinkPreviewEnrichment } from 'dashboard/composables/useLinkPreviewEnrichment';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
@@ -36,6 +37,16 @@ const events = ref([]);
 const isLoadingActivity = ref(false);
 const commentDraft = ref('');
 const isSavingComment = ref(false);
+const commentAttachments = ref([]);
+const commentAttachmentInput = ref(null);
+const { enrichLinks } = useLinkPreviewEnrichment();
+const commentRefs = {};
+const setCommentRef = (eventId, el) => {
+  if (el) commentRefs[eventId] = el;
+};
+const enrichCommentLinks = () => {
+  Object.values(commentRefs).forEach(enrichLinks);
+};
 
 const loadTicket = async () => {
   isLoading.value = true;
@@ -54,6 +65,7 @@ const loadActivity = async () => {
   try {
     const response = await TicketsAPI.getTimeline(props.ticketId);
     events.value = response.data || [];
+    enrichCommentLinks();
   } catch (error) {
     events.value = [];
   } finally {
@@ -66,12 +78,32 @@ const onUpdated = () => {
   emit('updated');
 };
 
+const openCommentAttachmentBrowser = () =>
+  commentAttachmentInput.value?.click();
+
+const onCommentAttachmentSelected = event => {
+  const files = Array.from(event.target.files || []);
+  event.target.value = '';
+  commentAttachments.value = [...commentAttachments.value, ...files];
+};
+
+const removeCommentAttachment = index => {
+  commentAttachments.value = commentAttachments.value.filter(
+    (_file, fileIndex) => fileIndex !== index
+  );
+};
+
 const submitComment = async () => {
   if (!commentDraft.value.trim()) return;
   try {
     isSavingComment.value = true;
-    await TicketsAPI.createComment(props.ticketId, commentDraft.value.trim());
+    await TicketsAPI.createComment(
+      props.ticketId,
+      commentDraft.value.trim(),
+      commentAttachments.value
+    );
     commentDraft.value = '';
+    commentAttachments.value = [];
     await loadActivity();
   } catch (error) {
     useAlert(t('TICKETS.QUICK_VIEW.COMMENT_ERROR'));
@@ -103,7 +135,6 @@ onMounted(() => {
   loadTicket();
   loadActivity();
 });
-
 </script>
 
 <template>
@@ -124,18 +155,51 @@ onMounted(() => {
           <div class="flex flex-col gap-2">
             <WootMessageEditor
               v-model="commentDraft"
-              channel-type="Context::Default"
+              channel-type="Context::TicketRichText"
               :enable-canned-responses="false"
               :placeholder="t('TICKETS.QUICK_VIEW.COMMENT_PLACEHOLDER')"
             />
-            <Button
-              size="small"
-              class="self-end"
-              :label="t('TICKETS.QUICK_VIEW.SEND_COMMENT')"
-              :is-loading="isSavingComment"
-              :disabled="!commentDraft.trim()"
-              @click="submitComment"
+            <div v-if="commentAttachments.length" class="flex flex-wrap gap-1">
+              <span
+                v-for="(file, index) in commentAttachments"
+                :key="`${file.name}-${index}`"
+                class="flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-n-weak text-n-slate-11"
+              >
+                <span class="i-lucide-paperclip size-3 shrink-0" />
+                <span class="truncate max-w-[8rem]">{{ file.name }}</span>
+                <button
+                  type="button"
+                  class="hover:text-n-ruby-9"
+                  :title="t('TICKETS.QUICK_VIEW.ATTACHMENT_REMOVE')"
+                  @click="removeCommentAttachment(index)"
+                >
+                  <span class="text-[10px] i-lucide-x" />
+                </button>
+              </span>
+            </div>
+            <input
+              ref="commentAttachmentInput"
+              type="file"
+              multiple
+              class="hidden"
+              @change="onCommentAttachmentSelected"
             />
+            <div class="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                class="text-xs text-n-slate-11 hover:underline"
+                @click="openCommentAttachmentBrowser"
+              >
+                {{ t('TICKETS.QUICK_VIEW.ATTACH_FILE') }}
+              </button>
+              <Button
+                size="small"
+                :label="t('TICKETS.QUICK_VIEW.SEND_COMMENT')"
+                :is-loading="isSavingComment"
+                :disabled="!commentDraft.trim()"
+                @click="submitComment"
+              />
+            </div>
           </div>
           <div v-if="isLoadingActivity" class="flex justify-center p-4">
             <Spinner />
@@ -202,11 +266,31 @@ onMounted(() => {
                   <span class="text-n-slate-12">
                     {{ describeTicketEvent(event, t).label }}
                   </span>
-                  <div
-                    v-if="event.tipo_evento === 'comentario'"
-                    v-dompurify-html="formatMessage(event.payload.texto)"
-                    class="text-sm text-n-slate-12"
-                  />
+                  <template v-if="event.tipo_evento === 'comentario'">
+                    <div
+                      :ref="el => setCommentRef(event.id, el)"
+                      v-dompurify-html="formatMessage(event.payload.texto)"
+                      class="text-sm break-words text-n-slate-12"
+                    />
+                    <div
+                      v-if="event.anexos?.length"
+                      class="flex flex-wrap gap-1"
+                    >
+                      <a
+                        v-for="anexo in event.anexos"
+                        :key="anexo.id"
+                        :href="anexo.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-n-weak text-n-slate-11 hover:text-n-slate-12"
+                      >
+                        <span class="i-lucide-paperclip size-3 shrink-0" />
+                        <span class="truncate max-w-[8rem]">{{
+                          anexo.filename
+                        }}</span>
+                      </a>
+                    </div>
+                  </template>
                   <span
                     v-else-if="ticketEventText(event)"
                     class="text-n-slate-11"

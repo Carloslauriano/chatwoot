@@ -5,10 +5,12 @@ class Api::V1::Accounts::Tickets::CommentsController < Api::V1::Accounts::BaseCo
   before_action :check_ticket_authorization
 
   def create
-    @event = @ticket.ticket_timeline_events.create!(
+    @event = @ticket.ticket_timeline_events.new(
       account: Current.account, tipo_evento: :comentario, origem: :interno, autor_id: Current.user.id,
       payload: { texto: params.require(:texto) }
     )
+    @event.anexos.attach(params[:anexos]) if params[:anexos].present?
+    @event.save!
     @event = serialize_ticket_event(@event)
   end
 

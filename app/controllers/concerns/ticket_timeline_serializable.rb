@@ -12,8 +12,23 @@ module TicketTimelineSerializable
       autor_nome: user_name_for(event.autor_id),
       autor_avatar_url: user_avatar_url_for(event.autor_id),
       payload: event.payload,
+      anexos: anexos_for(event),
       created_at: event.created_at,
     }
+  end
+
+  def anexos_for(event)
+    return [] unless event.comentario?
+
+    event.anexos.map do |anexo|
+      {
+        id: anexo.id,
+        filename: anexo.filename.to_s,
+        url: url_for(anexo),
+        content_type: anexo.content_type,
+        byte_size: anexo.byte_size
+      }
+    end
   end
 
   def user_name_for(user_id)

@@ -55,4 +55,41 @@ RSpec.describe Ticket do
       expect(ticket.resolvido_em).to be_nil
     end
   end
+
+  describe '#anexos' do
+    let(:ticket) { create(:ticket) }
+    let(:imagem) { Rack::Test::UploadedFile.new('spec/assets/avatar.png', 'image/png') }
+
+    it 'accepts an attached image' do
+      ticket.anexos.attach(imagem)
+
+      expect(ticket).to be_valid
+      expect(ticket.anexos).to be_attached
+    end
+
+    it 'rejects a file above the configured size limit' do
+      allow(GlobalConfigService).to receive(:load).with('MAXIMUM_FILE_UPLOAD_SIZE', 40).and_return('0.00001')
+      ticket.anexos.attach(imagem)
+
+      expect(ticket).to be_invalid
+      expect(ticket.errors[:anexos]).to be_present
+    end
+
+    it 'rejects a disallowed content type' do
+      arquivo = Rack::Test::UploadedFile.new('spec/assets/avatar.png', 'application/x-msdownload')
+      ticket.anexos.attach(arquivo)
+
+      expect(ticket).to be_invalid
+      expect(ticket.errors[:anexos]).to be_present
+    end
+
+    it 'rejects more than NUMERO_MAXIMO_ANEXOS files' do
+      (Ticket::NUMERO_MAXIMO_ANEXOS + 1).times do
+        ticket.anexos.attach(Rack::Test::UploadedFile.new('spec/assets/avatar.png', 'image/png'))
+      end
+
+      expect(ticket).to be_invalid
+      expect(ticket.errors[:anexos]).to be_present
+    end
+  end
 end

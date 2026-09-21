@@ -104,8 +104,17 @@ class TicketsAPI extends ApiClient {
     return axios.get(`${this.url}/${ticketId}/audit_logs`);
   }
 
-  createComment(ticketId, texto) {
-    return axios.post(`${this.url}/${ticketId}/comments`, { texto });
+  createComment(ticketId, texto, anexos = []) {
+    if (!anexos.length) {
+      return axios.post(`${this.url}/${ticketId}/comments`, { texto });
+    }
+
+    const formData = new FormData();
+    formData.append('texto', texto);
+    anexos.forEach(file => formData.append('anexos[]', file));
+    return axios.post(`${this.url}/${ticketId}/comments`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
   }
 
   updateLabels(ticketId, labels) {

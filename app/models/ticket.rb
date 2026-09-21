@@ -20,6 +20,8 @@
 class Ticket < ApplicationRecord
   include Labelable
 
+  NUMERO_MAXIMO_ANEXOS = 15
+
   belongs_to :account
   belongs_to :conversation, optional: true
   belongs_to :contact, optional: true
@@ -32,14 +34,17 @@ class Ticket < ApplicationRecord
   has_many :worklogs, dependent: :destroy
   has_many :ticket_audit_logs, dependent: :destroy
   has_many :active_timers, dependent: :destroy
+  has_many_attached :anexos
 
   enum prioridade: { baixa: 0, media: 1, alta: 2, critica: 3 }
   enum status_macro: { caixa_entrada: 0, a_fazer: 1, fazendo: 2, aguardando_versao: 3, resolvido: 4 }
 
   validates :descricao, presence: true
   validates :titulo, presence: true
+  validate :anexos_validos
 
   before_save :set_resolvido_em, if: :will_save_change_to_status_macro?
+  before_save :enrich_descricao_links, if: :will_save_change_to_descricao?
 
   # US09: tempo bruto = diferença entre abertura da conversa no Chatwoot e resolução do ticket
   def tempo_bruto_segundos
@@ -57,5 +62,34 @@ class Ticket < ApplicationRecord
 
   def set_resolvido_em
     self.resolvido_em = resolvido? ? Time.current : nil
+  end
+
+  def enrich_descricao_links
+    self.descricao = LinkTextEnricherService.enrich(descricao)
+  end
+
+  def anexos_validos
+    return unless anexos.attached?
+
+    errors.add(:anexos, 'quantidade máxima de anexos excedida') if anexos.size > NUMERO_MAXIMO_ANEXOS
+
+    anexos.each do |anexo|
+      validar_tamanho_anexo(anexo.blob)
+      validar_tipo_anexo(anexo.blob)
+    end
+  end
+
+  def validar_tamanho_anexo(blob)
+    limite_mb = GlobalConfigService.load('MAXIMUM_FILE_UPLOAD_SIZE', 40).to_i
+    limite_mb = 40 if limite_mb <= 0
+
+    errors.add(:anexos, "#{blob.filename} excede o tamanho máximo permitido") if blob.byte_size > limite_mb.megabytes
+  end
+
+  def validar_tipo_anexo(blob)
+    tipo = blob.content_type.to_s
+    aceito = tipo.start_with?('image/', 'video/', 'audio/') || Attachment::ACCEPTABLE_FILE_TYPES.include?(tipo)
+
+    errors.add(:anexos, "tipo de arquivo #{tipo} não suportado") unless aceito
   end
 end

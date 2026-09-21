@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { format } from 'date-fns';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
@@ -8,6 +8,8 @@ import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 import { useAdmin } from 'dashboard/composables/useAdmin';
 import { formatDuration } from 'shared/helpers/timeHelper';
 import TicketsAPI from 'dashboard/api/tickets';
+import TicketAttachmentsAPI from 'dashboard/api/ticketAttachments';
+import { useLinkPreviewEnrichment } from 'dashboard/composables/useLinkPreviewEnrichment';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
 import AddLabel from 'shared/components/ui/dropdown/AddLabel.vue';
 import LabelDropdown from 'shared/components/ui/label/LabelDropdown.vue';
@@ -289,6 +291,55 @@ const saveDescription = async () => {
   }
 };
 
+// Links "crus" (colados sem texto próprio) na descrição mostram o domínio
+// de cara e trocam pelo <title> da página assim que a busca no backend
+// termina — igual o preview de link do Trello. Nunca mexe em link com
+// texto próprio (ex: [texto](url) do markdown).
+const descriptionRef = ref(null);
+const { enrichLinks } = useLinkPreviewEnrichment();
+const enrichDescriptionLinks = () => enrichLinks(descriptionRef.value);
+
+watch(() => ticket.value.descricao, enrichDescriptionLinks, {
+  immediate: true,
+});
+// Cancelar a edição volta a mostrar a descrição sem trocar o texto — reaplica
+// o enriquecimento já que o conteúdo (e a ref do container) acabou de remontar.
+watch(isEditingDescription, isEditing => {
+  if (!isEditing) enrichDescriptionLinks();
+});
+
+// Anexos de arquivo persistidos na descrição (distintos da imagem colada
+// inline no texto, que já é resolvida pelo próprio editor via Active Storage).
+const attachmentInput = ref(null);
+const isUploadingAttachment = ref(false);
+
+const openAttachmentBrowser = () => attachmentInput.value?.click();
+
+const onAttachmentSelected = async event => {
+  const files = Array.from(event.target.files || []);
+  event.target.value = '';
+  if (!files.length) return;
+
+  try {
+    isUploadingAttachment.value = true;
+    await TicketAttachmentsAPI.create(ticket.value.id, files);
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.HEADER.ATTACHMENTS.UPLOAD_ERROR'));
+  } finally {
+    isUploadingAttachment.value = false;
+  }
+};
+
+const removeAttachment = async anexo => {
+  try {
+    await TicketAttachmentsAPI.destroy(ticket.value.id, anexo.id);
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.HEADER.ATTACHMENTS.DELETE_ERROR'));
+  }
+};
+
 const onWorklogCreated = () => emit('updated');
 
 const showManualTimeModal = ref(false);
@@ -364,6 +415,7 @@ const runMacro = async macro => {
 };
 
 onMounted(() => {
+  enrichDescriptionLinks();
   if (!ticketStatuses.value.length) {
     store.dispatch('ticketStatuses/get');
   }
@@ -635,7 +687,7 @@ onMounted(() => {
     </span>
 
     <!-- Descrição -->
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col min-w-0 gap-1">
       <div class="flex items-center justify-between">
         <span class="text-xs font-medium text-n-slate-11">
           {{ t('TICKETS.HEADER.DESCRIPTION') }}
@@ -651,13 +703,14 @@ onMounted(() => {
       </div>
       <div
         v-if="!isEditingDescription"
+        ref="descriptionRef"
         v-dompurify-html="formatMessage(ticket.descricao)"
-        class="text-sm text-n-slate-12"
+        class="text-sm [overflow-wrap:anywhere] [&_a]:[overflow-wrap:anywhere] text-n-slate-12"
       />
       <div v-else class="flex flex-col gap-2">
         <WootMessageEditor
           v-model="descriptionDraft"
-          channel-type="Context::Default"
+          channel-type="Context::TicketRichText"
           :enable-canned-responses="false"
         />
         <div class="flex items-center justify-end gap-2">
@@ -675,6 +728,46 @@ onMounted(() => {
             @click="saveDescription"
           />
         </div>
+      </div>
+
+      <!-- Anexos -->
+      <div class="flex flex-col gap-1">
+        <div class="flex flex-wrap gap-2">
+          <a
+            v-for="anexo in ticket.anexos"
+            :key="anexo.id"
+            :href="anexo.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-n-weak text-n-slate-11 hover:text-n-slate-12"
+          >
+            <span class="i-lucide-paperclip size-3 shrink-0" />
+            <span class="truncate max-w-[10rem]">{{ anexo.filename }}</span>
+            <button
+              type="button"
+              class="hover:text-n-ruby-9"
+              :title="t('TICKETS.HEADER.ATTACHMENTS.REMOVE')"
+              @click.prevent="removeAttachment(anexo)"
+            >
+              <span class="text-[10px] i-lucide-x" />
+            </button>
+          </a>
+        </div>
+        <input
+          ref="attachmentInput"
+          type="file"
+          multiple
+          class="hidden"
+          @change="onAttachmentSelected"
+        />
+        <button
+          type="button"
+          class="self-start text-xs text-n-slate-11 hover:underline"
+          :disabled="isUploadingAttachment"
+          @click="openAttachmentBrowser"
+        >
+          {{ t('TICKETS.HEADER.ATTACHMENTS.ADD') }}
+        </button>
       </div>
     </div>
 
