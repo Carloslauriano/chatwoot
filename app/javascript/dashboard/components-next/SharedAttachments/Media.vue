@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import {
   dynamicTime,
-  exactTimestamp,
   formatDuration,
   shortTimestamp,
 } from 'shared/helpers/timeHelper';
