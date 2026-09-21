@@ -114,7 +114,7 @@ const members = computed(() => {
           {{ totalWorked }}
         </span>
       </div>
-      <div v-if="members.length" class="flex items-center shrink-0 -space-x-2">
+      <div v-if="members.length" class="flex items-center shrink-0 gap-1">
         <Avatar
           v-for="member in members"
           :key="member.key"
@@ -123,7 +123,6 @@ const members = computed(() => {
           :name="member.nome"
           :size="24"
           rounded-full
-          class="ring-2 ring-n-solid-2"
         />
       </div>
     </div>
