@@ -8,6 +8,7 @@ import {
   formatDuration,
   shortTimestamp,
 } from 'shared/helpers/timeHelper';
+import { useExactTimestamp } from 'shared/composables/useExactTimestamp';
 import { downloadFile } from '@chatwoot/utils';
 import {
   ATTACHMENT_TYPES,
@@ -24,6 +25,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['select', 'jumpToMessage']);
+
+const exactTimestamp = useExactTimestamp();
 
 const { t } = useI18n();
 

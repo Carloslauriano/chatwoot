@@ -107,7 +107,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
       return render_could_not_create_error(I18n.t('errors.conversations.workflow.priority_hidden'))
     end
 
-    @conversation.toggle_priority(params[:priority])
+    @conversation.toggle_priority(permitted_update_params[:priority])
     head :ok
   end
 
@@ -148,6 +148,8 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
 
   def permitted_update_params
     # TODO: Move the other conversation attributes to this method and remove specific endpoints for each attribute
+    raise ActionController::ParameterMissing, :priority unless params[:priority].nil? || Conversation.priorities.key?(params[:priority])
+
     params.permit(:priority)
   end
 
