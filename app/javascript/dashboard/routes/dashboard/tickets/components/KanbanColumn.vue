@@ -38,8 +38,8 @@ const handleChange = event => {
 </script>
 
 <template>
-  <div class="flex flex-col w-full min-w-[260px] gap-3">
-    <div class="flex items-center gap-2 px-1">
+  <div class="flex flex-col w-full h-full min-w-[260px] max-h-full gap-3">
+    <div class="flex items-center flex-shrink-0 gap-2 px-1">
       <h3 class="text-sm font-medium text-n-slate-12">{{ title }}</h3>
       <span
         class="flex items-center justify-center px-1.5 h-5 min-w-[20px] text-xs font-medium rounded-full bg-n-alpha-2 text-n-slate-11"
@@ -49,7 +49,7 @@ const handleChange = event => {
     </div>
     <Draggable
       v-model="localTickets"
-      class="flex flex-col flex-1 min-h-[120px] p-2 rounded-lg bg-n-alpha-1"
+      class="flex flex-col flex-1 min-h-[120px] p-2 overflow-y-auto rounded-lg bg-n-alpha-1"
       group="tickets-kanban"
       item-key="id"
       tag="div"

@@ -148,8 +148,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col w-full h-full p-6 overflow-y-auto">
-    <div class="flex items-center justify-between mb-4">
+  <div class="flex flex-col w-full h-full p-6 overflow-hidden">
+    <div class="flex items-center justify-between flex-shrink-0 mb-4">
       <h1 class="text-xl font-medium text-n-slate-12">
         {{ t('SIDEBAR.TICKETS_KANBAN') }}
       </h1>
@@ -201,7 +201,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="flex flex-1 gap-4 overflow-x-auto">
+    <div class="flex flex-1 min-h-0 gap-4 overflow-x-auto">
       <KanbanColumn
         v-for="column in visibleColumns"
         :key="column.id"

@@ -24,7 +24,9 @@ const PRIORITY_COLOR = {
   critica: 'ruby',
 };
 
-const STATUS_MACRO_LABEL = {
+// Fallback apenas para tickets sem ticket_status (legado ou coluna excluída) —
+// ticket_status_name é a fonte de verdade e reflete a coluna atual do Kanban.
+const STATUS_MACRO_LABEL_FALLBACK = {
   caixa_entrada: 'Caixa de Entrada',
   a_fazer: 'A Fazer',
   fazendo: 'Fazendo',
@@ -93,7 +95,9 @@ onMounted(() => {
             />
             <Label
               :label="
-                STATUS_MACRO_LABEL[ticket.status_macro] || ticket.status_macro
+                ticket.ticket_status_name ||
+                STATUS_MACRO_LABEL_FALLBACK[ticket.status_macro] ||
+                ticket.status_macro
               "
               color="teal"
               compact
