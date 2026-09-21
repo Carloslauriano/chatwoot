@@ -19,6 +19,9 @@ export const getters = {
   getVerifiedAgents($state) {
     return $state.records.filter(record => record.confirmed);
   },
+  getActiveAgents($state) {
+    return $state.records.filter(record => !record.archived);
+  },
   getUIFlags($state) {
     return $state.uiFlags;
   },

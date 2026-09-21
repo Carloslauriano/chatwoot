@@ -43,7 +43,7 @@ const ticketStatuses = useMapGetter('ticketStatuses/getTicketStatuses');
 // Agentes da conta inteira, não os assignable do inbox da conversa aberta —
 // o card do ticket também é usado fora do contexto de uma conversa (Kanban,
 // TicketShow), onde não há inbox_id para o useAgentsList filtrar por.
-const agentsList = useMapGetter('agents/getAgents');
+const agentsList = useMapGetter('agents/getActiveAgents');
 const accountLabels = useMapGetter('labels/getLabels');
 const ticketMacros = useMapGetter('ticketMacros/getTicketMacros');
 const executingMacroId = ref(null);
