@@ -16,6 +16,7 @@ const store = useStore();
 const myTeams = useMapGetter('teams/getMyTeams');
 const teams = useMapGetter('teams/getTeams');
 const ticketStatuses = useMapGetter('ticketStatuses/getTicketStatuses');
+const agentsList = useMapGetter('agents/getActiveAgents');
 const getTicketsByTicketStatus = useMapGetter(
   'tickets/getTicketsByTicketStatus'
 );
@@ -143,6 +144,9 @@ watch(teamFilter, fetchTickets);
 onMounted(async () => {
   await store.dispatch('teams/get');
   await store.dispatch('ticketStatuses/get');
+  if (!agentsList.value.length) {
+    store.dispatch('agents/get');
+  }
   fetchTickets();
 });
 </script>

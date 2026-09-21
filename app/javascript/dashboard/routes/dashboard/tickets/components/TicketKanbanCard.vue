@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import Label from 'dashboard/components-next/label/Label.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
+import { useMapGetter } from 'dashboard/composables/store';
 import { formatDuration } from 'shared/helpers/timeHelper';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 import {
@@ -28,6 +29,12 @@ const descriptionPreview = computed(() =>
   getPlainText(props.ticket.descricao || '')
 );
 
+// Agentes da conta inteira (mesma fonte que o TicketHeaderCard) para resolver
+// o avatar dos colaboradores, já que assignments não traz avatar no payload.
+const agentsList = useMapGetter('agents/getActiveAgents');
+const agentFor = colaboradorId =>
+  agentsList.value.find(agent => agent.id === colaboradorId);
+
 const members = computed(() => {
   const assignments = props.ticket.assignments || [];
   const responsavelId = props.ticket.responsavel_id;
@@ -45,7 +52,7 @@ const members = computed(() => {
     .map(assignment => ({
       key: `assignment-${assignment.id}`,
       nome: assignment.colaborador_nome,
-      avatarUrl: null,
+      avatarUrl: agentFor(assignment.colaborador_id)?.thumbnail,
     }));
 
   return responsavelMember
