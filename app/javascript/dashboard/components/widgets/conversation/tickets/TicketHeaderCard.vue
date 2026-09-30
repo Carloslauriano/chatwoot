@@ -10,21 +10,22 @@ import { formatDuration } from 'shared/helpers/timeHelper';
 import TicketsAPI from 'dashboard/api/tickets';
 import TicketAttachmentsAPI from 'dashboard/api/ticketAttachments';
 import { useLinkPreviewEnrichment } from 'dashboard/composables/useLinkPreviewEnrichment';
+import { isImageAttachment } from 'dashboard/helper/ticketAttachmentHelper';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
-import AddLabel from 'shared/components/ui/dropdown/AddLabel.vue';
-import LabelDropdown from 'shared/components/ui/label/LabelDropdown.vue';
+import GalleryView from 'dashboard/components/widgets/conversation/components/GalleryView.vue';
 import Label from 'dashboard/components-next/label/Label.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
 import AccordionItem from 'dashboard/components/Accordion/AccordionItem.vue';
+import ConfirmationModal from 'dashboard/components/widgets/modal/ConfirmationModal.vue';
 import {
   PRIORITY_COLOR,
   PRIORITY_ICON,
-  colorForLabel,
 } from 'dashboard/helper/ticketCardHelper';
 import TimerWidget from './TimerWidget.vue';
 import ManualTimeEntryModal from './ManualTimeEntryModal.vue';
+import TicketLabelPicker from './TicketLabelPicker.vue';
 
 const props = defineProps({
   ticket: {
@@ -85,6 +86,17 @@ const selectedStatus = computed(
     ) || {}
 );
 
+// Mesma regra do Kanban (visibleColumns em TicketsKanban.vue): status sem
+// time vinculado aparece pra qualquer time; com time, só se bater com o
+// time atual do ticket. O status já selecionado continua aparecendo no
+// botão mesmo se não estiver nessa lista (ex.: ticket mudou de time).
+const visibleTicketStatuses = computed(() =>
+  ticketStatuses.value.filter(status => {
+    if (!status.team_ids || !status.team_ids.length) return true;
+    return status.team_ids.includes(ticket.value.team_id);
+  })
+);
+
 const onSelectTeam = async item => {
   try {
     await TicketsAPI.transferTeam(ticket.value.id, item.id || null);
@@ -104,6 +116,50 @@ const onSelectStatus = async item => {
     emit('updated');
   } catch (error) {
     useAlert(t('TICKETS.HEADER.STATUS_MACRO_UPDATE_ERROR'));
+  }
+};
+
+// Prioridade — clicar na label abre um seletor compacto; trocar de valor
+// exige confirmação em popup antes de salvar (diferente dos outros campos
+// do header, que salvam direto ao selecionar).
+const priorityOptions = ['baixa', 'media', 'alta', 'critica'].map(key => ({
+  id: key,
+  name: t(`TICKETS.PRIORITY_OPTIONS.${key.toUpperCase()}`),
+}));
+
+const showPriorityDropdown = ref(false);
+const isSavingPriority = ref(false);
+const pendingPriorityId = ref(null);
+const priorityConfirmModal = ref(null);
+
+const closePriorityDropdown = () => {
+  showPriorityDropdown.value = false;
+};
+
+const pendingPriorityLabel = computed(
+  () =>
+    priorityOptions.find(option => option.id === pendingPriorityId.value)
+      ?.name || ''
+);
+
+const selectPriority = async option => {
+  showPriorityDropdown.value = false;
+  if (option.id === ticket.value.prioridade) return;
+
+  pendingPriorityId.value = option.id;
+  const confirmed = await priorityConfirmModal.value.showConfirmation();
+  if (!confirmed) return;
+
+  try {
+    isSavingPriority.value = true;
+    await TicketsAPI.update(ticket.value.id, {
+      ticket: { prioridade: option.id },
+    });
+    emit('updated');
+  } catch (error) {
+    useAlert(t('TICKETS.HEADER.PRIORITY_UPDATE_ERROR'));
+  } finally {
+    isSavingPriority.value = false;
   }
 };
 
@@ -207,10 +263,6 @@ const onChangeStatusMicro = async event => {
 // Etiquetas — mesmo componente de seletor usado nas conversas (AddLabel +
 // LabelDropdown), em vez de uma grade de botões própria.
 const isTogglingLabels = ref(false);
-const showLabelDropdown = ref(false);
-const closeLabelDropdown = () => {
-  showLabelDropdown.value = false;
-};
 
 const toggleLabel = async title => {
   if (isTogglingLabels.value) return;
@@ -315,9 +367,7 @@ const isUploadingAttachment = ref(false);
 
 const openAttachmentBrowser = () => attachmentInput.value?.click();
 
-const onAttachmentSelected = async event => {
-  const files = Array.from(event.target.files || []);
-  event.target.value = '';
+const uploadAttachments = async files => {
   if (!files.length) return;
 
   try {
@@ -329,6 +379,73 @@ const onAttachmentSelected = async event => {
   } finally {
     isUploadingAttachment.value = false;
   }
+};
+
+const onAttachmentSelected = event => {
+  const files = Array.from(event.target.files || []);
+  event.target.value = '';
+  uploadAttachments(files);
+};
+
+// Colar uma imagem (Ctrl+V) enquanto edita a descrição anexa o arquivo — o
+// editor (WootMessageEditor) já intercepta o paste e não deixa a imagem
+// virar anexo sozinho fora do fluxo de email/web, então resolvemos aqui.
+const onDescriptionPaste = event => {
+  const files = Array.from(event.clipboardData?.files || []).filter(file =>
+    file.type.startsWith('image/')
+  );
+  uploadAttachments(files);
+};
+
+// Preview de imagem — mesmo GalleryView usado no chat, em vez de abrir a
+// imagem em nova aba. A lista navegável junta as <img> inline da descrição
+// (lidas do próprio container renderizado) com os anexos de imagem do
+// ticket, então o prev/next passeia pelas duas fontes juntas.
+const showGallery = ref(false);
+const selectedAttachment = ref(null);
+const galleryImages = ref([]);
+
+const buildTicketImages = () => {
+  const inlineImages = descriptionRef.value
+    ? Array.from(descriptionRef.value.querySelectorAll('img')).map(
+        (img, index) => ({
+          message_id: `description-${index}`,
+          file_type: 'image',
+          data_url: img.src,
+          created_at: ticket.value.created_at,
+        })
+      )
+    : [];
+
+  const attachmentImages = (ticket.value.anexos || [])
+    .filter(isImageAttachment)
+    .map(anexo => ({
+      message_id: `anexo-${anexo.id}`,
+      file_type: 'image',
+      data_url: anexo.url,
+      created_at: ticket.value.created_at,
+    }));
+
+  return [...inlineImages, ...attachmentImages];
+};
+
+const openGallery = (images, attachment) => {
+  galleryImages.value = images;
+  selectedAttachment.value = attachment;
+  showGallery.value = true;
+};
+
+const onDescriptionClick = event => {
+  if (event.target.tagName !== 'IMG') return;
+  const images = buildTicketImages();
+  const match = images.find(image => image.data_url === event.target.src);
+  openGallery(images, match || images[0]);
+};
+
+const openAttachmentGallery = anexo => {
+  const images = buildTicketImages();
+  const match = images.find(image => image.message_id === `anexo-${anexo.id}`);
+  openGallery(images, match || images[0]);
 };
 
 const removeAttachment = async anexo => {
@@ -471,19 +588,66 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <Label
-        class="shrink-0"
-        :label="ticket.prioridade"
-        :color="PRIORITY_COLOR[ticket.prioridade] || 'slate'"
-        compact
-      >
-        <template #icon>
-          <span
-            :class="PRIORITY_ICON[ticket.prioridade]"
-            class="text-current size-3"
-          />
-        </template>
-      </Label>
+      <div v-on-clickaway="closePriorityDropdown" class="relative shrink-0">
+        <button
+          type="button"
+          :disabled="isSavingPriority"
+          @click="showPriorityDropdown = !showPriorityDropdown"
+        >
+          <Label
+            :label="ticket.prioridade"
+            :color="PRIORITY_COLOR[ticket.prioridade] || 'slate'"
+            compact
+          >
+            <template #icon>
+              <span
+                :class="PRIORITY_ICON[ticket.prioridade]"
+                class="text-current size-3"
+              />
+            </template>
+          </Label>
+        </button>
+
+        <div
+          v-show="showPriorityDropdown"
+          class="absolute z-[100] w-40 p-1 mt-1 border rounded-lg shadow-lg top-full bg-n-alpha-3 backdrop-blur-[100px] border-n-strong"
+        >
+          <button
+            v-for="option in priorityOptions"
+            :key="option.id"
+            type="button"
+            class="flex items-center w-full px-1 py-1 rounded-md hover:bg-n-alpha-1"
+            :disabled="isSavingPriority"
+            @click="selectPriority(option)"
+          >
+            <Label
+              :label="option.name"
+              :color="PRIORITY_COLOR[option.id] || 'slate'"
+              compact
+            >
+              <template #icon>
+                <span
+                  :class="PRIORITY_ICON[option.id]"
+                  class="text-current size-3"
+                />
+              </template>
+            </Label>
+          </button>
+        </div>
+      </div>
+
+      <ConfirmationModal
+        ref="priorityConfirmModal"
+        :title="t('TICKETS.HEADER.PRIORITY_UPDATE_CONFIRM_TITLE')"
+        :description="
+          t('TICKETS.HEADER.PRIORITY_UPDATE_CONFIRM_DESCRIPTION', {
+            priority: pendingPriorityLabel,
+          })
+        "
+        :confirm-label="t('TICKETS.HEADER.SAVE')"
+        :cancel-label="t('TICKETS.CREATE.CANCEL')"
+      />
+
       <Button
         v-if="isAdmin"
         faded
@@ -508,7 +672,7 @@ onMounted(() => {
         </span>
         <MultiselectDropdown
           class="w-full"
-          :options="ticketStatuses"
+          :options="visibleTicketStatuses"
           :selected-item="selectedStatus"
           :multiselector-placeholder="t('TICKETS.HEADER.STATUS_MACRO')"
           :input-placeholder="t('TICKETS.HEADER.STATUS_MACRO')"
@@ -653,32 +817,12 @@ onMounted(() => {
       <span class="text-xs font-medium text-n-slate-11">
         {{ t('TICKETS.HEADER.LABELS') }}
       </span>
-      <div
-        v-on-clickaway="closeLabelDropdown"
-        class="relative flex flex-wrap items-center gap-1"
-      >
-        <AddLabel @add="showLabelDropdown = !showLabelDropdown" />
-        <Label
-          v-for="labelName in ticket.label_list"
-          :key="labelName"
-          :label="labelName"
-          :color="colorForLabel(labelName)"
-          compact
-        />
-        <div
-          v-show="showLabelDropdown"
-          class="absolute z-[100] w-72 p-2 mt-1 border rounded-lg shadow-lg top-full bg-n-alpha-3 backdrop-blur-[100px] border-n-strong"
-        >
-          <LabelDropdown
-            v-if="showLabelDropdown"
-            :account-labels="accountLabels"
-            :selected-labels="ticket.label_list || []"
-            :allow-creation="false"
-            @add="label => toggleLabel(label.title)"
-            @remove="toggleLabel"
-          />
-        </div>
-      </div>
+      <TicketLabelPicker
+        :account-labels="accountLabels"
+        :selected-labels="ticket.label_list || []"
+        @add="label => toggleLabel(label.title)"
+        @remove="toggleLabel"
+      />
     </div>
 
     <!-- Categoria -->
@@ -705,9 +849,10 @@ onMounted(() => {
         v-if="!isEditingDescription"
         ref="descriptionRef"
         v-dompurify-html="formatMessage(ticket.descricao)"
-        class="text-sm [overflow-wrap:anywhere] [&_a]:[overflow-wrap:anywhere] text-n-slate-12"
+        class="text-sm [overflow-wrap:anywhere] [&_a]:[overflow-wrap:anywhere] [&_img]:cursor-zoom-in text-n-slate-12"
+        @click="onDescriptionClick"
       />
-      <div v-else class="flex flex-col gap-2">
+      <div v-else class="flex flex-col gap-2" @paste="onDescriptionPaste">
         <WootMessageEditor
           v-model="descriptionDraft"
           channel-type="Context::TicketRichText"
@@ -733,25 +878,45 @@ onMounted(() => {
       <!-- Anexos -->
       <div class="flex flex-col gap-1">
         <div class="flex flex-wrap gap-2">
-          <a
-            v-for="anexo in ticket.anexos"
-            :key="anexo.id"
-            :href="anexo.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-n-weak text-n-slate-11 hover:text-n-slate-12"
-          >
-            <span class="i-lucide-paperclip size-3 shrink-0" />
-            <span class="truncate max-w-[10rem]">{{ anexo.filename }}</span>
-            <button
-              type="button"
-              class="hover:text-n-ruby-9"
-              :title="t('TICKETS.HEADER.ATTACHMENTS.REMOVE')"
-              @click.prevent="removeAttachment(anexo)"
+          <template v-for="anexo in ticket.anexos" :key="anexo.id">
+            <div
+              v-if="isImageAttachment(anexo)"
+              class="relative group shrink-0"
             >
-              <span class="text-[10px] i-lucide-x" />
-            </button>
-          </a>
+              <img
+                :src="anexo.url"
+                :alt="anexo.filename"
+                class="object-cover border rounded-lg cursor-zoom-in size-16 border-n-weak"
+                @click="openAttachmentGallery(anexo)"
+              />
+              <button
+                type="button"
+                class="absolute items-center justify-center hidden w-4 h-4 text-white rounded-full -top-1 -right-1 bg-n-ruby-9 group-hover:flex"
+                :title="t('TICKETS.HEADER.ATTACHMENTS.REMOVE')"
+                @click="removeAttachment(anexo)"
+              >
+                <span class="text-[10px] i-lucide-x" />
+              </button>
+            </div>
+            <a
+              v-else
+              :href="anexo.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-n-weak text-n-slate-11 hover:text-n-slate-12"
+            >
+              <span class="i-lucide-paperclip size-3 shrink-0" />
+              <span class="truncate max-w-[10rem]">{{ anexo.filename }}</span>
+              <button
+                type="button"
+                class="hover:text-n-ruby-9"
+                :title="t('TICKETS.HEADER.ATTACHMENTS.REMOVE')"
+                @click.prevent="removeAttachment(anexo)"
+              >
+                <span class="text-[10px] i-lucide-x" />
+              </button>
+            </a>
+          </template>
         </div>
         <input
           ref="attachmentInput"
@@ -860,5 +1025,13 @@ onMounted(() => {
         @saved="onManualTimeSaved"
       />
     </woot-modal>
+
+    <GalleryView
+      v-if="showGallery"
+      v-model:show="showGallery"
+      :attachment="selectedAttachment"
+      :all-attachments="galleryImages"
+      @close="showGallery = false"
+    />
   </div>
 </template>

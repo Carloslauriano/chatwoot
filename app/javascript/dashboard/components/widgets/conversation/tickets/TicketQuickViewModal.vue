@@ -7,10 +7,12 @@ import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 import { useLinkPreviewEnrichment } from 'dashboard/composables/useLinkPreviewEnrichment';
+import { isImageAttachment } from 'dashboard/helper/ticketAttachmentHelper';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
+import GalleryView from 'dashboard/components/widgets/conversation/components/GalleryView.vue';
 import {
   describeTicketEvent,
   ticketEventText,
@@ -87,6 +89,74 @@ const onCommentAttachmentSelected = event => {
   commentAttachments.value = [...commentAttachments.value, ...files];
 };
 
+// Mesma lógica do file-input: colar (Ctrl+V) uma imagem enquanto escreve o
+// comentário a adiciona como anexo, em vez de ser descartada pelo editor.
+const onCommentPaste = event => {
+  const files = Array.from(event.clipboardData?.files || []).filter(file =>
+    file.type.startsWith('image/')
+  );
+  if (!files.length) return;
+  commentAttachments.value = [...commentAttachments.value, ...files];
+};
+
+// Preview de imagem — mesmo GalleryView usado no chat. A lista navegável
+// junta as <img> inline de todos os comentários (via commentRefs, já usado
+// pelo enriquecimento de link) com os anexos de imagem de cada comentário,
+// na ordem da timeline, então o prev/next passeia pela conversa inteira.
+const showGallery = ref(false);
+const selectedAttachment = ref(null);
+const galleryImages = ref([]);
+
+const buildActivityImages = () => {
+  const images = [];
+  events.value.forEach(event => {
+    if (event.tipo_evento !== 'comentario') return;
+
+    const commentEl = commentRefs[event.id];
+    if (commentEl) {
+      Array.from(commentEl.querySelectorAll('img')).forEach((img, index) => {
+        images.push({
+          message_id: `comment-${event.id}-img-${index}`,
+          file_type: 'image',
+          data_url: img.src,
+          created_at: event.created_at,
+        });
+      });
+    }
+
+    (event.anexos || []).filter(isImageAttachment).forEach(anexo => {
+      images.push({
+        message_id: `comment-${event.id}-anexo-${anexo.id}`,
+        file_type: 'image',
+        data_url: anexo.url,
+        created_at: event.created_at,
+      });
+    });
+  });
+  return images;
+};
+
+const openGallery = (images, attachment) => {
+  galleryImages.value = images;
+  selectedAttachment.value = attachment;
+  showGallery.value = true;
+};
+
+const onCommentBodyClick = event => {
+  if (event.target.tagName !== 'IMG') return;
+  const images = buildActivityImages();
+  const match = images.find(image => image.data_url === event.target.src);
+  openGallery(images, match || images[0]);
+};
+
+const openCommentAttachmentGallery = (event, anexo) => {
+  const images = buildActivityImages();
+  const match = images.find(
+    image => image.message_id === `comment-${event.id}-anexo-${anexo.id}`
+  );
+  openGallery(images, match || images[0]);
+};
+
 const removeCommentAttachment = index => {
   commentAttachments.value = commentAttachments.value.filter(
     (_file, fileIndex) => fileIndex !== index
@@ -152,7 +222,7 @@ onMounted(() => {
           <span class="text-xs font-medium text-n-slate-11">
             {{ t('TICKETS.QUICK_VIEW.ACTIVITY') }}
           </span>
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-2" @paste="onCommentPaste">
             <WootMessageEditor
               v-model="commentDraft"
               channel-type="Context::TicketRichText"
@@ -270,25 +340,38 @@ onMounted(() => {
                     <div
                       :ref="el => setCommentRef(event.id, el)"
                       v-dompurify-html="formatMessage(event.payload.texto)"
-                      class="text-sm break-words text-n-slate-12"
+                      class="text-sm break-words text-n-slate-12 [&_img]:cursor-zoom-in"
+                      @click="onCommentBodyClick"
                     />
                     <div
                       v-if="event.anexos?.length"
                       class="flex flex-wrap gap-1"
                     >
-                      <a
-                        v-for="anexo in event.anexos"
-                        :key="anexo.id"
-                        :href="anexo.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-n-weak text-n-slate-11 hover:text-n-slate-12"
-                      >
-                        <span class="i-lucide-paperclip size-3 shrink-0" />
-                        <span class="truncate max-w-[8rem]">{{
-                          anexo.filename
-                        }}</span>
-                      </a>
+                      <template v-for="anexo in event.anexos" :key="anexo.id">
+                        <div
+                          v-if="isImageAttachment(anexo)"
+                          class="relative shrink-0"
+                        >
+                          <img
+                            :src="anexo.url"
+                            :alt="anexo.filename"
+                            class="object-cover border rounded-lg cursor-zoom-in size-12 border-n-weak"
+                            @click="openCommentAttachmentGallery(event, anexo)"
+                          />
+                        </div>
+                        <a
+                          v-else
+                          :href="anexo.url"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="flex items-center gap-1 px-2 py-1 text-xs rounded-lg border border-n-weak text-n-slate-11 hover:text-n-slate-12"
+                        >
+                          <span class="i-lucide-paperclip size-3 shrink-0" />
+                          <span class="truncate max-w-[8rem]">{{
+                            anexo.filename
+                          }}</span>
+                        </a>
+                      </template>
                     </div>
                   </template>
                   <span
@@ -307,5 +390,13 @@ onMounted(() => {
         </div>
       </template>
     </div>
+
+    <GalleryView
+      v-if="showGallery"
+      v-model:show="showGallery"
+      :attachment="selectedAttachment"
+      :all-attachments="galleryImages"
+      @close="showGallery = false"
+    />
   </div>
 </template>
