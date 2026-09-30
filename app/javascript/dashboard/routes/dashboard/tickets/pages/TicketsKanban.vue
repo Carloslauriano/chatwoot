@@ -1,17 +1,26 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
 import { useToggle } from '@vueuse/core';
 import { vOnClickOutside } from '@vueuse/components';
+import { debounce } from '@chatwoot/utils';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import KanbanColumn from '../components/KanbanColumn.vue';
 import TicketQuickViewModal from 'dashboard/components/widgets/conversation/tickets/TicketQuickViewModal.vue';
 import CreateStandaloneTicket from 'dashboard/components/widgets/conversation/tickets/CreateStandaloneTicket.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
+import Input from 'dashboard/components-next/input/Input.vue';
+import Icon from 'dashboard/components-next/icon/Icon.vue';
 import SelectMenu from 'dashboard/components-next/selectmenu/SelectMenu.vue';
+import Switch from 'dashboard/components-next/switch/Switch.vue';
+
+const DEBOUNCE_DELAY = 300;
 
 const { t } = useI18n();
 const store = useStore();
+const route = useRoute();
+const router = useRouter();
 
 const myTeams = useMapGetter('teams/getMyTeams');
 const teams = useMapGetter('teams/getTeams');
@@ -20,10 +29,14 @@ const agentsList = useMapGetter('agents/getActiveAgents');
 const getTicketsByTicketStatus = useMapGetter(
   'tickets/getTicketsByTicketStatus'
 );
+const uiFlags = useMapGetter('tickets/getUIFlags');
 
 const openTicketId = ref(null);
 const showTicketModal = ref(false);
 const showCreateTicketModal = ref(false);
+// Preenchido quando o "+ Criar novo ticket" de uma coluna específica é
+// clicado — null quando é o botão genérico do topo (sem status pré-definido).
+const createFromColumn = ref(null);
 
 // 'mine' | 'all' | '<teamId>' — só um id de time específico habilita a
 // sobreposição de posição por time (não faz sentido com múltiplos times).
@@ -31,6 +44,9 @@ const teamFilter = ref('mine');
 // 'priority' (padrão: prioridade maior primeiro, id menor como desempate) |
 // 'newest' | 'oldest'.
 const sortMode = ref('priority');
+// Dimensões independentes do filtro de time: combinam via AND no backend.
+const searchQuery = ref('');
+const assignedToMeFilter = ref(false);
 
 const [showFilterPanel, toggleFilterPanel] = useToggle();
 
@@ -92,6 +108,18 @@ const visibleColumns = computed(() => {
   return [...columns].sort((a, b) => columnPosition(a) - columnPosition(b));
 });
 
+// Time "correspondente" de uma coluna, usado pelo "+ Criar novo ticket" de
+// cada coluna: se um time específico está filtrado, ele já garante que só
+// aparecem colunas compatíveis (ver visibleColumns), então vale sempre; sem
+// filtro específico ('mine'/'all'), só dá pra afirmar um time sem ambiguidade
+// se a coluna estiver vinculada a exatamente um.
+const correspondingTeamId = column => {
+  if (singleTeamId.value) return singleTeamId.value;
+  if (column.team_ids && column.team_ids.length === 1)
+    return column.team_ids[0];
+  return null;
+};
+
 // Padrão do Kanban: prioridade maior primeiro, id menor (mais antigo) acima
 // como desempate dentro da mesma prioridade.
 const PRIORITY_RANK = { critica: 3, alta: 2, media: 1, baixa: 0 };
@@ -110,8 +138,17 @@ const ticketsForColumn = columnId =>
   sortTickets(getTicketsByTicketStatus.value(columnId));
 
 const fetchTickets = () => {
-  store.dispatch('tickets/fetchByTeams', teamIdsFilter.value);
+  store.dispatch('tickets/fetchByTeams', {
+    teamIds: teamIdsFilter.value,
+    q: searchQuery.value,
+    assignedToMe: assignedToMeFilter.value,
+  });
 };
+
+const onSearch = debounce(value => {
+  searchQuery.value = value;
+  fetchTickets();
+}, DEBOUNCE_DELAY);
 
 const handleMoved = ({ ticketId, ticketStatusId }) => {
   store.dispatch('tickets/updateTicketStatus', {
@@ -120,14 +157,49 @@ const handleMoved = ({ ticketId, ticketStatusId }) => {
   });
 };
 
+// Abrir/fechar o modal seta o estado local DIRETO (não depende do router
+// resolver a navegação pra aparecer na tela) — a URL é só sincronizada em
+// paralelo, best-effort, pra permitir link direto/reload e voltar/avançar no
+// navegador. O watch abaixo só aplica a URL->estado quando ela muda por fora
+// (mount com ?ticket= já presente, ou navegação voltar/avançar), nunca
+// desfazendo uma abertura que acabou de ser feita localmente.
 const openTicket = ticket => {
   openTicketId.value = ticket.id;
   showTicketModal.value = true;
+  router.push({
+    name: route.name,
+    params: route.params,
+    query: { ...route.query, ticket: ticket.id },
+  });
 };
 
 const closeTicketModal = () => {
   showTicketModal.value = false;
   fetchTickets();
+  if (route.query.ticket) {
+    const { ticket: _ticket, ...rest } = route.query;
+    router.replace({ name: route.name, params: route.params, query: rest });
+  }
+};
+
+watch(
+  () => route.query.ticket,
+  value => {
+    if (value && Number(value) !== openTicketId.value) {
+      openTicketId.value = Number(value);
+      showTicketModal.value = true;
+    } else if (!value && showTicketModal.value) {
+      showTicketModal.value = false;
+    }
+  },
+  { immediate: true }
+);
+
+const openCreateTicketModal = (column = null) => {
+  createFromColumn.value = column
+    ? { ticketStatusId: column.id, teamId: correspondingTeamId(column) }
+    : null;
+  showCreateTicketModal.value = true;
 };
 
 const closeCreateTicketModal = () => {
@@ -140,6 +212,7 @@ const onTicketCreated = () => {
 };
 
 watch(teamFilter, fetchTickets);
+watch(assignedToMeFilter, fetchTickets);
 
 onMounted(async () => {
   await store.dispatch('teams/get');
@@ -149,6 +222,12 @@ onMounted(async () => {
   }
   fetchTickets();
 });
+
+// Sem isso, ticket.created/updated recebidos via ActionCable continuariam
+// disparando refetch do board mesmo com o usuário fora do Kanban.
+onUnmounted(() => {
+  store.dispatch('tickets/clearKanbanParams');
+});
 </script>
 
 <template>
@@ -157,12 +236,34 @@ onMounted(async () => {
       <h1 class="text-xl font-medium text-n-slate-12">
         {{ t('SIDEBAR.TICKETS_KANBAN') }}
       </h1>
-      <div class="relative flex gap-2">
+      <div class="relative flex items-center gap-2">
+        <Input
+          :model-value="searchQuery"
+          type="search"
+          :placeholder="t('TICKETS.KANBAN.FILTER.SEARCH_PLACEHOLDER')"
+          :custom-input-class="[
+            'h-8 [&:not(.focus)]:!border-transparent bg-n-alpha-2 dark:bg-n-solid-1 ltr:!pl-8 !py-1 rtl:!pr-8',
+          ]"
+          class="w-56"
+          @input="onSearch($event.target.value)"
+        >
+          <template #prefix>
+            <Icon
+              icon="i-lucide-search"
+              class="absolute -translate-y-1/2 text-n-slate-11 size-4 top-1/2 ltr:left-2 rtl:right-2"
+            />
+          </template>
+        </Input>
+        <Icon
+          v-if="uiFlags.isFetching"
+          icon="i-lucide-loader-circle"
+          class="animate-spin text-n-slate-11 size-4"
+        />
         <Button
           icon="i-lucide-plus"
           :label="t('TICKETS.KANBAN.NEW_TICKET')"
           xs
-          @click="showCreateTicketModal = true"
+          @click="openCreateTicketModal()"
         />
         <Button
           v-tooltip.left="t('TICKETS.KANBAN.FILTER.TOOLTIP')"
@@ -201,6 +302,12 @@ onMounted(async () => {
               @update:model-value="value => (sortMode = value)"
             />
           </div>
+          <div class="flex items-center justify-between gap-2 mt-4">
+            <span class="text-sm truncate text-n-slate-12">
+              {{ t('TICKETS.KANBAN.FILTER.ASSIGNED_TO_ME') }}
+            </span>
+            <Switch v-model="assignedToMeFilter" />
+          </div>
         </div>
       </div>
     </div>
@@ -214,6 +321,7 @@ onMounted(async () => {
         :tickets="ticketsForColumn(column.id)"
         @moved="handleMoved"
         @open="openTicket"
+        @create="openCreateTicketModal(column)"
       />
     </div>
 
@@ -242,6 +350,10 @@ onMounted(async () => {
         />
         <div class="flex flex-col px-8 pb-4">
           <CreateStandaloneTicket
+            :default-team-id="
+              createFromColumn ? createFromColumn.teamId : singleTeamId
+            "
+            :default-ticket-status-id="createFromColumn?.ticketStatusId"
             @close="closeCreateTicketModal"
             @created="onTicketCreated"
           />
