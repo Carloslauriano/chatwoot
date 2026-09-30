@@ -185,6 +185,8 @@ onMounted(() => {
         <header
           class="z-10 flex items-center justify-between w-full h-16 px-6 py-2 bg-n-background border-b border-n-weak"
           @click.stop
+          @mousedown.stop
+          @mouseup.stop
         >
           <div
             v-if="senderDetails"
@@ -261,7 +263,11 @@ onMounted(() => {
           </div>
         </header>
 
-        <main class="flex items-stretch flex-1 h-full overflow-hidden">
+        <main
+          class="flex items-stretch flex-1 h-full overflow-hidden"
+          @mousedown.stop
+          @mouseup.stop
+        >
           <div class="flex items-center justify-center w-16 shrink-0">
             <NextButton
               v-if="hasMoreThanOneAttachment"
