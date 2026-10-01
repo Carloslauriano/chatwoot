@@ -10,7 +10,10 @@ import { formatDuration } from 'shared/helpers/timeHelper';
 import TicketsAPI from 'dashboard/api/tickets';
 import TicketAttachmentsAPI from 'dashboard/api/ticketAttachments';
 import { useLinkPreviewEnrichment } from 'dashboard/composables/useLinkPreviewEnrichment';
-import { isImageAttachment } from 'dashboard/helper/ticketAttachmentHelper';
+import {
+  isImageAttachment,
+  toUnixSeconds,
+} from 'dashboard/helper/ticketAttachmentHelper';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
 import GalleryView from 'dashboard/components/widgets/conversation/components/GalleryView.vue';
 import Label from 'dashboard/components-next/label/Label.vue';
@@ -406,13 +409,15 @@ const selectedAttachment = ref(null);
 const galleryImages = ref([]);
 
 const buildTicketImages = () => {
+  const createdAt = toUnixSeconds(ticket.value.created_at);
+
   const inlineImages = descriptionRef.value
     ? Array.from(descriptionRef.value.querySelectorAll('img')).map(
         (img, index) => ({
           message_id: `description-${index}`,
           file_type: 'image',
           data_url: img.src,
-          created_at: ticket.value.created_at,
+          created_at: createdAt,
         })
       )
     : [];
@@ -423,7 +428,7 @@ const buildTicketImages = () => {
       message_id: `anexo-${anexo.id}`,
       file_type: 'image',
       data_url: anexo.url,
-      created_at: ticket.value.created_at,
+      created_at: createdAt,
     }));
 
   return [...inlineImages, ...attachmentImages];
@@ -437,6 +442,10 @@ const openGallery = (images, attachment) => {
 
 const onDescriptionClick = event => {
   if (event.target.tagName !== 'IMG') return;
+  // A imagem pode estar dentro de um <a> gerado pelo editor rich-text (link
+  // pro blob) — sem isso, o navegador segue o link nativo ao mesmo tempo que
+  // a galeria abre, dando a impressão de "pisca e fecha".
+  event.preventDefault();
   const images = buildTicketImages();
   const match = images.find(image => image.data_url === event.target.src);
   openGallery(images, match || images[0]);

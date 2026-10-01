@@ -7,7 +7,10 @@ import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 import { useLinkPreviewEnrichment } from 'dashboard/composables/useLinkPreviewEnrichment';
-import { isImageAttachment } from 'dashboard/helper/ticketAttachmentHelper';
+import {
+  isImageAttachment,
+  toUnixSeconds,
+} from 'dashboard/helper/ticketAttachmentHelper';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
@@ -112,6 +115,8 @@ const buildActivityImages = () => {
   events.value.forEach(event => {
     if (event.tipo_evento !== 'comentario') return;
 
+    const createdAt = toUnixSeconds(event.created_at);
+
     const commentEl = commentRefs[event.id];
     if (commentEl) {
       Array.from(commentEl.querySelectorAll('img')).forEach((img, index) => {
@@ -119,7 +124,7 @@ const buildActivityImages = () => {
           message_id: `comment-${event.id}-img-${index}`,
           file_type: 'image',
           data_url: img.src,
-          created_at: event.created_at,
+          created_at: createdAt,
         });
       });
     }
@@ -129,7 +134,7 @@ const buildActivityImages = () => {
         message_id: `comment-${event.id}-anexo-${anexo.id}`,
         file_type: 'image',
         data_url: anexo.url,
-        created_at: event.created_at,
+        created_at: createdAt,
       });
     });
   });
@@ -144,6 +149,9 @@ const openGallery = (images, attachment) => {
 
 const onCommentBodyClick = event => {
   if (event.target.tagName !== 'IMG') return;
+  // Mesmo motivo do TicketHeaderCard: evita que o navegador siga um <a> que
+  // o editor rich-text possa ter colocado em volta da imagem.
+  event.preventDefault();
   const images = buildActivityImages();
   const match = images.find(image => image.data_url === event.target.src);
   openGallery(images, match || images[0]);

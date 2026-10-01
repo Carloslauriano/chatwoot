@@ -8,3 +8,14 @@ export const isImageAttachment = anexo => {
   if (anexo?.content_type) return anexo.content_type.startsWith('image/');
   return IMAGE_EXTENSION_REGEX.test(anexo?.filename || '');
 };
+
+// GalleryView (feito pra Attachment de mensagem) espera created_at como Unix
+// timestamp em segundos (usa date-fns fromUnixTime) — ticket/comentário vêm
+// do jbuilder como string ISO 8601, então precisa converter antes de montar
+// o attachment sintético, senão messageTimestamp quebra com "Invalid time
+// value".
+export const toUnixSeconds = isoString => {
+  if (!isoString) return null;
+  const parsed = new Date(isoString).getTime();
+  return Number.isNaN(parsed) ? null : Math.floor(parsed / 1000);
+};

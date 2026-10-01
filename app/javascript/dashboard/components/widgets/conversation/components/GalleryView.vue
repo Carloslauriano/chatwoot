@@ -44,11 +44,13 @@ const ALLOWED_FILE_TYPES = {
 const isDownloading = ref(false);
 const activeAttachment = ref({});
 const activeFileType = ref('');
-const activeImageIndex = ref(
-  props.allAttachments.findIndex(
-    attachment => attachment.message_id === props.attachment.message_id
-  ) || 0
+// `findIndex` retorna -1 quando não encontra, e "-1 || 0" NÃO cai no
+// fallback (-1 é truthy em JS) — resultava em activeImageIndex = -1 quando o
+// attachment inicial não batia com nenhum item de allAttachments.
+const initialImageIndex = props.allAttachments.findIndex(
+  attachment => attachment.message_id === props.attachment.message_id
 );
+const activeImageIndex = ref(initialImageIndex === -1 ? 0 : initialImageIndex);
 
 const imageRef = useTemplateRef('imageRef');
 
