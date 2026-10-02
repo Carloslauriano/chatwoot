@@ -26,7 +26,11 @@ class ContactAPI extends ApiClient {
   }
 
   update(id, data) {
-    return axios.patch(`${this.url}/${id}?include_contact_inboxes=false`, data);
+    return axios.patch(
+      `${this.url}/${id}?include_contact_inboxes=false`,
+      data,
+      { headers: { 'X-Manual-Edit': 'true' } }
+    );
   }
 
   getConversations(contactId, { inboxId, conversationId } = {}) {
