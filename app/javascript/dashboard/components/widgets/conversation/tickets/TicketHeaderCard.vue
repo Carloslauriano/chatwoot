@@ -56,22 +56,11 @@ const executingMacroId = ref(null);
 
 const ticket = computed(() => props.ticket);
 
-const myAssignment = computed(() =>
-  (ticket.value.assignments || []).find(
-    assignment => assignment.colaborador_id === currentUser.value.id
-  )
-);
-
 const myActiveTimer = computed(() =>
   (ticket.value.active_timers || []).find(
     timer => timer.colaborador_id === currentUser.value.id
   )
 );
-
-const statusMicroOptions = ['a_fazer', 'fazendo', 'finalizado'].map(key => ({
-  id: key,
-  name: t(`TICKETS.STATUS_MICRO_OPTIONS.${key.toUpperCase()}`),
-}));
 
 const teamOptions = computed(() => [
   { id: null, name: t('TICKETS.CREATE.TEAM.NONE') },
@@ -245,21 +234,6 @@ const promoteToResponsible = async member => {
     emit('updated');
   } catch (error) {
     useAlert(t('TICKETS.HEADER.RESPONSIBLE_UPDATE_ERROR'));
-  }
-};
-
-const onChangeStatusMicro = async event => {
-  const value = event.target.value;
-  if (!myAssignment.value) return;
-  try {
-    await TicketsAPI.updateStatusMicro(
-      ticket.value.id,
-      myAssignment.value.id,
-      value
-    );
-    emit('updated');
-  } catch (error) {
-    useAlert(t('TICKETS.HEADER.STATUS_MICRO_UPDATE_ERROR'));
   }
 };
 
@@ -724,26 +698,6 @@ onMounted(() => {
         />
       </div>
     </div>
-
-    <label
-      v-if="myAssignment"
-      class="flex items-center gap-2 text-xs text-n-slate-11"
-    >
-      {{ t('TICKETS.HEADER.MY_STATUS') }}
-      <select
-        class="text-xs rounded-lg border border-n-weak"
-        :value="myAssignment.status_micro"
-        @change="onChangeStatusMicro"
-      >
-        <option
-          v-for="option in statusMicroOptions"
-          :key="option.id"
-          :value="option.id"
-        >
-          {{ option.name }}
-        </option>
-      </select>
-    </label>
 
     <!-- Membros (responsável + colaboradores em um único bloco) -->
     <div class="flex flex-col gap-1">
