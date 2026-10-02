@@ -116,5 +116,17 @@ RSpec.describe 'Tickets API', type: :request do
       expect(ids).to include(alvo.id)
       expect(ids).not_to include(outro.id)
     end
+
+    it 'searches by ticket id (with optional #) and honours limit' do
+      alvo = create(:ticket, account: account, titulo: 'Alvo')
+      create(:ticket, account: account, titulo: 'Outro')
+
+      get "/api/v1/accounts/#{account.id}/tickets",
+          params: { q: "##{alvo.id}", limit: 1 },
+          headers: agent.create_new_auth_token,
+          as: :json
+
+      expect(response.parsed_body.pluck('id')).to eq([alvo.id])
+    end
   end
 end

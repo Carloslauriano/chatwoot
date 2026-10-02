@@ -12,7 +12,8 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
   # era retornado e o frontend pegava o primeiro, errado, da lista.
   # assigned_to_me: usado pelo filtro "atribuído a mim" do Kanban — sempre
   # resolvido contra Current.user, nunca aceita um user_id do cliente.
-  # q: busca livre (título/descrição/nome do contato) do Kanban.
+  # q: busca livre (id/título/descrição/nome do contato) do Kanban e do LinkTicket.
+  # limit: usado pelo LinkTicket na busca em toda a conta (máx. 100).
   def index
     @tickets = Current.account.tickets
     @tickets = @tickets.where(team_id: params[:team_id]) if params[:team_id].present?
@@ -25,9 +26,11 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
       uid: Current.user.id
     ) if ActiveModel::Type::Boolean.new.cast(params[:assigned_to_me])
     @tickets = @tickets.left_joins(:contact).where(
-      'tickets.titulo ILIKE :search OR tickets.descricao ILIKE :search OR contacts.name ILIKE :search',
-      search: "%#{params[:q].strip}%"
+      'tickets.titulo ILIKE :search OR tickets.descricao ILIKE :search OR contacts.name ILIKE :search ' \
+      'OR tickets.id::text = :exact',
+      search: "%#{params[:q].strip}%", exact: params[:q].strip.delete_prefix('#')
     ) if params[:q].present?
+    @tickets = @tickets.order(updated_at: :desc).limit(params[:limit].to_i.clamp(1, 100)) if params[:limit].present?
   end
 
   def show; end
