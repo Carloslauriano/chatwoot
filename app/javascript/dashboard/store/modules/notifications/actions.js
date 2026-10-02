@@ -2,7 +2,10 @@ import types from '../../mutation-types';
 import NotificationsAPI from '../../../api/notifications';
 
 export const actions = {
-  index: async ({ commit }, { page = 1, status, type, sortOrder } = {}) => {
+  index: async (
+    { commit },
+    { page = 1, status, type, sortOrder, notificationType } = {}
+  ) => {
     commit(types.SET_NOTIFICATIONS_UI_FLAG, { isFetching: true });
     try {
       const {
@@ -14,13 +17,18 @@ export const actions = {
         status,
         type,
         sortOrder,
+        notificationType,
       });
       commit(types.SET_NOTIFICATIONS, payload);
-      commit(types.SET_NOTIFICATIONS_META, meta);
-      commit(types.SET_NOTIFICATIONS_UI_FLAG, { isFetching: false });
-      if (payload.length < 15) {
-        commit(types.SET_ALL_NOTIFICATIONS_LOADED);
+      // A type-filtered fetch (e.g. ticket-activity-only) must not clobber the
+      // account-wide meta/pagination state used by the generic notification feed.
+      if (!notificationType) {
+        commit(types.SET_NOTIFICATIONS_META, meta);
+        if (payload.length < 15) {
+          commit(types.SET_ALL_NOTIFICATIONS_LOADED);
+        }
       }
+      commit(types.SET_NOTIFICATIONS_UI_FLAG, { isFetching: false });
     } catch (error) {
       commit(types.SET_NOTIFICATIONS_UI_FLAG, { isFetching: false });
     }

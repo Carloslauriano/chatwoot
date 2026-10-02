@@ -38,6 +38,7 @@ class NotificationFinder
 
   def find_all_notifications
     @notifications = current_user.notifications.where(account_id: @current_account.id)
+    @notifications = @notifications.where(notification_type: params[:notification_type]) if params[:notification_type].present?
   end
 
   def filter_snoozed_notifications

@@ -15,5 +15,9 @@
   "CHOICE_TOGGLE": {
     "YES": "Yes",
     "NO": "No"
+  },
+  "TICKET_NOTIFICATIONS": {
+    "TOOLTIP": "Ticket activity",
+    "EMPTY_STATE": "No ticket activity yet"
   }
 }

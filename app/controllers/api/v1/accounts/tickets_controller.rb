@@ -10,6 +10,9 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
   # usados para checar se já existe ticket vinculado (TicketsList,
   # OpenTicketButton, LinkTicket) — sem isso, qualquer ticket da conta
   # era retornado e o frontend pegava o primeiro, errado, da lista.
+  # assigned_to_me: usado pelo filtro "atribuído a mim" do Kanban — sempre
+  # resolvido contra Current.user, nunca aceita um user_id do cliente.
+  # q: busca livre (título/descrição/nome do contato) do Kanban.
   def index
     @tickets = Current.account.tickets
     @tickets = @tickets.where(team_id: params[:team_id]) if params[:team_id].present?
@@ -17,15 +20,27 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
     @tickets = @tickets.where(contact_id: params[:contact_id]) if params[:contact_id].present?
     @tickets = @tickets.where.not(status_macro: params[:exclude_status]) if params[:exclude_status].present?
     @tickets = @tickets.where(archived: params[:archived].present? ? ActiveModel::Type::Boolean.new.cast(params[:archived]) : false)
+    @tickets = @tickets.where(
+      'tickets.responsavel_id = :uid OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = tickets.id AND ta.colaborador_id = :uid)',
+      uid: Current.user.id
+    ) if ActiveModel::Type::Boolean.new.cast(params[:assigned_to_me])
+    @tickets = @tickets.left_joins(:contact).where(
+      'tickets.titulo ILIKE :search OR tickets.descricao ILIKE :search OR contacts.name ILIKE :search',
+      search: "%#{params[:q].strip}%"
+    ) if params[:q].present?
   end
 
   def show; end
 
+  # ticket_status_id opcional no payload: usado pelo botão "+" de uma coluna
+  # específica do Kanban, pra já criar o ticket direto naquele status (em vez
+  # de cair no status padrão/posição 1 do time). Revalidado contra a conta
+  # (não é mass-assignment direto) pelo mesmo motivo do ticket_status action.
   def create
     @ticket = Current.account.tickets.new(ticket_params)
     @ticket.contact_id ||= @ticket.conversation&.contact_id
     @ticket.categoria ||= ''
-    @ticket.ticket_status_id ||= Current.account.ticket_statuses.find_by(is_default: true)&.id
+    @ticket.ticket_status_id = requested_ticket_status_id || default_ticket_status_id(@ticket.team_id)
     if @ticket.team_id.present?
       @ticket.setor_atual = Team.find(@ticket.team_id).name
     else
@@ -74,15 +89,24 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
   # US06 + G3: sem bloqueio por status_micro pendente — decisão de produto confirmada.
   # Colunas do Kanban agora são TicketStatus configuráveis, não mais o enum
   # status_macro (mantido só como legado não usado).
+  #
+  # Mudar de etapa finaliza (com Worklog) qualquer timer ativo neste ticket —
+  # decisão confirmada com o Carlos: o tempo trabalhado na etapa anterior deve
+  # ser registrado, diferente do transfer (US05), que descarta sem worklog.
   def ticket_status
     novo_status = Current.account.ticket_statuses.find(params.require(:ticket_status_id))
     nome_antes = @ticket.ticket_status&.name
-    @ticket.update!(ticket_status: novo_status)
-    TicketAutomationRules::RunnerService.new(@ticket, event_name: 'ticket_status_changed').perform
-    @ticket.ticket_timeline_events.create!(
-      account: Current.account, tipo_evento: :status_macro_changed, origem: :interno, autor_id: Current.user.id,
-      payload: { status_macro_antes: nome_antes, status_macro_depois: novo_status.name }
-    )
+
+    ActiveRecord::Base.transaction do
+      @ticket.active_timers.find_each { |timer| close_timer_with_worklog(timer) }
+      @ticket.update!(ticket_status: novo_status)
+      TicketAutomationRules::RunnerService.new(@ticket, event_name: 'ticket_status_changed').perform
+      @ticket.ticket_timeline_events.create!(
+        account: Current.account, tipo_evento: :status_macro_changed, origem: :interno, autor_id: Current.user.id,
+        payload: { status_macro_antes: nome_antes, status_macro_depois: novo_status.name }
+      )
+    end
+
     log_audit!(@ticket, 'status_macro_changed', campo: 'ticket_status', antes: nome_antes, depois: novo_status.name)
   end
 
@@ -138,6 +162,23 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
   def ticket_params
     params.require(:ticket).permit(:conversation_id, :contact_id, :titulo, :descricao, :categoria, :prioridade,
                                     :setor_atual, :responsavel_id, :team_id, anexos: [])
+  end
+
+  def requested_ticket_status_id
+    return nil if params[:ticket][:ticket_status_id].blank?
+
+    Current.account.ticket_statuses.find(params[:ticket][:ticket_status_id]).id
+  end
+
+  # Novo ticket já cai na 1ª coluna (menor position) configurada para o time
+  # escolhido (ex. "Dev"), se houver; senão cai no status padrão da conta.
+  def default_ticket_status_id(team_id)
+    return Current.account.ticket_statuses.find_by(is_default: true)&.id if team_id.blank?
+
+    TicketStatusTeam.joins(:ticket_status)
+                     .where(team_id: team_id, ticket_statuses: { account_id: Current.account.id })
+                     .order(:position).first&.ticket_status_id ||
+      Current.account.ticket_statuses.find_by(is_default: true)&.id
   end
 
   def ensure_assignment!(colaborador_id)

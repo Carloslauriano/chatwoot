@@ -8,9 +8,11 @@ class ConversationBuilder
   private
 
   def look_up_exising_conversation
-    return unless @contact_inbox.inbox.lock_to_single_conversation?
+    return @contact_inbox.conversations.last if @contact_inbox.inbox.lock_to_single_conversation?
 
-    @contact_inbox.conversations.last
+    # Mirrors the native channel builders (WhatsApp, Facebook, Instagram): reuse the open
+    # conversation, only start a new one once the previous one has been resolved.
+    @contact_inbox.conversations.where.not(status: :resolved).last
   end
 
   def create_new_conversation

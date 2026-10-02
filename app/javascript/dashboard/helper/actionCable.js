@@ -57,6 +57,8 @@ class ActionCableConnector extends BaseActionCableConnector {
       'notification.created': this.onNotificationCreated,
       'notification.deleted': this.onNotificationDeleted,
       'notification.updated': this.onNotificationUpdated,
+      'ticket.created': this.onTicketRealtimeChange,
+      'ticket.updated': this.onTicketRealtimeChange,
       'conversation.read': this.onConversationRead,
       'conversation.updated': this.onConversationUpdated,
       'conversation.unread_count_changed':
@@ -390,6 +392,13 @@ class ActionCableConnector extends BaseActionCableConnector {
 
   onNotificationUpdated = data => {
     this.app.$store.dispatch('notifications/updateNotification', data);
+  };
+
+  // Payload em si (dados do ticket) não importa aqui — o refresh é sempre um
+  // refetch completo do Kanban com os filtros ativos (ver tickets/refreshKanban),
+  // não um patch otimista do card.
+  onTicketRealtimeChange = () => {
+    this.app.$store.dispatch('tickets/refreshKanban');
   };
 
   onCopilotMessageCreated = data => {

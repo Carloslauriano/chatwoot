@@ -5,18 +5,31 @@ import { useAlert } from 'dashboard/composables';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import TicketsAPI from 'dashboard/api/tickets';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
-import AddLabel from 'shared/components/ui/dropdown/AddLabel.vue';
-import LabelDropdown from 'shared/components/ui/label/LabelDropdown.vue';
-import Label from 'dashboard/components-next/label/Label.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
-import { colorForLabel } from 'dashboard/helper/ticketCardHelper';
+import TicketLabelPicker from './TicketLabelPicker.vue';
+
+const props = defineProps({
+  // Time atualmente filtrado no Kanban (ex. "Dev"), se houver — usado para
+  // pré-selecionar o time do novo ticket com a "área ativa" da tela.
+  defaultTeamId: {
+    type: [Number, String],
+    default: null,
+  },
+  // Preenchido quando o ticket é criado a partir do botão "+" de uma coluna
+  // específica do Kanban — o ticket já nasce direto naquele status, sem
+  // depender do status padrão (posição 1) do time.
+  defaultTicketStatusId: {
+    type: [Number, String],
+    default: null,
+  },
+});
 
 const emit = defineEmits(['close', 'created']);
 const { t } = useI18n();
 
 const store = useStore();
-const agentsList = useMapGetter('agents/getAgents');
+const agentsList = useMapGetter('agents/getActiveAgents');
 const teams = useMapGetter('teams/getTeams');
 const accountLabels = useMapGetter('labels/getLabels');
 
@@ -89,11 +102,6 @@ const toggleLabel = title => {
     : [...formState.labels, title];
 };
 
-const showLabelDropdown = ref(false);
-const closeLabelDropdown = () => {
-  showLabelDropdown.value = false;
-};
-
 onMounted(async () => {
   if (!accountLabels.value?.length) {
     store.dispatch('labels/get');
@@ -104,7 +112,11 @@ onMounted(async () => {
   if (!teams.value?.length) {
     await store.dispatch('teams/get');
   }
-  if (defaultTeam.value) formState.teamId = defaultTeam.value.id;
+  if (props.defaultTeamId) {
+    formState.teamId = Number(props.defaultTeamId);
+  } else if (defaultTeam.value) {
+    formState.teamId = defaultTeam.value.id;
+  }
 });
 
 const onClose = () => emit('close');
@@ -119,6 +131,9 @@ const createTicket = async () => {
     responsavel_id: formState.responsavelId,
   };
   if (formState.teamId) payload.team_id = formState.teamId;
+  if (props.defaultTicketStatusId) {
+    payload.ticket_status_id = Number(props.defaultTicketStatusId);
+  }
 
   try {
     isCreating.value = true;
@@ -212,32 +227,12 @@ const createTicket = async () => {
       <span class="text-sm font-medium text-n-slate-12">
         {{ $t('TICKETS.CREATE.LABELS.LABEL') }}
       </span>
-      <div
-        v-on-clickaway="closeLabelDropdown"
-        class="relative flex flex-wrap items-center gap-1"
-      >
-        <AddLabel @add="showLabelDropdown = !showLabelDropdown" />
-        <Label
-          v-for="labelName in formState.labels"
-          :key="labelName"
-          :label="labelName"
-          :color="colorForLabel(labelName)"
-          compact
-        />
-        <div
-          v-show="showLabelDropdown"
-          class="absolute z-[100] w-72 p-2 mt-1 border rounded-lg shadow-lg top-full bg-n-alpha-3 backdrop-blur-[100px] border-n-strong"
-        >
-          <LabelDropdown
-            v-if="showLabelDropdown"
-            :account-labels="accountLabels"
-            :selected-labels="formState.labels"
-            :allow-creation="false"
-            @add="label => toggleLabel(label.title)"
-            @remove="toggleLabel"
-          />
-        </div>
-      </div>
+      <TicketLabelPicker
+        :account-labels="accountLabels"
+        :selected-labels="formState.labels"
+        @add="label => toggleLabel(label.title)"
+        @remove="toggleLabel"
+      />
     </div>
 
     <div class="flex items-center justify-end w-full gap-2 mt-2">

@@ -597,7 +597,9 @@
         "MINE": "Meus times",
         "ALL": "Todos os times",
         "TEAM_LABEL": "Time",
-        "SORT_LABEL": "Ordenar por"
+        "SORT_LABEL": "Ordenar por",
+        "SEARCH_PLACEHOLDER": "Buscar tickets",
+        "ASSIGNED_TO_ME": "Atribuído a mim"
       },
       "SORT": {
         "PRIORITY": "Prioridade",
@@ -709,7 +711,10 @@
       "UNARCHIVE": "Desarquivar",
       "ARCHIVE_ERROR": "Não foi possível arquivar/desarquivar o ticket",
       "MACROS": "Macros",
-      "MACRO_RUN_ERROR": "Não foi possível executar a macro. Tente novamente"
+      "MACRO_RUN_ERROR": "Não foi possível executar a macro. Tente novamente",
+      "PRIORITY_UPDATE_CONFIRM_TITLE": "Alterar prioridade?",
+      "PRIORITY_UPDATE_CONFIRM_DESCRIPTION": "Tem certeza que deseja alterar a prioridade do ticket para {priority}?",
+      "PRIORITY_UPDATE_ERROR": "Não foi possível atualizar a prioridade"
     },
     "TABS": {
       "TIMELINE": "Linha do tempo",

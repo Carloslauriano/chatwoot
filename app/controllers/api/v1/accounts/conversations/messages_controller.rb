@@ -8,7 +8,7 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
 
   def create
     user = Current.user || @resource
-    mb = Messages::MessageBuilder.new(user, @conversation, params)
+    mb = Messages::MessageBuilder.new(user, conversation_for_new_message, params)
     @message = mb.perform
   rescue StandardError => e
     render_could_not_create_error(e.message)
@@ -56,6 +56,24 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   end
 
   private
+
+  def conversation_for_new_message
+    return @conversation unless reopens_via_resolved_api_conversation?
+
+    # Unlike native channels (WhatsApp, Facebook, Instagram), which re-resolve the target conversation
+    # on every inbound event, API inboxes are addressed by a conversation_id the caller already holds.
+    # If that conversation is resolved and the inbox is set to open a new conversation instead of
+    # reopening, honor that here the same way ConversationBuilder does for POST /conversations -
+    # otherwise this endpoint would silently reopen the resolved conversation the caller was pointed at.
+    @conversation = ConversationBuilder.new(params: params, contact_inbox: @conversation.contact_inbox).perform
+  end
+
+  def reopens_via_resolved_api_conversation?
+    params[:message_type] == 'incoming' &&
+      @conversation.inbox.api? &&
+      @conversation.resolved? &&
+      !@conversation.inbox.lock_to_single_conversation?
+  end
 
   def message
     @message ||= @conversation.messages.find(permitted_params[:id])

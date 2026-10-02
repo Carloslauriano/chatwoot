@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { OnClickOutside } from '@vueuse/components';
 import { useToggle } from '@vueuse/core';
 
@@ -8,6 +8,7 @@ import Avatar from 'next/avatar/Avatar.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import EmojiIcon from 'dashboard/components-next/emoji-icon-picker/EmojiIcon.vue';
 import MultiselectDropdownItems from 'shared/components/ui/MultiselectDropdownItems.vue';
+import { useDropdownPosition } from 'dashboard/composables/useDropdownPosition';
 
 const props = defineProps({
   options: {
@@ -47,6 +48,17 @@ const props = defineProps({
 const emit = defineEmits(['select']);
 const [showSearchDropdown, toggleDropdown] = useToggle(false);
 
+// Painel continua no mesmo lugar do DOM (sem Teleport) — só decide, com
+// base no espaço disponível, se abre pra baixo ou pra cima e se precisa
+// deslocar horizontalmente, pra nunca vazar pra fora da tela/modal.
+const triggerRef = ref(null);
+const dropdownRef = ref(null);
+const { position } = useDropdownPosition(
+  triggerRef,
+  dropdownRef,
+  showSearchDropdown
+);
+
 const onCloseDropdown = () => toggleDropdown(false);
 const onClickSelectItem = value => {
   emit('select', value);
@@ -79,7 +91,11 @@ const selectedThumbnail = computed(
 
 <template>
   <OnClickOutside @trigger="onCloseDropdown">
-    <div class="relative w-full mb-2" @keyup.esc="onCloseDropdown">
+    <div
+      ref="triggerRef"
+      class="relative w-full mb-2"
+      @keyup.esc="onCloseDropdown"
+    >
       <Button
         slate
         outline
@@ -139,11 +155,16 @@ const selectedThumbnail = computed(
         />
       </Button>
       <div
-        :class="{
-          'block visible': showSearchDropdown,
-          'hidden invisible': !showSearchDropdown,
-        }"
-        class="box-border top-[2.625rem] w-full border rounded-lg bg-n-alpha-3 backdrop-blur-[100px] absolute shadow-lg border-n-strong dark:border-n-strong p-2 z-[9999]"
+        ref="dropdownRef"
+        :class="[
+          position.class,
+          {
+            'block visible': showSearchDropdown,
+            'hidden invisible': !showSearchDropdown,
+          },
+        ]"
+        :style="position.style"
+        class="box-border w-full border rounded-lg bg-n-alpha-3 backdrop-blur-[100px] absolute shadow-lg border-n-strong dark:border-n-strong p-2 z-[9999]"
       >
         <div class="flex items-center justify-between mb-1">
           <h4

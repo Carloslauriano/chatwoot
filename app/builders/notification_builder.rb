@@ -26,9 +26,9 @@ class NotificationBuilder
     # Create conversation_creation notification only if user is subscribed to it
     return if notification_type == 'conversation_creation' && !user_subscribed_to_notification?
     # skip notifications for blocked conversations except for user mentions
-    return if primary_actor.contact.blocked? && notification_type != 'conversation_mention'
-    # respect conversation access (inbox/team membership and custom-role permissions)
-    return unless user_can_access_conversation?
+    return if primary_actor.is_a?(Conversation) && primary_actor.contact.blocked? && notification_type != 'conversation_mention'
+    # respect access to the primary actor (conversation inbox/team membership, or ticket account membership)
+    return unless user_can_access_primary_actor?
 
     user.notifications.create!(
       notification_type: notification_type,
@@ -37,6 +37,14 @@ class NotificationBuilder
       # secondary_actor is secondary_actor if present, else current_user
       secondary_actor: secondary_actor || current_user
     )
+  end
+
+  def user_can_access_primary_actor?
+    primary_actor.is_a?(Ticket) ? user_can_access_ticket? : user_can_access_conversation?
+  end
+
+  def user_can_access_ticket?
+    AccountUser.exists?(account_id: account.id, user_id: user.id)
   end
 
   def user_can_access_conversation?

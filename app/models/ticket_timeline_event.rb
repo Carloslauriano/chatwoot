@@ -37,8 +37,25 @@ class TicketTimelineEvent < ApplicationRecord
   validate :anexos_validos
 
   before_save :enrich_texto_links, if: -> { comentario? && payload['texto'].present? && will_save_change_to_payload? }
+  after_create_commit :notify_ticket_activity
+
+  def push_event_data
+    {
+      id: id,
+      ticket_id: ticket_id,
+      tipo_evento: tipo_evento,
+      origem: origem,
+      payload: payload,
+      autor_id: autor_id,
+      created_at: created_at.to_i
+    }
+  end
 
   private
+
+  def notify_ticket_activity
+    Tickets::TimelineNotificationService.new(ticket_timeline_event: self).perform
+  end
 
   def enrich_texto_links
     self.payload = payload.merge('texto' => LinkTextEnricherService.enrich(payload['texto']))

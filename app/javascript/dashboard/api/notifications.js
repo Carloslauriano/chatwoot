@@ -6,7 +6,7 @@ class NotificationsAPI extends ApiClient {
     super('notifications', { accountScoped: true });
   }
 
-  get({ page, status, type, sortOrder }) {
+  get({ page, status, type, sortOrder, notificationType }) {
     const includesFilter = [status, type].filter(value => !!value);
 
     return axios.get(this.url, {
@@ -14,6 +14,7 @@ class NotificationsAPI extends ApiClient {
         page,
         sort_order: sortOrder,
         includes: includesFilter,
+        notification_type: notificationType,
       },
     });
   }
@@ -22,8 +23,8 @@ class NotificationsAPI extends ApiClient {
     return axios.get(`${this.url}/${contactId}/notifications`);
   }
 
-  getUnreadCount() {
-    return axios.get(`${this.url}/unread_count`);
+  getUnreadCount(params = {}) {
+    return axios.get(`${this.url}/unread_count`, { params });
   }
 
   read(primaryActorType, primaryActorId) {

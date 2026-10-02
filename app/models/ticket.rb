@@ -34,6 +34,7 @@ class Ticket < ApplicationRecord
   has_many :worklogs, dependent: :destroy
   has_many :ticket_audit_logs, dependent: :destroy
   has_many :active_timers, dependent: :destroy
+  has_many :notifications, as: :primary_actor, dependent: :destroy_async
   has_many_attached :anexos
 
   enum prioridade: { baixa: 0, media: 1, alta: 2, critica: 3 }
@@ -45,6 +46,8 @@ class Ticket < ApplicationRecord
 
   before_save :set_resolvido_em, if: :will_save_change_to_status_macro?
   before_save :enrich_descricao_links, if: :will_save_change_to_descricao?
+  after_create_commit :dispatch_created_event
+  after_update_commit :dispatch_updated_event
 
   # US09: tempo bruto = diferença entre abertura da conversa no Chatwoot e resolução do ticket
   def tempo_bruto_segundos
@@ -58,7 +61,28 @@ class Ticket < ApplicationRecord
     worklogs.sum(:duracao_segundos)
   end
 
+  def push_event_data
+    {
+      id: id,
+      titulo: titulo,
+      status_macro: status_macro,
+      conversation_id: conversation_id,
+      responsavel_id: responsavel_id,
+      account_id: account_id
+    }
+  end
+
   private
+
+  # Board kanban ouve esses dois eventos (via ActionCable) pra atualizar em
+  # tempo real sem depender de refetch manual do usuário.
+  def dispatch_created_event
+    Rails.configuration.dispatcher.dispatch(TICKET_CREATED, Time.zone.now, ticket: self)
+  end
+
+  def dispatch_updated_event
+    Rails.configuration.dispatcher.dispatch(TICKET_UPDATED, Time.zone.now, ticket: self)
+  end
 
   def set_resolvido_em
     self.resolvido_em = resolvido? ? Time.current : nil

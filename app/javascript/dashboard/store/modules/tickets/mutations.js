@@ -3,6 +3,7 @@ import {
   CLEAR_TICKETS,
   SET_TICKETS,
   SET_TICKET_ITEM,
+  SET_LAST_KANBAN_PARAMS,
 } from './types';
 
 export const mutations = {
@@ -36,5 +37,9 @@ export const mutations = {
         ...data,
       },
     };
+  },
+
+  [SET_LAST_KANBAN_PARAMS]: ($state, params) => {
+    $state.lastKanbanParams = params;
   },
 };

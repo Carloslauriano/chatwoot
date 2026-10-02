@@ -6,12 +6,9 @@ import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
 import TicketsAPI from 'dashboard/api/tickets';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
-import AddLabel from 'shared/components/ui/dropdown/AddLabel.vue';
-import LabelDropdown from 'shared/components/ui/label/LabelDropdown.vue';
-import Label from 'dashboard/components-next/label/Label.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
-import { colorForLabel } from 'dashboard/helper/ticketCardHelper';
+import TicketLabelPicker from './TicketLabelPicker.vue';
 
 const props = defineProps({
   conversationId: {
@@ -25,8 +22,9 @@ const { t } = useI18n();
 
 const store = useStore();
 // Agentes da conta inteira, não os assignable do inbox da conversa aberta —
-// o responsável do ticket pode ser qualquer agente da conta.
-const agentsList = useMapGetter('agents/getAgents');
+// o responsável do ticket pode ser qualquer agente da conta, exceto os
+// arquivados.
+const agentsList = useMapGetter('agents/getActiveAgents');
 const teams = useMapGetter('teams/getTeams');
 const currentChat = useMapGetter('getSelectedChat');
 const accountLabels = useMapGetter('labels/getLabels');
@@ -109,12 +107,6 @@ const toggleLabel = title => {
   formState.labels = formState.labels.includes(title)
     ? formState.labels.filter(label => label !== title)
     : [...formState.labels, title];
-};
-
-// Mesmo seletor de etiquetas usado na conversa (AddLabel + LabelDropdown).
-const showLabelDropdown = ref(false);
-const closeLabelDropdown = () => {
-  showLabelDropdown.value = false;
 };
 
 // Pré-preenche com os dados da conversa (agente, time, prioridade, etiquetas).
@@ -251,32 +243,12 @@ const createTicket = async () => {
       <span class="text-sm font-medium text-n-slate-12">
         {{ $t('TICKETS.CREATE.LABELS.LABEL') }}
       </span>
-      <div
-        v-on-clickaway="closeLabelDropdown"
-        class="relative flex flex-wrap items-center gap-1"
-      >
-        <AddLabel @add="showLabelDropdown = !showLabelDropdown" />
-        <Label
-          v-for="labelName in formState.labels"
-          :key="labelName"
-          :label="labelName"
-          :color="colorForLabel(labelName)"
-          compact
-        />
-        <div
-          v-show="showLabelDropdown"
-          class="absolute z-[100] w-72 p-2 mt-1 border rounded-lg shadow-lg top-full bg-n-alpha-3 backdrop-blur-[100px] border-n-strong"
-        >
-          <LabelDropdown
-            v-if="showLabelDropdown"
-            :account-labels="accountLabels"
-            :selected-labels="formState.labels"
-            :allow-creation="false"
-            @add="label => toggleLabel(label.title)"
-            @remove="toggleLabel"
-          />
-        </div>
-      </div>
+      <TicketLabelPicker
+        :account-labels="accountLabels"
+        :selected-labels="formState.labels"
+        @add="label => toggleLabel(label.title)"
+        @remove="toggleLabel"
+      />
     </div>
 
     <div class="flex items-center justify-end w-full gap-2 mt-2">

@@ -9,8 +9,12 @@ class TicketsAPI extends ApiClient {
 
   // teamIds vazio/omitido: retorna todos os tickets da conta.
   // teamIds presente: filtra por team_id[] (usado pelo Kanban).
-  list(teamIds = []) {
-    const params = teamIds.length ? { team_id: teamIds } : {};
+  // q/assignedToMe: busca livre e filtro "atribuído a mim" do Kanban.
+  list({ teamIds = [], q, assignedToMe } = {}) {
+    const params = {};
+    if (teamIds.length) params.team_id = teamIds;
+    if (q) params.q = q;
+    if (assignedToMe) params.assigned_to_me = true;
     return axios.get(this.url, { params });
   }
 

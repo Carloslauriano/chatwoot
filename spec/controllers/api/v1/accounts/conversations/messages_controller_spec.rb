@@ -171,29 +171,57 @@ RSpec.describe 'Conversation Messages API', type: :request do
         let(:api_inbox) { create(:inbox, channel: api_channel, account: account) }
         let(:conversation) { create(:conversation, inbox: api_inbox, account: account) }
 
-        it 'reopens the conversation with new incoming message' do
-          create(:message, conversation: conversation, account: account)
-          conversation.resolved!
+        context 'when lock_to_single_conversation is enabled' do
+          before { api_inbox.update!(lock_to_single_conversation: true) }
 
-          params = { content: 'test-message', private: false, message_type: 'incoming' }
+          it 'reopens the conversation with new incoming message' do
+            create(:message, conversation: conversation, account: account)
+            conversation.resolved!
 
-          post api_v1_account_conversation_messages_url(account_id: account.id, conversation_id: conversation.display_id),
-               params: params,
-               headers: agent.create_new_auth_token,
-               as: :json
+            params = { content: 'test-message', private: false, message_type: 'incoming' }
 
-          expect(response).to have_http_status(:success)
-          expect(conversation.reload.status).to eq('open')
-          expect(Conversations::ActivityMessageJob)
-            .to(have_been_enqueued.at_least(:once)
-              .with(conversation, { account_id: conversation.account_id, inbox_id: conversation.inbox_id, message_type: :activity,
-                                    content: 'System reopened the conversation due to a new incoming message.',
-                                    content_attributes: {
-                                      activity: {
-                                        type: 'conversation_status_changed',
-                                        status: 'open'
-                                      }
-                                    } }))
+            post api_v1_account_conversation_messages_url(account_id: account.id, conversation_id: conversation.display_id),
+                 params: params,
+                 headers: agent.create_new_auth_token,
+                 as: :json
+
+            expect(response).to have_http_status(:success)
+            expect(conversation.reload.status).to eq('open')
+            expect(Conversations::ActivityMessageJob)
+              .to(have_been_enqueued.at_least(:once)
+                .with(conversation, { account_id: conversation.account_id, inbox_id: conversation.inbox_id, message_type: :activity,
+                                      content: 'System reopened the conversation due to a new incoming message.',
+                                      content_attributes: {
+                                        activity: {
+                                          type: 'conversation_status_changed',
+                                          status: 'open'
+                                        }
+                                      } }))
+          end
+        end
+
+        context 'when lock_to_single_conversation is disabled' do
+          it 'creates a new conversation instead of reopening the resolved one' do
+            create(:message, conversation: conversation, account: account)
+            conversation.resolved!
+
+            params = { content: 'test-message', private: false, message_type: 'incoming' }
+
+            expect do
+              post api_v1_account_conversation_messages_url(account_id: account.id, conversation_id: conversation.display_id),
+                   params: params,
+                   headers: agent.create_new_auth_token,
+                   as: :json
+            end.to change(Conversation, :count).by(1)
+
+            expect(response).to have_http_status(:success)
+            expect(conversation.reload.status).to eq('resolved')
+
+            new_conversation = Conversation.last
+            expect(new_conversation.id).not_to eq(conversation.id)
+            expect(new_conversation.contact_inbox_id).to eq(conversation.contact_inbox_id)
+            expect(new_conversation.messages.pluck(:content)).to include('test-message')
+          end
         end
       end
     end

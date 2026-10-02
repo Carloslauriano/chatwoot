@@ -57,6 +57,10 @@ module Events::Types
   NOTIFICATION_DELETED = 'notification.deleted'
   NOTIFICATION_UPDATED = 'notification.updated'
 
+  # ticket events
+  TICKET_CREATED = 'ticket.created'
+  TICKET_UPDATED = 'ticket.updated'
+
   # agent events
   AGENT_ADDED = 'agent.added'
   AGENT_REMOVED = 'agent.removed'

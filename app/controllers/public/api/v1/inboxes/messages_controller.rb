@@ -6,7 +6,7 @@ class Public::Api::V1::Inboxes::MessagesController < Public::Api::V1::InboxesCon
   end
 
   def create
-    @message = @conversation.messages.new(message_params)
+    @message = target_conversation.messages.new(message_params)
     build_attachment
     @message.save!
   end
@@ -20,6 +20,21 @@ class Public::Api::V1::Inboxes::MessagesController < Public::Api::V1::InboxesCon
   end
 
   private
+
+  def target_conversation
+    return @conversation unless reopens_via_resolved_conversation?
+
+    # External integrations bridging a channel through an API inbox (e.g. a WhatsApp gateway) cache
+    # the conversation_id per contact and post every inbound event straight to it, so unlike native
+    # channels there is no per-message conversation lookup here. Honor "create new conversations"
+    # the same way ConversationBuilder does for POST .../conversations, instead of silently reopening
+    # the resolved conversation the integration happened to still be pointed at.
+    @conversation = ConversationBuilder.new(params: params, contact_inbox: @contact_inbox).perform
+  end
+
+  def reopens_via_resolved_conversation?
+    @conversation.present? && @conversation.resolved? && !@contact_inbox.inbox.lock_to_single_conversation?
+  end
 
   def build_attachment
     return if params[:attachments].blank?

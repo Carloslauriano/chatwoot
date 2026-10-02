@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Draggable from 'vuedraggable';
 import TicketKanbanCard from './TicketKanbanCard.vue';
 
@@ -18,7 +19,8 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['moved', 'open']);
+const emit = defineEmits(['moved', 'open', 'create']);
+const { t } = useI18n();
 
 // v-model local — Draggable precisa de um array editável; a fonte de
 // verdade continua sendo a store, atualizada via evento @change.
@@ -59,5 +61,13 @@ const handleChange = event => {
         <TicketKanbanCard :ticket="element" @open="emit('open', $event)" />
       </template>
     </Draggable>
+    <button
+      type="button"
+      class="flex items-center flex-shrink-0 gap-1 px-2 py-1.5 text-sm rounded-lg text-n-slate-11 hover:bg-n-alpha-1 hover:text-n-slate-12"
+      @click="emit('create')"
+    >
+      <span class="i-lucide-plus size-4" />
+      {{ t('TICKETS.KANBAN.NEW_TICKET') }}
+    </button>
   </div>
 </template>

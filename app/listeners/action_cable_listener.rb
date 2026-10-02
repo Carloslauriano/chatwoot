@@ -29,6 +29,19 @@ class ActionCableListener < BaseListener
               })
   end
 
+  # Tickets são visíveis para toda a conta (TicketPolicy#show? não restringe
+  # por time), então qualquer Kanban aberto por qualquer agente pode precisar
+  # reagir a qualquer ticket — broadcast pra conta inteira, não só um time.
+  def ticket_created(event)
+    ticket, account = extract_ticket_and_account(event)
+    broadcast(account, user_tokens(account, account.agents), TICKET_CREATED, ticket.push_event_data)
+  end
+
+  def ticket_updated(event)
+    ticket, account = extract_ticket_and_account(event)
+    broadcast(account, user_tokens(account, account.agents), TICKET_UPDATED, ticket.push_event_data)
+  end
+
   def account_cache_invalidated(event)
     account = event.data[:account]
     tokens = user_tokens(account, account.agents)

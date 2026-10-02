@@ -613,7 +613,9 @@
         "MINE": "My teams",
         "ALL": "All teams",
         "TEAM_LABEL": "Team",
-        "SORT_LABEL": "Sort by"
+        "SORT_LABEL": "Sort by",
+        "SEARCH_PLACEHOLDER": "Search tickets",
+        "ASSIGNED_TO_ME": "Assigned to me"
       },
       "SORT": {
         "PRIORITY": "Priority",
@@ -726,6 +728,9 @@
       "ARCHIVE_ERROR": "Could not archive/unarchive the ticket",
       "MACROS": "Macros",
       "MACRO_RUN_ERROR": "Could not run the macro. Please try again",
+      "PRIORITY_UPDATE_CONFIRM_TITLE": "Change priority?",
+      "PRIORITY_UPDATE_CONFIRM_DESCRIPTION": "Are you sure you want to change the ticket priority to {priority}?",
+      "PRIORITY_UPDATE_ERROR": "Could not update the priority",
       "ATTACHMENTS": {
         "LABEL": "Attachments",
         "ADD": "Attach file",

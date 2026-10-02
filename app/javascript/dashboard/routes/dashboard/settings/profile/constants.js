@@ -34,6 +34,10 @@ export const NOTIFICATION_TYPES = [
     label: 'PROFILE_SETTINGS.FORM.NOTIFICATIONS.TYPES.SLA_MISSED_RESOLUTION',
     value: 'sla_missed_resolution',
   },
+  {
+    label: 'PROFILE_SETTINGS.FORM.NOTIFICATIONS.TYPES.TICKET_ACTIVITY',
+    value: 'ticket_activity',
+  },
 ];
 
 export const EVENT_TYPES = {

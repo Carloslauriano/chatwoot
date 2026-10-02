@@ -73,6 +73,26 @@ watch(
   { immediate: true }
 );
 
+// Resync when the parent reloads the ticket and the server reports a
+// different timer state for this agent — e.g. the ticket_status action
+// stops the timer (with worklog) when the ticket moves to another stage
+// while this card/modal stays open.
+watch(
+  () => [props.initialState, props.initialStartedAt],
+  ([newState, newStartedAt]) => {
+    const shouldRun = newState === 'running';
+    if (shouldRun === (timerState.value === 'running')) return;
+
+    timerState.value = shouldRun ? 'running' : 'stopped';
+    startedAt.value = shouldRun && newStartedAt ? new Date(newStartedAt) : null;
+    if (shouldRun) {
+      activeTimerTicketId.value = props.ticketId;
+    } else if (activeTimerTicketId.value === props.ticketId) {
+      activeTimerTicketId.value = null;
+    }
+  }
+);
+
 // RN01 feedback: if this widget owns the running timer and a DIFFERENT
 // ticket becomes the active one for this agent (started elsewhere in this
 // session), show the non-blocking toast and reset locally — the backend

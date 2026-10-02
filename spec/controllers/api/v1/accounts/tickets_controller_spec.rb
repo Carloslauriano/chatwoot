@@ -81,4 +81,40 @@ RSpec.describe 'Tickets API', type: :request do
       expect(response.parsed_body['tempo_liquido_segundos']).to eq(0)
     end
   end
+
+  describe 'GET /api/v1/accounts/{account.id}/tickets?assigned_to_me=true' do
+    it 'returns tickets where the current user is the responsavel or a colaborador only' do
+      meu_ticket = create(:ticket, account: account, responsavel: agent)
+      ticket_como_colaborador = create(:ticket, account: account)
+      create(:ticket_assignment, account: account, ticket: ticket_como_colaborador, colaborador: agent)
+      ticket_de_outro = create(:ticket, account: account)
+
+      get "/api/v1/accounts/#{account.id}/tickets",
+          params: { assigned_to_me: true },
+          headers: agent.create_new_auth_token,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      ids = response.parsed_body.pluck('id')
+      expect(ids).to include(meu_ticket.id, ticket_como_colaborador.id)
+      expect(ids).not_to include(ticket_de_outro.id)
+    end
+  end
+
+  describe 'GET /api/v1/accounts/{account.id}/tickets?q=' do
+    it 'searches by titulo, descricao and contact name' do
+      alvo = create(:ticket, account: account, titulo: 'Impressora térmica não liga')
+      outro = create(:ticket, account: account, titulo: 'Outro assunto qualquer')
+
+      get "/api/v1/accounts/#{account.id}/tickets",
+          params: { q: 'térmica' },
+          headers: agent.create_new_auth_token,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      ids = response.parsed_body.pluck('id')
+      expect(ids).to include(alvo.id)
+      expect(ids).not_to include(outro.id)
+    end
+  end
 end

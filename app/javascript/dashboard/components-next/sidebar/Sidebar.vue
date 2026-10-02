@@ -17,6 +17,7 @@ import SidebarGroup from './SidebarGroup.vue';
 import SidebarProfileMenu from './SidebarProfileMenu.vue';
 import SidebarChangelogCard from './SidebarChangelogCard.vue';
 import SidebarChangelogButton from './SidebarChangelogButton.vue';
+import SidebarTicketNotificationButton from './SidebarTicketNotificationButton.vue';
 import ChannelLeaf from './ChannelLeaf.vue';
 import ChannelIcon from 'next/icon/ChannelIcon.vue';
 import EmojiIcon from 'next/emoji-icon-picker/EmojiIcon.vue';
@@ -1100,6 +1101,7 @@ const menuItems = computed(() => {
             />
           </template>
         </ComposeConversation>
+        <SidebarTicketNotificationButton />
       </div>
     </section>
     <nav

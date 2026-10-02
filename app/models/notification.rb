@@ -43,7 +43,8 @@ class Notification < ApplicationRecord
     participating_conversation_new_message: 5,
     sla_missed_first_response: 6,
     sla_missed_next_response: 7,
-    sla_missed_resolution: 8
+    sla_missed_resolution: 8,
+    ticket_activity: 9
   }.freeze
 
   enum notification_type: NOTIFICATION_TYPES
@@ -53,7 +54,7 @@ class Notification < ApplicationRecord
   after_destroy_commit :dispatch_destroy_event
   after_update_commit :dispatch_update_event
 
-  PRIMARY_ACTORS = ['Conversation'].freeze
+  PRIMARY_ACTORS = ['Conversation', 'Ticket'].freeze
 
   def push_event_data
     # Secondary actor could be nil for cases like system assigning conversation
@@ -96,7 +97,8 @@ class Notification < ApplicationRecord
       'conversation_mention' => 'notifications.notification_title.conversation_mention',
       'sla_missed_first_response' => 'notifications.notification_title.sla_missed_first_response',
       'sla_missed_next_response' => 'notifications.notification_title.sla_missed_next_response',
-      'sla_missed_resolution' => 'notifications.notification_title.sla_missed_resolution'
+      'sla_missed_resolution' => 'notifications.notification_title.sla_missed_resolution',
+      'ticket_activity' => 'notifications.notification_title.ticket_activity'
     }
 
     i18n_key = notification_title_map[notification_type]
@@ -104,6 +106,8 @@ class Notification < ApplicationRecord
 
     if notification_type == 'conversation_creation'
       I18n.t(i18n_key, display_id: conversation.display_id, inbox_name: primary_actor.inbox.name)
+    elsif notification_type == 'ticket_activity'
+      I18n.t(i18n_key, titulo: primary_actor.titulo)
     elsif %w[conversation_assignment assigned_conversation_new_message participating_conversation_new_message
              conversation_mention].include?(notification_type)
       I18n.t(i18n_key, display_id: conversation.display_id)
@@ -121,6 +125,8 @@ class Notification < ApplicationRecord
       message_body(secondary_actor)
     when 'conversation_assignment', 'sla_missed_next_response', 'sla_missed_resolution'
       message_body((conversation.messages.incoming.last || conversation.messages.outgoing.last))
+    when 'ticket_activity'
+      ticket_activity_body
     else
       ''
     end
@@ -153,13 +159,23 @@ class Notification < ApplicationRecord
     end
   end
 
-  def process_notification_delivery
-    Notification::PushNotificationJob.perform_later(self) if user_subscribed_to_notification?('push')
+  def ticket_activity_body
+    event = secondary_actor
+    return I18n.t('notifications.no_content') if event.blank?
 
-    # Should we do something about the case where user subscribed to both push and email ?
-    # In future, we could probably add condition here to enqueue the job for 30 seconds later
-    # when push enabled and then check in email job whether notification has been read already.
-    Notification::EmailNotificationJob.perform_later(self) if user_subscribed_to_notification?('email')
+    texto = event.payload.is_a?(Hash) ? event.payload['texto'] : nil
+    texto.presence || event.tipo_evento.humanize
+  end
+
+  def process_notification_delivery
+    unless notification_type == 'ticket_activity'
+      Notification::PushNotificationJob.perform_later(self) if user_subscribed_to_notification?('push')
+
+      # Should we do something about the case where user subscribed to both push and email ?
+      # In future, we could probably add condition here to enqueue the job for 30 seconds later
+      # when push enabled and then check in email job whether notification has been read already.
+      Notification::EmailNotificationJob.perform_later(self) if user_subscribed_to_notification?('email')
+    end
 
     Notification::RemoveDuplicateNotificationJob.perform_later(self)
   end
