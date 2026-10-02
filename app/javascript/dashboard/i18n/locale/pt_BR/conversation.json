@@ -655,8 +655,8 @@
       "ERROR": "Não foi possível criar o ticket. Tente novamente"
     },
     "LINK": {
-      "SEARCH_PLACEHOLDER": "Buscar tickets abertos deste contato",
-      "EMPTY": "Nenhum ticket aberto encontrado para este contato",
+      "SEARCH_PLACEHOLDER": "Buscar tickets abertos por número, título ou contato",
+      "EMPTY": "Nenhum ticket aberto encontrado",
       "SUBMIT": "Vincular ticket",
       "SUCCESS": "Ticket vinculado com sucesso",
       "ERROR": "Não foi possível vincular o ticket. Tente novamente",

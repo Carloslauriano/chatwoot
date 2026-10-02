@@ -671,8 +671,8 @@
       "ERROR": "Could not create the ticket. Please try again"
     },
     "LINK": {
-      "SEARCH_PLACEHOLDER": "Search open tickets for this contact",
-      "EMPTY": "No open tickets found for this contact",
+      "SEARCH_PLACEHOLDER": "Search open tickets by number, title or contact",
+      "EMPTY": "No open tickets found",
       "SUBMIT": "Link ticket",
       "SUCCESS": "Ticket linked successfully",
       "ERROR": "Could not link the ticket. Please try again",

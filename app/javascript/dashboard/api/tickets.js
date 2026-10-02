@@ -28,6 +28,12 @@ class TicketsAPI extends ApiClient {
     });
   }
 
+  searchOpen(q) {
+    return axios.get(this.url, {
+      params: { q, exclude_status: 'resolvido', limit: 30 },
+    });
+  }
+
   linkConversation(ticketId, conversationId) {
     return axios.post(`${this.url}/${ticketId}/link_conversation`, {
       conversation_id: conversationId,

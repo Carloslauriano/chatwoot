@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useDebounceFn } from '@vueuse/core';
 import { useAlert } from 'dashboard/composables';
 import { useMapGetter } from 'dashboard/composables/store';
 import TicketsAPI from 'dashboard/api/tickets';
@@ -30,6 +31,7 @@ const tickets = ref([]);
 const isLoading = ref(false);
 const isLinking = ref(false);
 const selectedTicketId = ref(null);
+const searchQuery = ref('');
 
 const hasTickets = computed(() => tickets.value.length > 0);
 
@@ -45,6 +47,27 @@ const loadOpenTickets = async () => {
     isLoading.value = false;
   }
 };
+
+// Sem busca: tickets abertos do contato da conversa. Com busca: qualquer
+// ticket aberto da conta (o chamado pode ser de outro contato/canal).
+const searchOpenTickets = async () => {
+  const query = searchQuery.value.trim();
+  if (!query) {
+    await loadOpenTickets();
+    return;
+  }
+  isLoading.value = true;
+  try {
+    const response = await TicketsAPI.searchOpen(query);
+    tickets.value = response.data || [];
+  } catch (error) {
+    tickets.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const onSearchInput = useDebounceFn(searchOpenTickets, 300);
 
 const onSelectTicket = ticketId => {
   selectedTicketId.value = ticketId;
@@ -82,6 +105,13 @@ onMounted(loadOpenTickets);
 
 <template>
   <div class="flex flex-col gap-3">
+    <input
+      v-model="searchQuery"
+      type="search"
+      class="!mb-0"
+      :placeholder="$t('TICKETS.LINK.SEARCH_PLACEHOLDER')"
+      @input="onSearchInput"
+    />
     <div v-if="isLoading" class="flex justify-center p-8">
       <Spinner />
     </div>
