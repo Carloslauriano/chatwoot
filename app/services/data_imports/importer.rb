@@ -302,7 +302,8 @@ class DataImports::Importer
   def update_existing_contact(contact, contact_payload)
     attrs = contact_attributes(contact_payload)
     updates = {}
-    updates[:name] = attrs[:name] if contact.name.blank? && attrs[:name].present?
+    # Nome editado manualmente pela interface trava contra sobrescrita automática.
+    updates[:name] = attrs[:name] if contact.name.blank? && attrs[:name].present? && !contact.editado?
     updates[:email] = attrs[:email] if contact_email_available?(contact, attrs[:email])
     updates[:phone_number] = attrs[:phone_number] if contact_phone_number_available?(contact, attrs[:phone_number])
     updates[:identifier] = attrs[:identifier] if contact.identifier.blank? && attrs[:identifier].present?

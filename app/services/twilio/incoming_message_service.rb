@@ -190,6 +190,8 @@ class Twilio::IncomingMessageService
   def update_contact_name_if_needed
     return if params[:ProfileName].blank?
     return if @contact.name == params[:ProfileName]
+    # Nome editado manualmente pela interface trava contra sobrescrita automática.
+    return if @contact.editado?
 
     # Only update if current name exactly matches a phone number candidate
     return unless contact_name_matches_phone_number?

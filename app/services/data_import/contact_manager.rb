@@ -59,7 +59,8 @@ class DataImport::ContactManager
   private
 
   def update_contact_attributes(params, contact)
-    contact.name = params[:name] if params[:name].present?
+    # Nome editado manualmente pela interface trava contra sobrescrita automática.
+    contact.name = params[:name] if params[:name].present? && !contact.editado?
     contact.additional_attributes ||= {}
     contact.additional_attributes[:company_name] = params[:company_name] if params[:company_name].present?
     contact.additional_attributes[:city] = params[:city] if params[:city].present?

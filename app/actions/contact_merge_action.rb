@@ -53,6 +53,9 @@ class ContactMergeAction
 
   def merge_and_remove_mergee_contact
     mergable_attribute_keys = %w[identifier name email phone_number additional_attributes custom_attributes]
+    # Nome editado manualmente pela interface trava contra sobrescrita automática
+    # (aqui, o contato mesclado nunca deve substituir o nome do contato base).
+    mergable_attribute_keys -= ['name'] if base_contact.editado?
     base_contact_attributes = base_contact.attributes.slice(*mergable_attribute_keys).compact_blank
     mergee_contact_attributes = mergee_contact.attributes.slice(*mergable_attribute_keys).compact_blank
 

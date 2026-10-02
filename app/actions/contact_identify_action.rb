@@ -98,6 +98,8 @@ class ContactIdentifyAction
   end
 
   def update_contact
+    # Nome editado manualmente pela interface trava contra sobrescrita automática.
+    @attributes_to_update.delete(:name) if @contact.editado?
     @contact.attributes = params.slice(*@attributes_to_update).reject do |_k, v|
       v.blank?
     end.merge({ custom_attributes: custom_attributes, additional_attributes: additional_attributes })
