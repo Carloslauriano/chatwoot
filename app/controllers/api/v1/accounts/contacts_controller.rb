@@ -92,7 +92,12 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
   end
 
   def update
-    @contact.assign_attributes(contact_update_params)
+    update_params = contact_update_params
+    @contact.assign_attributes(update_params)
+    # Edição de nome pela interface trava contra sobrescrita automática (ver
+    # guards em ContactIdentifyAction, ContactMergeAction, WhatsApp/Twilio
+    # incoming services e nos imports) — não vem de params do cliente.
+    @contact.editado = true if update_params.key?(:name) && @contact.name_changed?
     @contact.save!
     process_avatar_from_url
   end
