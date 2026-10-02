@@ -93,10 +93,11 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
 
   def update
     update_params = contact_update_params
+    # Só a interface envia o header X-Manual-Edit. Sem ele (integrações, gateways) o nome é ignorado,
+    # sem erro; com ele o nome é aplicado e trava contra sobrescrita automática (ver guards em
+    # ContactIdentifyAction, ContactMergeAction, WhatsApp/Twilio incoming services e nos imports).
+    update_params = update_params.except(:name) unless manual_edit?
     @contact.assign_attributes(update_params)
-    # Edição de nome pela interface trava contra sobrescrita automática (ver
-    # guards em ContactIdentifyAction, ContactMergeAction, WhatsApp/Twilio
-    # incoming services e nos imports) — não vem de params do cliente.
     @contact.editado = true if update_params.key?(:name) && @contact.name_changed?
     @contact.save!
     process_avatar_from_url
@@ -189,6 +190,10 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
     return @contact.additional_attributes.merge(permitted_params[:additional_attributes]) if permitted_params[:additional_attributes]
 
     @contact.additional_attributes
+  end
+
+  def manual_edit?
+    request.headers['X-Manual-Edit'].to_s == 'true'
   end
 
   def contact_update_params

@@ -619,7 +619,7 @@ RSpec.describe 'Contacts API', type: :request do
 
       it 'updates the contact' do
         patch "/api/v1/accounts/#{account.id}/contacts/#{contact.id}",
-              headers: admin.create_new_auth_token,
+              headers: admin.create_new_auth_token.merge('X-Manual-Edit' => 'true'),
               params: valid_params,
               as: :json
 
@@ -629,6 +629,39 @@ RSpec.describe 'Contacts API', type: :request do
         # custom attributes are merged properly without overwriting existing ones
         expect(contact.custom_attributes).to eq({ 'test' => 'new test', 'test1' => 'test1', 'test2' => 'test2' })
         expect(contact.additional_attributes).to eq({ 'attr1' => 'attr1', 'attr2' => 'new attr2', 'attr3' => 'attr3' })
+      end
+
+      it 'locks the name (editado) when the UI sends X-Manual-Edit' do
+        patch "/api/v1/accounts/#{account.id}/contacts/#{contact.id}",
+              headers: admin.create_new_auth_token.merge('X-Manual-Edit' => 'true'),
+              params: valid_params,
+              as: :json
+
+        expect(contact.reload.editado).to be(true)
+      end
+
+      it 'lets another agent rename a locked contact from the UI' do
+        contact.update!(name: 'Manual', editado: true)
+
+        patch "/api/v1/accounts/#{account.id}/contacts/#{contact.id}",
+              headers: admin.create_new_auth_token.merge('X-Manual-Edit' => 'true'),
+              params: valid_params,
+              as: :json
+
+        expect(contact.reload.name).to eq('Test Blub')
+      end
+
+      it 'ignores the name without X-Manual-Edit but still returns success and applies the rest' do
+        contact.update!(name: 'Manual', editado: true)
+
+        patch "/api/v1/accounts/#{account.id}/contacts/#{contact.id}",
+              headers: { api_access_token: admin.access_token.token },
+              params: valid_params,
+              as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(contact.reload.name).to eq('Manual')
+        expect(contact.custom_attributes).to include('test2' => 'test2')
       end
 
       it 'prevents the update of contact of another account' do
