@@ -1,5 +1,7 @@
 class Api::BaseController < ApplicationController
   include AccessTokenAuthHelper
+  # Raw API tokens must bypass DeviseTokenAuth's encoded dashboard bearer parsing.
+  skip_before_action :set_current_user, if: :authenticate_by_access_token?
   respond_to :json
   before_action :set_current_ui_origin
   before_action :authenticate_access_token!, if: :authenticate_by_access_token?
@@ -10,10 +12,6 @@ class Api::BaseController < ApplicationController
 
   def set_current_ui_origin
     Current.originated_from_ui = !authenticate_by_access_token?
-  end
-
-  def authenticate_by_access_token?
-    request.headers[:api_access_token].present? || request.headers[:HTTP_API_ACCESS_TOKEN].present?
   end
 
   def check_authorization(model = nil)

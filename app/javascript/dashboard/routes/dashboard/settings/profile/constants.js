@@ -38,6 +38,10 @@ export const NOTIFICATION_TYPES = [
     label: 'PROFILE_SETTINGS.FORM.NOTIFICATIONS.TYPES.TICKET_ACTIVITY',
     value: 'ticket_activity',
   },
+  {
+    label: 'PROFILE_SETTINGS.FORM.NOTIFICATIONS.TYPES.VOICE_CALL_MISSED',
+    value: 'voice_call_missed',
+  },
 ];
 
 export const EVENT_TYPES = {

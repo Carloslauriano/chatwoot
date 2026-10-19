@@ -44,7 +44,8 @@ class Notification < ApplicationRecord
     sla_missed_first_response: 6,
     sla_missed_next_response: 7,
     sla_missed_resolution: 8,
-    ticket_activity: 9
+    ticket_activity: 9,
+    voice_call_missed: 10
   }.freeze
 
   enum notification_type: NOTIFICATION_TYPES
@@ -223,3 +224,5 @@ class Notification < ApplicationRecord
     }
   end
 end
+
+Notification.prepend_mod_with('Notification')
