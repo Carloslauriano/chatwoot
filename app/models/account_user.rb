@@ -3,6 +3,8 @@
 # Table name: account_users
 #
 #  id                       :bigint           not null, primary key
+#  accepts_calls            :boolean          default(TRUE), not null
+#  accepts_conversations    :boolean          default(TRUE), not null
 #  active_at                :datetime
 #  archived                 :boolean          default(FALSE), not null
 #  auto_offline             :boolean          default(TRUE), not null
@@ -48,6 +50,7 @@ class AccountUser < ApplicationRecord
 
   validates :user_id, uniqueness: { scope: :account_id }
   validate :prevent_archiving_last_administrator, if: -> { archived_changed? && archived? }
+  validate :accepts_conversations_or_calls
 
   def create_notification_setting
     setting = user.notification_settings.new(account_id: account.id)
@@ -108,6 +111,12 @@ class AccountUser < ApplicationRecord
 
   def dispatch_account_cache_invalidated
     Rails.configuration.dispatcher.dispatch(ACCOUNT_CACHE_INVALIDATED, Time.zone.now, account: account, cache_keys: account.cache_keys)
+  end
+
+  def accepts_conversations_or_calls
+    return if accepts_conversations || accepts_calls
+
+    errors.add(:base, I18n.t('errors.account_user.no_work_preference'))
   end
 end
 
