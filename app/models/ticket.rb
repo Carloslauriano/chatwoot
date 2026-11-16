@@ -61,6 +61,12 @@ class Ticket < ApplicationRecord
     worklogs.sum(:duracao_segundos)
   end
 
+  # Chamado pelo ActiveTimer: iniciar/parar um timer não altera a linha do ticket,
+  # então sem isso o Kanban dos outros agentes não veria o timer correndo.
+  def broadcast_timer_change
+    dispatch_updated_event
+  end
+
   def push_event_data
     {
       id: id,

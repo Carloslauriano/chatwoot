@@ -23,4 +23,21 @@ RSpec.describe ActiveTimer do
       expect { segundo_timer.save!(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
     end
   end
+
+  describe 'broadcast para o Kanban' do
+    let(:account) { create(:account) }
+    let(:colaborador) { create(:user, account: account) }
+    let(:ticket) { create(:ticket, account: account) }
+    let(:dispatcher) { instance_double(Dispatcher, dispatch: true) }
+
+    before { allow(Rails.configuration).to receive(:dispatcher).and_return(dispatcher) }
+
+    it 'dispara ticket.updated ao iniciar e ao parar o timer' do
+      timer = create(:active_timer, account: account, ticket: ticket, colaborador: colaborador)
+      expect(dispatcher).to have_received(:dispatch).with(Events::Types::TICKET_UPDATED, anything, ticket: ticket)
+
+      timer.destroy!
+      expect(dispatcher).to have_received(:dispatch).with(Events::Types::TICKET_UPDATED, anything, ticket: ticket).twice
+    end
+  end
 end

@@ -18,4 +18,13 @@ class ActiveTimer < ApplicationRecord
   belongs_to :colaborador, class_name: 'User'
 
   validates :colaborador_id, uniqueness: true
+
+  after_create_commit :broadcast_ticket_change
+  after_destroy_commit :broadcast_ticket_change, unless: :destroyed_by_association
+
+  private
+
+  def broadcast_ticket_change
+    ticket.broadcast_timer_change
+  end
 end

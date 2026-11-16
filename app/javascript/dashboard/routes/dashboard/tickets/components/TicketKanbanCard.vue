@@ -1,5 +1,6 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useIntervalFn } from '@vueuse/core';
 import Label from 'dashboard/components-next/label/Label.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import { useMapGetter } from 'dashboard/composables/store';
@@ -21,9 +22,52 @@ const props = defineProps({
 const emit = defineEmits(['open']);
 const { getPlainText } = useMessageFormatter();
 
-const totalWorked = computed(() =>
-  formatDuration(props.ticket.tempo_liquido_segundos || 0)
+const currentUserId = useMapGetter('getCurrentUserID');
+
+// Timers ativos (de qualquer colaborador) fazem o tempo do card crescer ao vivo.
+// Se um deles for do usuário logado, o contador fica vermelho.
+const activeTimers = computed(() => props.ticket.active_timers || []);
+const hasRunningTimer = computed(() => activeTimers.value.length > 0);
+const hasMyTimer = computed(() =>
+  activeTimers.value.some(timer => timer.colaborador_id === currentUserId.value)
 );
+
+const now = ref(Date.now());
+const { pause, resume } = useIntervalFn(
+  () => {
+    now.value = Date.now();
+  },
+  1000,
+  { immediate: false }
+);
+
+watch(
+  hasRunningTimer,
+  running => {
+    if (running) {
+      now.value = Date.now();
+      resume();
+    } else {
+      pause();
+    }
+  },
+  { immediate: true }
+);
+
+const runningSeconds = computed(() =>
+  activeTimers.value.reduce((sum, timer) => {
+    const elapsed = Math.floor(
+      (now.value - Date.parse(timer.iniciado_em)) / 1000
+    );
+    return sum + Math.max(0, elapsed);
+  }, 0)
+);
+
+const totalSeconds = computed(
+  () => (props.ticket.tempo_liquido_segundos || 0) + runningSeconds.value
+);
+
+const totalWorked = computed(() => formatDuration(totalSeconds.value));
 
 const descriptionPreview = computed(() =>
   getPlainText(props.ticket.descricao || '')
@@ -107,8 +151,9 @@ const members = computed(() => {
           {{ ticket.team_name }}
         </span>
         <span
-          v-if="ticket.tempo_liquido_segundos"
-          class="flex items-center gap-1 shrink-0"
+          v-if="totalSeconds"
+          class="flex items-center gap-1 shrink-0 tabular-nums"
+          :class="{ 'text-n-ruby-11 font-medium': hasMyTimer }"
         >
           <span class="text-sm i-lucide-clock" />
           {{ totalWorked }}
