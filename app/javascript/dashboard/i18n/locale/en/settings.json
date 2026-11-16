@@ -108,6 +108,18 @@
         "RESET_SUCCESS": "Access token regenerated successfully",
         "RESET_ERROR": "Unable to regenerate access token. Please try again"
       },
+      "MCP_CONFIG": {
+        "TITLE": "MCP server (tickets)",
+        "DESCRIPTION": "Connect an external AI to your tickets using your access token",
+        "TOOLS_NOTE": "The AI can list, read, create and update tickets, change their status and add comments. Archiving and deleting are not available. It acts with your permissions.",
+        "SERVER_URL": "Server URL",
+        "CLAUDE_CODE": "Claude Code (terminal)",
+        "JSON_CONFIG": "Claude Desktop / Cursor (JSON config)",
+        "SHOW_TOKEN": "Show token",
+        "HIDE_TOKEN": "Hide token",
+        "COPY": "Copy",
+        "COPY_SUCCESS": "Copied to clipboard"
+      },
       "AUDIO_NOTIFICATIONS_SECTION": {
         "TITLE": "Audio Alerts",
         "NOTE": "Enable audio alerts in dashboard for new messages and conversations.",

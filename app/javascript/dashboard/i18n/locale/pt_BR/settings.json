@@ -108,6 +108,18 @@
         "RESET_SUCCESS": "Token de acesso gerado novamente com sucesso",
         "RESET_ERROR": "Não foi possível regerar o token de acesso. Por favor, tente novamente"
       },
+      "MCP_CONFIG": {
+        "TITLE": "Servidor MCP (tickets)",
+        "DESCRIPTION": "Conecte uma IA externa aos seus tickets usando seu token de acesso",
+        "TOOLS_NOTE": "A IA pode listar, ler, criar e atualizar tickets, mudar o status e adicionar comentários. Arquivar e excluir não estão disponíveis. Ela age com as suas permissões.",
+        "SERVER_URL": "URL do servidor",
+        "CLAUDE_CODE": "Claude Code (terminal)",
+        "JSON_CONFIG": "Claude Desktop / Cursor (config JSON)",
+        "SHOW_TOKEN": "Mostrar token",
+        "HIDE_TOKEN": "Ocultar token",
+        "COPY": "Copiar",
+        "COPY_SUCCESS": "Copiado para a área de transferência"
+      },
       "AUDIO_NOTIFICATIONS_SECTION": {
         "TITLE": "Alertas de áudio",
         "NOTE": "Habilitar notificações de áudio no painel para novas mensagens e conversas.",

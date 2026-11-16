@@ -19,6 +19,7 @@ import AudioNotifications from './AudioNotifications.vue';
 import SectionLayout from '../account/components/SectionLayout.vue';
 import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 import AccessToken from './AccessToken.vue';
+import McpConfigExample from './McpConfigExample.vue';
 import MfaSettingsCard from './MfaSettingsCard.vue';
 import ActiveSessions from './ActiveSessions.vue';
 import Policy from 'dashboard/components/policy.vue';
@@ -42,6 +43,7 @@ export default {
     NotificationPreferences,
     AudioNotifications,
     AccessToken,
+    McpConfigExample,
     MfaSettingsCard,
     ActiveSessions,
     BaseSettingsHeader,
@@ -367,6 +369,16 @@ export default {
         :disabled="!apiAndWebhooksEnabled"
         @on-copy="onCopyToken"
         @on-reset="resetAccessToken"
+      />
+    </SectionLayout>
+    <SectionLayout
+      with-border
+      :title="$t('PROFILE_SETTINGS.FORM.MCP_CONFIG.TITLE')"
+      :description="$t('PROFILE_SETTINGS.FORM.MCP_CONFIG.DESCRIPTION')"
+    >
+      <McpConfigExample
+        :token="currentUser.access_token"
+        :disabled="!apiAndWebhooksEnabled"
       />
     </SectionLayout>
   </div>
