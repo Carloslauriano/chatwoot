@@ -213,6 +213,8 @@ Rails.application.routes.draw do
             resources :attachments, only: [:create, :destroy], controller: 'tickets/attachments'
           end
           resources :ticket_statuses, only: [:index, :create, :update, :destroy]
+          post 'mcp', to: 'mcp#handle'
+          match 'mcp', to: 'mcp#method_not_allowed', via: [:get, :delete, :put, :patch]
           resources :ticket_automation_rules, only: [:index, :create, :update, :destroy]
           resources :ticket_macros, only: [:index, :create, :update, :destroy] do
             member do
