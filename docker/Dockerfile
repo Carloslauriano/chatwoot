@@ -74,15 +74,23 @@ ENV PATH="$PNPM_HOME:$PATH"
 
 WORKDIR /app
 
+# Heavy native gems get their own layer so a Gemfile change doesn't recompile them.
+# Keep these versions in sync with Gemfile.lock (grpc, google-protobuf, nokogiri).
+RUN --mount=type=cache,target=/gems/ruby/3.4.0/cache \
+  MAKEFLAGS="-j$(nproc)" gem install --no-document --platform ruby \
+  --install-dir /gems/ruby/3.4.0 \
+  grpc:1.72.0 google-protobuf:3.25.7 nokogiri:1.19.4
+
 COPY Gemfile Gemfile.lock ./
 
 RUN bundle config set --local force_ruby_platform true
 
 # Do not install development or test gems in production
 RUN --mount=type=cache,target=/gems/ruby/3.4.0/cache \
+  export MAKEFLAGS="-j$(nproc)"; \
   if [ "$RAILS_ENV" = "production" ]; then \
-  bundle config set without 'development test'; bundle install -j 4 -r 3; \
-  else bundle install -j 4 -r 3; \
+  bundle config set without 'development test'; bundle install -j "$(nproc)" -r 3; \
+  else bundle install -j "$(nproc)" -r 3; \
   fi
 
 COPY package.json pnpm-lock.yaml ./
