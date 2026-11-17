@@ -120,6 +120,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_07_075626) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "active_timers", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "colaborador_id", null: false
+    t.bigint "ticket_id", null: false
+    t.datetime "iniciado_em", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_active_timers_on_account_id"
+    t.index ["colaborador_id"], name: "index_active_timers_on_colaborador_id", unique: true
+    t.index ["ticket_id"], name: "index_active_timers_on_ticket_id"
+  end
+
   create_table "agent_bot_inboxes", force: :cascade do |t|
     t.integer "inbox_id"
     t.integer "agent_bot_id"
@@ -856,6 +868,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_07_075626) do
     t.string "last_name", default: ""
     t.string "location", default: ""
     t.string "country_code", default: ""
+    t.boolean "editado", default: false, null: false
     t.boolean "blocked", default: false, null: false
     t.bigint "company_id"
     t.index "lower((email)::text), account_id", name: "index_contacts_on_lower_email_account_id"
@@ -1071,6 +1084,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_07_075626) do
     t.index ["identifier", "account_id"], name: "index_conversations_on_identifier_and_account_id"
     t.index ["inbox_id"], name: "index_conversations_on_inbox_id"
     t.index ["priority"], name: "index_conversations_on_priority"
+    t.index ["team_id", "status", "priority"], name: "index_conversations_on_team_status_priority"
     t.index ["status", "account_id"], name: "index_conversations_on_status_and_account_id"
     t.index ["status", "priority"], name: "index_conversations_on_status_and_priority"
     t.index ["team_id"], name: "index_conversations_on_team_id"
@@ -1760,10 +1774,129 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_07_075626) do
     t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "default_for_tickets", default: false, null: false
     t.string "icon", default: ""
     t.string "icon_color", default: ""
     t.index ["account_id"], name: "index_teams_on_account_id"
     t.index ["name", "account_id"], name: "index_teams_on_name_and_account_id", unique: true
+  create_table "ticket_assignments", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "ticket_id", null: false
+    t.bigint "colaborador_id", null: false
+    t.integer "status_micro", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_ticket_assignments_on_account_id"
+    t.index ["colaborador_id"], name: "index_ticket_assignments_on_colaborador_id"
+    t.index ["ticket_id", "colaborador_id"], name: "uniq_ticket_id_colaborador_id", unique: true
+    t.index ["ticket_id"], name: "index_ticket_assignments_on_ticket_id"
+  end
+
+  create_table "ticket_audit_logs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "ticket_id", null: false
+    t.bigint "autor_id", null: false
+    t.string "acao", null: false
+    t.string "campo"
+    t.jsonb "valor_antes"
+    t.jsonb "valor_depois"
+    t.datetime "created_at", null: false
+    t.index ["account_id"], name: "index_ticket_audit_logs_on_account_id"
+    t.index ["ticket_id", "created_at"], name: "index_ticket_audit_logs_on_ticket_id_and_created_at"
+    t.index ["ticket_id"], name: "index_ticket_audit_logs_on_ticket_id"
+  end
+
+  create_table "ticket_automation_rules", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.string "description"
+    t.string "event_name", null: false
+    t.boolean "active", default: true, null: false
+    t.jsonb "conditions", default: {}, null: false
+    t.jsonb "actions", default: [], null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "event_name"], name: "index_ticket_automation_rules_on_account_id_and_event_name"
+    t.index ["account_id"], name: "index_ticket_automation_rules_on_account_id"
+  end
+
+  create_table "ticket_macros", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.jsonb "actions", default: [], null: false
+    t.bigint "created_by_id"
+    t.bigint "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_ticket_macros_on_account_id"
+  end
+
+  create_table "ticket_status_teams", force: :cascade do |t|
+    t.bigint "ticket_status_id", null: false
+    t.bigint "team_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "position", default: 0, null: false
+    t.index ["team_id"], name: "index_ticket_status_teams_on_team_id"
+    t.index ["ticket_status_id", "team_id"], name: "idx_ticket_status_teams_unique", unique: true
+    t.index ["ticket_status_id"], name: "index_ticket_status_teams_on_ticket_status_id"
+  end
+
+  create_table "ticket_statuses", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.string "color", default: "#1f93ff", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "is_default", default: false, null: false
+    t.index ["account_id", "position"], name: "index_ticket_statuses_on_account_id_and_position"
+    t.index ["account_id"], name: "index_ticket_statuses_on_account_id"
+  end
+
+  create_table "ticket_timeline_events", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "ticket_id", null: false
+    t.integer "tipo_evento", null: false
+    t.integer "origem", null: false
+    t.bigint "autor_id"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.index ["account_id"], name: "index_ticket_timeline_events_on_account_id"
+    t.index ["ticket_id", "created_at"], name: "index_ticket_timeline_events_on_ticket_id_and_created_at"
+    t.index ["ticket_id"], name: "index_ticket_timeline_events_on_ticket_id"
+  end
+
+  create_table "tickets", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "conversation_id"
+    t.bigint "contact_id"
+    t.bigint "responsavel_id", null: false
+    t.text "descricao", null: false
+    t.string "categoria", null: false
+    t.integer "prioridade", default: 0, null: false
+    t.string "setor_atual", default: "suporte", null: false
+    t.integer "status_macro", default: 0, null: false
+    t.datetime "resolvido_em"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "team_id"
+    t.bigint "ticket_status_id"
+    t.string "titulo", null: false
+    t.boolean "archived", default: false, null: false
+    t.index ["account_id", "archived"], name: "index_tickets_on_account_id_and_archived"
+    t.index ["account_id", "conversation_id"], name: "index_tickets_on_account_id_and_conversation_id"
+    t.index ["account_id", "setor_atual"], name: "index_tickets_on_account_id_and_setor_atual"
+    t.index ["account_id", "status_macro"], name: "index_tickets_on_account_id_and_status_macro"
+    t.index ["account_id", "team_id"], name: "index_tickets_on_account_id_and_team_id"
+    t.index ["account_id"], name: "index_tickets_on_account_id"
+    t.index ["contact_id"], name: "index_tickets_on_contact_id"
+    t.index ["conversation_id"], name: "index_tickets_on_conversation_id"
+    t.index ["responsavel_id"], name: "index_tickets_on_responsavel_id"
+    t.index ["team_id"], name: "index_tickets_on_team_id"
+    t.index ["ticket_status_id"], name: "index_tickets_on_ticket_status_id"
+  end
+
   end
 
   create_table "user_sessions", force: :cascade do |t|
@@ -1854,8 +1987,28 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_07_075626) do
     t.boolean "open_all_day", default: false
     t.index ["account_id"], name: "index_working_hours_on_account_id"
     t.index ["inbox_id"], name: "index_working_hours_on_inbox_id"
+  create_table "worklogs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "ticket_id", null: false
+    t.bigint "colaborador_id", null: false
+    t.datetime "inicio", null: false
+    t.datetime "fim", null: false
+    t.integer "duracao_segundos", null: false
+    t.integer "origem", default: 0, null: false
+    t.boolean "editado_manualmente", default: false, null: false
+    t.string "motivo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_worklogs_on_account_id"
+    t.index ["colaborador_id"], name: "index_worklogs_on_colaborador_id"
+    t.index ["ticket_id"], name: "index_worklogs_on_ticket_id"
   end
 
+  end
+
+  add_foreign_key "active_timers", "accounts", on_delete: :cascade
+  add_foreign_key "active_timers", "tickets", on_delete: :cascade
+  add_foreign_key "active_timers", "users", column: "colaborador_id", on_delete: :cascade
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "campaign_recipients", "accounts", on_delete: :cascade
@@ -1871,7 +2024,28 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_07_075626) do
   add_foreign_key "conversation_monitor_work_items", "conversations", on_delete: :cascade
   add_foreign_key "conversation_monitors", "accounts", on_delete: :cascade
   add_foreign_key "conversation_monitors", "users", on_delete: :nullify
+  add_foreign_key "ticket_assignments", "accounts", on_delete: :cascade
+  add_foreign_key "ticket_assignments", "tickets", on_delete: :cascade
+  add_foreign_key "ticket_assignments", "users", column: "colaborador_id", on_delete: :cascade
+  add_foreign_key "ticket_audit_logs", "accounts", on_delete: :cascade
+  add_foreign_key "ticket_audit_logs", "tickets", on_delete: :cascade
+  add_foreign_key "ticket_automation_rules", "accounts", on_delete: :cascade
+  add_foreign_key "ticket_macros", "accounts", on_delete: :cascade
+  add_foreign_key "ticket_status_teams", "teams", on_delete: :cascade
+  add_foreign_key "ticket_status_teams", "ticket_statuses", on_delete: :cascade
+  add_foreign_key "ticket_statuses", "accounts", on_delete: :cascade
+  add_foreign_key "ticket_timeline_events", "accounts", on_delete: :cascade
+  add_foreign_key "ticket_timeline_events", "tickets", on_delete: :cascade
+  add_foreign_key "tickets", "accounts", on_delete: :cascade
+  add_foreign_key "tickets", "contacts", on_delete: :cascade
+  add_foreign_key "tickets", "conversations", on_delete: :cascade
+  add_foreign_key "tickets", "teams", on_delete: :nullify
+  add_foreign_key "tickets", "ticket_statuses", on_delete: :nullify
+  add_foreign_key "tickets", "users", column: "responsavel_id", on_delete: :cascade
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "worklogs", "accounts", on_delete: :cascade
+  add_foreign_key "worklogs", "tickets", on_delete: :cascade
+  add_foreign_key "worklogs", "users", column: "colaborador_id", on_delete: :cascade
   add_foreign_key "shopify_custom_apps", "accounts"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
