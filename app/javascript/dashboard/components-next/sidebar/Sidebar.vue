@@ -48,6 +48,7 @@ const emit = defineEmits([
 const { accountScopedRoute, isOnChatwootCloud } = useAccount();
 const { isEnterprise } = useConfig();
 const store = useStore();
+const inboxes = useMapGetter('inboxes/getInboxes');
 
 // Calls run on the enterprise-only API (cloud runs enterprise); hide the entry
 // on community so it doesn't lead to a dashboard/CTA the backend can't serve.
@@ -234,7 +235,6 @@ useEventListener(document, 'mouseup', onResizeEnd);
 useEventListener(document, 'touchmove', onResizeMove, { passive: false });
 useEventListener(document, 'touchend', onResizeEnd);
 
-const inboxes = useMapGetter('inboxes/getInboxes');
 const labels = useMapGetter('labels/getLabelsOnSidebar');
 const allUnreadCount = useMapGetter(
   'conversationUnreadCounts/getAllUnreadCount'
@@ -1087,7 +1087,9 @@ const menuItems = computed(() => {
       <div
         class="flex gap-2"
         :class="
-          isEffectivelyCollapsed ? 'flex-col items-center' : 'px-2 justify-center'
+          isEffectivelyCollapsed
+            ? 'flex-col items-center'
+            : 'px-2 justify-center'
         "
       >
         <Button

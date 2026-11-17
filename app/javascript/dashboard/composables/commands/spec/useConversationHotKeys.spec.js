@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
 import { useCaptain } from 'dashboard/composables/useCaptain';
 import { useAgentsList } from 'dashboard/composables/useAgentsList';
+import { useAccount } from 'dashboard/composables/useAccount';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 import {
   mockAssignableAgents,
@@ -20,6 +21,7 @@ vi.mock('vue-router');
 vi.mock('dashboard/composables/useConversationLabels');
 vi.mock('dashboard/composables/useCaptain');
 vi.mock('dashboard/composables/useAgentsList');
+vi.mock('dashboard/composables/useAccount');
 
 describe('useConversationHotKeys', () => {
   let store;
@@ -49,6 +51,7 @@ describe('useConversationHotKeys', () => {
       addLabelToConversation: vi.fn(),
       removeLabelFromConversation: vi.fn(),
     });
+    useAccount.mockReturnValue({ currentAccount: { value: { settings: {} } } });
     useCaptain.mockReturnValue({ captainTasksEnabled: { value: true } });
     useAgentsList.mockReturnValue({
       agentsList: { value: [] },
