@@ -13,7 +13,7 @@ module TicketTimelineSerializable
       autor_avatar_url: user_avatar_url_for(event.autor_id),
       payload: event.payload,
       anexos: anexos_for(event),
-      created_at: event.created_at,
+      created_at: event.created_at
     }
   end
 

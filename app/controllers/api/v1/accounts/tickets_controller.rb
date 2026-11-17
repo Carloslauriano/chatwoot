@@ -2,7 +2,7 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
   include TicketTimelineSerializable
 
   before_action :fetch_ticket, only: [:show, :update, :link_conversation, :transfer, :ticket_status,
-                                       :timer_start, :timer_stop, :timeline, :audit_logs, :archive, :unarchive]
+                                      :timer_start, :timer_stop, :timeline, :audit_logs, :archive, :unarchive]
   before_action :check_authorization
 
   # Sem filtros: retorna todos os tickets da conta (página "Tickets").
@@ -21,15 +21,19 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
     @tickets = @tickets.where(contact_id: params[:contact_id]) if params[:contact_id].present?
     @tickets = @tickets.where.not(status_macro: params[:exclude_status]) if params[:exclude_status].present?
     @tickets = @tickets.where(archived: params[:archived].present? ? ActiveModel::Type::Boolean.new.cast(params[:archived]) : false)
-    @tickets = @tickets.where(
-      'tickets.responsavel_id = :uid OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = tickets.id AND ta.colaborador_id = :uid)',
-      uid: Current.user.id
-    ) if ActiveModel::Type::Boolean.new.cast(params[:assigned_to_me])
-    @tickets = @tickets.left_joins(:contact).where(
-      'tickets.titulo ILIKE :search OR tickets.descricao ILIKE :search OR contacts.name ILIKE :search ' \
-      'OR tickets.id::text = :exact',
-      search: "%#{params[:q].strip}%", exact: params[:q].strip.delete_prefix('#')
-    ) if params[:q].present?
+    if ActiveModel::Type::Boolean.new.cast(params[:assigned_to_me])
+      @tickets = @tickets.where(
+        'tickets.responsavel_id = :uid OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = tickets.id AND ta.colaborador_id = :uid)',
+        uid: Current.user.id
+      )
+    end
+    if params[:q].present?
+      @tickets = @tickets.left_joins(:contact).where(
+        'tickets.titulo ILIKE :search OR tickets.descricao ILIKE :search OR contacts.name ILIKE :search ' \
+        'OR tickets.id::text = :exact',
+        search: "%#{params[:q].strip}%", exact: params[:q].strip.delete_prefix('#')
+      )
+    end
     @tickets = @tickets.order(updated_at: :desc).limit(params[:limit].to_i.clamp(1, 100)) if params[:limit].present?
   end
 
@@ -135,9 +139,9 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
 
   def timeline
     @timeline_events = @ticket.ticket_timeline_events
-                               .map { |event| serialize_ticket_event(event) }
-                               .sort_by { |event| event[:created_at] }
-                               .reverse
+                              .map { |event| serialize_ticket_event(event) }
+                              .sort_by { |event| event[:created_at] }
+                              .reverse
   end
 
   def audit_logs
@@ -164,7 +168,7 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
 
   def ticket_params
     params.require(:ticket).permit(:conversation_id, :contact_id, :titulo, :descricao, :categoria, :prioridade,
-                                    :setor_atual, :responsavel_id, :team_id, anexos: [])
+                                   :setor_atual, :responsavel_id, :team_id, anexos: [])
   end
 
   def requested_ticket_status_id
@@ -179,8 +183,8 @@ class Api::V1::Accounts::TicketsController < Api::V1::Accounts::BaseController
     return Current.account.ticket_statuses.find_by(is_default: true)&.id if team_id.blank?
 
     TicketStatusTeam.joins(:ticket_status)
-                     .where(team_id: team_id, ticket_statuses: { account_id: Current.account.id })
-                     .order(:position).first&.ticket_status_id ||
+                    .where(team_id: team_id, ticket_statuses: { account_id: Current.account.id })
+                    .order(:position).first&.ticket_status_id ||
       Current.account.ticket_statuses.find_by(is_default: true)&.id
   end
 

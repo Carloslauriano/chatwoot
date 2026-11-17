@@ -26,9 +26,9 @@ class Team < ApplicationRecord
   has_many :members, through: :team_members, source: :user
   has_many :conversations, dependent: :nullify
 
+  before_save :unset_other_default_for_tickets, if: :default_for_tickets?
   before_destroy :capture_filtered_unread_count_member_ids, prepend: true
   after_destroy_commit :invalidate_filtered_unread_counts_after_destroy
-  before_save :unset_other_default_for_tickets, if: :default_for_tickets?
 
   validates :name,
             presence: { message: I18n.t('errors.validations.presence') },

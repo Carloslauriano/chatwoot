@@ -1,0 +1,37 @@
+# Offenses herdados do fork (tickets) e do merge com upstream; pagar aos poucos.
+Metrics/AbcSize:
+  Exclude:
+  - app/controllers/api/v1/accounts/conversations_controller.rb
+  - app/controllers/api/v1/accounts/tickets_controller.rb
+Metrics/ClassLength:
+  Exclude:
+  - app/controllers/api/v1/accounts/contacts_controller.rb
+  - app/controllers/api/v1/accounts/conversations_controller.rb
+  - app/listeners/action_cable_listener.rb
+  - app/models/account.rb
+Metrics/CyclomaticComplexity:
+  Exclude:
+  - app/builders/notification_builder.rb
+  - app/controllers/api/v1/accounts/conversations_controller.rb
+  - app/controllers/api/v1/accounts/tickets_controller.rb
+  - app/services/ticket_automation_rules/runner_service.rb
+  - app/services/ticket_macros/runner_service.rb
+Metrics/MethodLength:
+  Exclude:
+  - app/controllers/api/v1/accounts/tickets_controller.rb
+  - app/presenters/conversations/event_data_presenter.rb
+  - db/migrate/20260820100200_add_ticket_status_id_to_tickets.rb
+Metrics/PerceivedComplexity:
+  Exclude:
+  - app/controllers/api/v1/accounts/conversations_controller.rb
+  - app/controllers/api/v1/accounts/tickets_controller.rb
+  - app/services/ticket_automation_rules/runner_service.rb
+RSpec/NestedGroups:
+  Exclude:
+  - spec/controllers/api/v1/accounts/conversations/messages_controller_spec.rb
+Rails/SkipsModelValidations:
+  Exclude:
+  - app/models/team.rb
+  - app/models/ticket_status.rb
+  - db/migrate/20260820120000_add_titulo_to_tickets.rb
+  - spec/models/ticket_spec.rb

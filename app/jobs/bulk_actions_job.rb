@@ -32,7 +32,7 @@ class BulkActionsJob < ApplicationJob
   end
 
   def conversation_update_params(conversation, params)
-    return params unless params[:assignee_id].present?
+    return params if params[:assignee_id].blank?
     return params unless conversation.priority_gate_blocked_for_assignment?
 
     params.except(:assignee_id)

@@ -19,12 +19,13 @@ class ActiveTimer < ApplicationRecord
 
   validates :colaborador_id, uniqueness: true
 
-  after_create_commit :broadcast_ticket_change
-  after_destroy_commit :broadcast_ticket_change, unless: :destroyed_by_association
+  after_commit :broadcast_ticket_change, on: [:create, :destroy]
 
   private
 
   def broadcast_ticket_change
+    return if destroyed_by_association
+
     ticket.broadcast_timer_change
   end
 end

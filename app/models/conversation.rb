@@ -159,7 +159,7 @@ class Conversation < ApplicationRecord
     scope_team_id = gating_team_id
     return false if scope_team_id.blank?
 
-    account.conversations.open.where(team_id: scope_team_id, priority: nil).exists?
+    account.conversations.open.exists?(team_id: scope_team_id, priority: nil)
   end
 
   def priority_gate_blocked_for_assignment?

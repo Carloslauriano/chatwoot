@@ -200,9 +200,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   def apply_inactivity_resolve_extras
-    if Current.account.inactivity_resolve_message.present?
-      MessageTemplates::Template::InactivityResolve.new(conversation: @conversation).perform
-    end
+    MessageTemplates::Template::InactivityResolve.new(conversation: @conversation).perform if Current.account.inactivity_resolve_message.present?
     @conversation.add_labels(Current.account.inactivity_resolve_label) if Current.account.inactivity_resolve_label.present?
     @conversation.additional_attributes = @conversation.additional_attributes.merge('skip_csat_survey' => true)
   end

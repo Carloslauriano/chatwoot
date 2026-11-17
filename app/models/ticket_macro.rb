@@ -18,7 +18,7 @@ class TicketMacro < ApplicationRecord
   def json_actions_format
     return if actions.blank?
 
-    attributes = actions.map { |obj| obj['action_name'] }
+    attributes = actions.pluck('action_name')
     invalid = attributes - ACTIONS_ATTRS
 
     errors.add(:actions, "Ticket macro execution actions #{invalid.join(',')} not supported.") if invalid.any?

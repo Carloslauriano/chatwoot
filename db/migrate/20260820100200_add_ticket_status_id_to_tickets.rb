@@ -4,7 +4,7 @@ class AddTicketStatusIdToTickets < ActiveRecord::Migration[7.1]
     ['A Fazer', 1],
     ['Fazendo', 2],
     ['Aguardando Versão', 3],
-    ['Resolvido', 4],
+    ['Resolvido', 4]
   ].freeze
 
   def up
