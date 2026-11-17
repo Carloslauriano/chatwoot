@@ -53,6 +53,7 @@ describe Tickets::TimelineNotificationService do
     end
 
     it 'does not duplicate the notification' do
+      event # cria o evento (e a notificação inicial) antes de medir
       expect do
         described_class.new(ticket_timeline_event: event).perform
       end.not_to(change { responsavel.notifications.count })

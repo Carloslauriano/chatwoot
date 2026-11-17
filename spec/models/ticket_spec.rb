@@ -5,8 +5,8 @@ require 'rails_helper'
 RSpec.describe Ticket do
   describe 'associations' do
     it { is_expected.to belong_to(:account) }
-    it { is_expected.to belong_to(:conversation) }
-    it { is_expected.to belong_to(:contact) }
+    it { is_expected.to belong_to(:conversation).optional(true) }
+    it { is_expected.to belong_to(:contact).optional(true) }
     it { is_expected.to belong_to(:responsavel) }
     it { is_expected.to belong_to(:team).optional(true) }
     it { is_expected.to belong_to(:ticket_status).optional(true) }
@@ -68,19 +68,23 @@ RSpec.describe Ticket do
     end
 
     it 'rejects a file above the configured size limit' do
-      allow(GlobalConfigService).to receive(:load).with('MAXIMUM_FILE_UPLOAD_SIZE', 40).and_return('0.00001')
-      ticket.anexos.attach(imagem)
+      allow(GlobalConfigService).to receive(:load).with('MAXIMUM_FILE_UPLOAD_SIZE', 40).and_return('1')
+      # registro novo: em registro persistido o attach já salva (e descarta o anexo inválido)
+      novo_ticket = build(:ticket)
+      novo_ticket.anexos.attach(io: StringIO.new('a' * 2.megabytes), filename: 'grande.png', content_type: 'image/png')
 
-      expect(ticket).to be_invalid
-      expect(ticket.errors[:anexos]).to be_present
+      expect(novo_ticket).to be_invalid
+      expect(novo_ticket.errors[:anexos]).to be_present
     end
 
     it 'rejects a disallowed content type' do
-      arquivo = Rack::Test::UploadedFile.new('spec/assets/avatar.png', 'application/x-msdownload')
-      ticket.anexos.attach(arquivo)
+      novo_ticket = build(:ticket)
+      # identify: false evita o ActiveStorage trocar o tipo pelo conteúdo real do arquivo
+      novo_ticket.anexos.attach(io: File.open('spec/assets/avatar.png'), filename: 'virus.exe',
+                                content_type: 'application/x-msdownload', identify: false)
 
-      expect(ticket).to be_invalid
-      expect(ticket.errors[:anexos]).to be_present
+      expect(novo_ticket).to be_invalid
+      expect(novo_ticket.errors[:anexos]).to be_present
     end
 
     it 'rejects more than NUMERO_MAXIMO_ANEXOS files' do
