@@ -170,9 +170,23 @@ const openConversation = async notificationItem => {
     id,
     primaryActorId,
     primaryActorType,
-    primaryActor: { inboxId, id: conversationId },
+    primaryActor: { inboxId, id: conversationId } = {},
     notificationType,
   } = notificationItem;
+
+  if (notificationType === 'ticket_activity') {
+    await store.dispatch('notifications/read', {
+      id,
+      primaryActorId,
+      primaryActorType,
+      unreadCount: meta.value.unreadCount,
+    });
+    router.push({
+      name: 'tickets_kanban',
+      query: { ticket: primaryActorId },
+    });
+    return;
+  }
 
   if (route.params.id === String(conversationId)) return;
 

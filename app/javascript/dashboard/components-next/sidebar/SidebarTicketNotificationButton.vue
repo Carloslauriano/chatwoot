@@ -88,7 +88,7 @@ const openNotification = async notification => {
   }
 
   closePopover();
-  router.push({ name: 'ticket_show', params: { ticketId: primaryActorId } });
+  router.push({ name: 'tickets_kanban', query: { ticket: primaryActorId } });
 };
 
 onMounted(fetchUnreadCount);
