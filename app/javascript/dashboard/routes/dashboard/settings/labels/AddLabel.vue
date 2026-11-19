@@ -26,7 +26,7 @@ export default {
       color: '#000',
       description: '',
       title: '',
-      showOnSidebar: true,
+      showOnSidebar: false,
     };
   },
   validations,
