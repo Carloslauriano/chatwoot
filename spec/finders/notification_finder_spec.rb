@@ -11,6 +11,24 @@ RSpec.describe NotificationFinder do
     create_list(:notification, 3, account: account, user: user)
   end
 
+  describe 'ticket notifications' do
+    before do
+      create(:notification, account: account, user: user).update_column(:notification_type, Notification.notification_types[:ticket_activity]) # rubocop:disable Rails/SkipsModelValidations
+    end
+
+    it 'excludes ticket_activity from the generic list and counts' do
+      finder = described_class.new(user, account, {})
+      expect(finder.notifications.map(&:notification_type)).not_to include('ticket_activity')
+      expect(finder.unread_count).to eq(3)
+      expect(finder.count).to eq(3)
+    end
+
+    it 'includes ticket_activity when explicitly filtered' do
+      finder = described_class.new(user, account, { notification_type: 'ticket_activity' })
+      expect(finder.count).to eq(1)
+    end
+  end
+
   describe '#notifications' do
     subject { notification_finder.notifications }
 

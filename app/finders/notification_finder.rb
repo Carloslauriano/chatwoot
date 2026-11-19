@@ -38,7 +38,12 @@ class NotificationFinder
 
   def find_all_notifications
     @notifications = current_user.notifications.where(account_id: @current_account.id)
-    @notifications = @notifications.where(notification_type: params[:notification_type]) if params[:notification_type].present?
+    if params[:notification_type].present?
+      @notifications = @notifications.where(notification_type: params[:notification_type])
+    else
+      # Ticket notifications have their own bell; keep them out of the generic Inbox and its badge.
+      @notifications = @notifications.where.not(notification_type: Notification.notification_types[:ticket_activity])
+    end
   end
 
   def filter_snoozed_notifications
