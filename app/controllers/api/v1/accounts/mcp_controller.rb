@@ -65,7 +65,8 @@ class Api::V1::Accounts::McpController < Api::V1::Accounts::BaseController
       'protocolVersion' => SUPPORTED_VERSIONS.include?(requested) ? requested : SUPPORTED_VERSIONS.first,
       'capabilities' => { 'tools' => { 'listChanged' => false } },
       'serverInfo' => { 'name' => 'chatwoot-tickets', 'version' => '1.0.0' },
-      'instructions' => 'Manage and read support tickets. Archiving and deleting tickets is not available.'
+      'instructions' => 'Manage and read support tickets, including time tracking (timers and worklogs). ' \
+                        'Archiving and deleting tickets is not available.'
     }
   end
 

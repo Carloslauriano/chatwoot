@@ -133,5 +133,62 @@ RSpec.describe 'Tickets MCP API', type: :request do
 
       expect(response.parsed_body['error']['code']).to eq(-32_602)
     end
+
+    describe 'timer tools' do
+      it 'lists the timer tools' do
+        rpc('tools/list')
+
+        names = response.parsed_body['result']['tools'].pluck('name')
+        expect(names).to include('start_ticket_timer', 'stop_ticket_timer', 'add_ticket_worklog')
+      end
+
+      it 'starts a timer for the token user' do
+        result = tool_call('start_ticket_timer', { id: ticket.id })
+
+        expect(result['isError']).to be(false)
+        expect(ActiveTimer.where(ticket_id: ticket.id, colaborador_id: agent.id).count).to eq(1)
+      end
+
+      it 'stops with finalizado and records a timer worklog' do
+        tool_call('start_ticket_timer', { id: ticket.id })
+
+        result = tool_call('stop_ticket_timer', { id: ticket.id, decisao: 'finalizado' })
+
+        expect(result['isError']).to be(false)
+        expect(ActiveTimer.where(ticket_id: ticket.id)).to be_empty
+        expect(ticket.worklogs.last.origem).to eq('timer')
+      end
+
+      it 'stops with pausado without creating a worklog' do
+        tool_call('start_ticket_timer', { id: ticket.id })
+
+        result = tool_call('stop_ticket_timer', { id: ticket.id, decisao: 'pausado' })
+
+        expect(result['isError']).to be(false)
+        expect(ActiveTimer.where(ticket_id: ticket.id)).to be_empty
+        expect(ticket.worklogs.count).to eq(0)
+      end
+
+      it 'returns a tool error when stopping without a running timer' do
+        result = tool_call('stop_ticket_timer', { id: ticket.id, decisao: 'pausado' })
+
+        expect(result['isError']).to be(true)
+      end
+
+      it 'adds a manual worklog' do
+        result = tool_call('add_ticket_worklog', { id: ticket.id, inicio: 1.hour.ago.iso8601, duracao_segundos: 1800, motivo: 'MCP' })
+
+        expect(result['isError']).to be(false)
+        expect(ticket.worklogs.last).to have_attributes(origem: 'manual', duracao_segundos: 1800, colaborador_id: agent.id)
+      end
+
+      it 'cannot start a timer on a ticket of another account' do
+        other = create(:ticket)
+
+        result = tool_call('start_ticket_timer', { id: other.id })
+
+        expect(result['isError']).to be(true)
+      end
+    end
   end
 end

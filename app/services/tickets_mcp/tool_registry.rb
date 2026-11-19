@@ -42,7 +42,8 @@ class TicketsMcp::ToolRegistry
   def self.build_tools
     [
       list_tickets, show_ticket, ticket_timeline, ticket_audit_logs, list_ticket_statuses,
-      create_ticket, update_ticket, change_ticket_status, add_ticket_comment
+      create_ticket, update_ticket, change_ticket_status, add_ticket_comment,
+      start_ticket_timer, stop_ticket_timer, add_ticket_worklog
     ]
   end
 
@@ -130,6 +131,49 @@ class TicketsMcp::ToolRegistry
     )
   end
 
+  def self.start_ticket_timer
+    Tool.new(
+      name: 'start_ticket_timer',
+      description: 'Start the time tracking timer on a ticket for the token user. Only one timer can run per user: ' \
+                   'an active timer on another ticket is paused without creating a worklog. ' \
+                   'Sets the user assignment to "fazendo". Idempotent for the same ticket.',
+      properties: ID_PROPERTY, required: ['id'], verb: :post, path: 'tickets/%<id>s/timer/start',
+      build: ->(_args) { {} }
+    )
+  end
+
+  def self.stop_ticket_timer
+    Tool.new(
+      name: 'stop_ticket_timer',
+      description: 'Stop the running timer of the token user on a ticket. decisao=finalizado records a worklog ' \
+                   'and marks the assignment as finished; decisao=pausado only discards the timer without a worklog. ' \
+                   'Fails with 404 when the user has no running timer on the ticket.',
+      properties: ID_PROPERTY.merge(
+        'decisao' => { 'type' => 'string', 'enum' => %w[finalizado pausado], 'description' => 'What to do when stopping' }
+      ),
+      required: %w[id decisao], verb: :post, path: 'tickets/%<id>s/timer/stop',
+      build: ->(args) { { body: { 'decisao' => args['decisao'] } } }
+    )
+  end
+
+  WORKLOG_FIELDS = {
+    'inicio' => { 'type' => 'string', 'description' => 'Start time (ISO 8601)' },
+    'fim' => { 'type' => 'string', 'description' => 'End time (ISO 8601)' },
+    'duracao_segundos' => { 'type' => 'integer', 'description' => 'Duration in seconds' },
+    'motivo' => { 'type' => 'string', 'description' => 'Reason for the manual entry' },
+    'colaborador_id' => { 'type' => 'integer', 'description' => 'User id the time belongs to (defaults to token user)' }
+  }.freeze
+
+  def self.add_ticket_worklog
+    Tool.new(
+      name: 'add_ticket_worklog',
+      description: 'Add a manual time entry (worklog) to a ticket. Provide inicio plus duracao_segundos or fim.',
+      properties: ID_PROPERTY.merge(WORKLOG_FIELDS), required: ['id'], verb: :post, path: 'tickets/%<id>s/worklogs',
+      build: ->(args) { { body: { 'worklog' => args.slice(*WORKLOG_FIELDS.keys).compact } } }
+    )
+  end
+
   private_class_method :build_tools, :list_tickets, :show_ticket, :ticket_timeline, :ticket_audit_logs,
-                       :list_ticket_statuses, :create_ticket, :update_ticket, :change_ticket_status, :add_ticket_comment
+                       :list_ticket_statuses, :create_ticket, :update_ticket, :change_ticket_status, :add_ticket_comment,
+                       :start_ticket_timer, :stop_ticket_timer, :add_ticket_worklog
 end
